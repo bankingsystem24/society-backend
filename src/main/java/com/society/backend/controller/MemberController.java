@@ -1,0 +1,49 @@
+package com.society.backend.controller;
+
+import com.society.backend.dto.MemberResponse;
+import com.society.backend.entity.Member;
+import com.society.backend.service.MemberService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/members")
+@CrossOrigin("*")
+public class MemberController {
+
+    @Autowired
+    private MemberService service;
+
+    // Create Member
+    @PostMapping
+    public Member create(@RequestBody Member member) {
+        return service.save(member);
+    }
+
+    // Get All Members
+    @GetMapping
+    public List<MemberResponse> getAll() {
+        return service.getAll();
+    }
+
+    // Get Member By ID
+    @GetMapping("/{id}")
+    public MemberResponse getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    // Update Member
+    @PutMapping("/{id}")
+    public Member update(@PathVariable Long id, @RequestBody Member member) {
+        return service.update(id, member);
+    }
+
+    // Delete Member
+    @DeleteMapping("/{id}")
+    public String delete(@PathVariable Long id) {
+        service.delete(id);
+        return "Member deleted successfully";
+    }
+}
