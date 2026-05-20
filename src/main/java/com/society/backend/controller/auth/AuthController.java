@@ -20,20 +20,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-
         User user = userRepository.findAll()
                 .stream()
-                .filter(u -> u.getUsername().equals(request.username)
-                        && u.getPassword().equals(request.password))
+                .filter(u -> u.getUsername().equals(request.getUsername())
+                        && u.getPassword().equals(request.getPassword()))
                 .findFirst()
                 .orElse(null);
-
         if (user == null) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
-
         String token = jwtUtil.generateToken(user.getUsername());
-
         return ResponseEntity.ok(token);
     }
 }
