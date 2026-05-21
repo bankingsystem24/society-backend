@@ -18,11 +18,48 @@ public class FlatService {
         return flatRepository.save(flat);
     }
 
-public List<FlatResponse> getAll() {
+    public List<FlatResponse> getBySocietyId(Long societyId) {
 
-    List<Flat> flats = flatRepository.findAll();
+        List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
-    return flats.stream().map(flat -> {
+        return flats.stream().map(flat -> {
+
+            FlatResponse res = new FlatResponse();
+
+            res.setId(flat.getId());
+            res.setFlatNo(flat.getFlatNo());
+            res.setFloorNo(flat.getFloorNo());
+            res.setAreaSqFt(flat.getAreaSqFt());
+            res.setBedrooms(flat.getBedrooms());
+            res.setMaintenanceAmount(flat.getMaintenanceAmount());
+            res.setStatus(flat.getStatus());
+
+            if (flat.getSociety() != null) {
+                res.setSocietyId(flat.getSociety().getId());
+                res.setSocietyName(flat.getSociety().getSocietyName());
+            }
+
+            // Wing
+            if (flat.getWing() != null) {
+                res.setWingId(flat.getWing().getId());
+                res.setWingName(flat.getWing().getWingName());
+            }
+
+            // Owner
+            if (flat.getOwner() != null) {
+                res.setOwnerId(flat.getOwner().getId());
+                res.setOwnerName(flat.getOwner().getName());
+            }
+
+            return res;
+
+        }).toList();
+    }    
+
+    public FlatResponse getById(Long id) {
+
+        Flat flat = flatRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Flat not found"));
 
         FlatResponse res = new FlatResponse();
 
@@ -40,32 +77,45 @@ public List<FlatResponse> getAll() {
         }
 
         return res;
-
-    }).toList();
-}
-    
-public FlatResponse getById(Long id) {
-
-    Flat flat = flatRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Flat not found"));
-
-    FlatResponse res = new FlatResponse();
-
-    res.setId(flat.getId());
-    res.setFlatNo(flat.getFlatNo());
-    res.setFloorNo(flat.getFloorNo());
-    res.setAreaSqFt(flat.getAreaSqFt());
-    res.setBedrooms(flat.getBedrooms());
-    res.setMaintenanceAmount(flat.getMaintenanceAmount());
-    res.setStatus(flat.getStatus());
-
-    if (flat.getSociety() != null) {
-        res.setSocietyId(flat.getSociety().getId());
-        res.setSocietyName(flat.getSociety().getSocietyName());
     }
 
-    return res;
-}
+    public List<FlatResponse> getAll() {
+
+        List<Flat> flats = flatRepository.findAll();
+
+        return flats.stream().map(flat -> {
+
+            FlatResponse res = new FlatResponse();
+
+            res.setId(flat.getId());
+            res.setFlatNo(flat.getFlatNo());
+            res.setFloorNo(flat.getFloorNo());
+            res.setAreaSqFt(flat.getAreaSqFt());
+            res.setBedrooms(flat.getBedrooms());
+            res.setMaintenanceAmount(flat.getMaintenanceAmount());
+            res.setStatus(flat.getStatus());
+
+            if (flat.getSociety() != null) {
+                res.setSocietyId(flat.getSociety().getId());
+                res.setSocietyName(flat.getSociety().getSocietyName());
+            }
+
+            // Wing
+            if (flat.getWing() != null) {
+                res.setWingId(flat.getWing().getId());
+                res.setWingName(flat.getWing().getWingName());
+            }
+
+            // Owner
+            if (flat.getOwner() != null) {
+                res.setOwnerId(flat.getOwner().getId());
+                res.setOwnerName(flat.getOwner().getName());
+            }
+
+            return res;
+
+        }).toList();
+    }
 
     public Flat update(Long id, Flat flat) {
 
@@ -87,4 +137,5 @@ public FlatResponse getById(Long id) {
         flatRepository.deleteById(id);
     }
 
+    
 }

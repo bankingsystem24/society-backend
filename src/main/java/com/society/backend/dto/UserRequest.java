@@ -1,41 +1,34 @@
-package com.society.backend.entity;
+package com.society.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.society.backend.enums.Role;
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "users")
-public class User extends SocietyBaseEntity {
+public class UserRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true)
     private String username;
-
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
     private String email;
-
-    @Column(length = 15)
     private String mobile;
-
-    @Enumerated(EnumType.STRING)
     private Role role;
+    private Boolean active;
 
-    private Boolean active = true;
+    // Nested objects from frontend (keep same JSON structure)
+    private IdRequest member;
+    private IdRequest society;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
+    // ===== Inner reusable class for { id: X } =====
+    public static class IdRequest {
+        private Long id;
 
-    public Long getId() {
-        return id;
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
     }
+
+    // ===== Getters / Setters =====
 
     public String getUsername() {
         return username;
@@ -45,15 +38,10 @@ public class User extends SocietyBaseEntity {
         this.username = username;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getPassword() {
         return password;
     }
 
-    // Later store encrypted password using BCrypt
     public void setPassword(String password) {
         this.password = password;
     }
@@ -89,11 +77,20 @@ public class User extends SocietyBaseEntity {
     public void setActive(Boolean active) {
         this.active = active;
     }
-    public Member getMember() {
+
+    public IdRequest getMember() {
         return member;
     }
-    public void setMember(Member member) {
+
+    public void setMember(IdRequest member) {
         this.member = member;
     }
 
+    public IdRequest getSociety() {
+        return society;
+    }
+
+    public void setSociety(IdRequest society) {
+        this.society = society;
+    }
 }

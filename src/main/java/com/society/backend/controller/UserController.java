@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.society.backend.dto.UserRequest;
 import com.society.backend.dto.UserResponse;
 import com.society.backend.entity.User;
 import com.society.backend.service.UserService;
@@ -21,9 +22,8 @@ public class UserController {
     // =========================
 
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody User user) {
-
-        return ResponseEntity.ok(service.save(user));
+    public ResponseEntity<?> create(@RequestBody UserRequest req) {
+        return ResponseEntity.ok(service.createUser(req));
     }
 
     // =========================

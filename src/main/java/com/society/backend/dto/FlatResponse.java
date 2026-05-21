@@ -13,6 +13,12 @@ public class FlatResponse {
     private Long societyId;
     private String societyName;
 
+    private Long wingId;
+    private String wingName;
+
+    private Long ownerId;
+    private String ownerName;
+
     public Long getId() {
     return id;
 }
@@ -84,4 +90,37 @@ public String getSocietyName() {
 public void setSocietyName(String societyName) {
     this.societyName = societyName;
 }
+
+public Long getWingId() {
+    return wingId;
+}
+
+public void setWingId(Long wingId) {
+    this.wingId = wingId;
+}
+
+public String getWingName() {
+    return wingName;
+}
+
+public void setWingName(String wingName) {
+    this.wingName = wingName;
+}
+
+public Long getOwnerId() {
+    return ownerId;
+}
+
+public void setOwnerId(Long ownerId) {
+    this.ownerId = ownerId;
+}
+
+public String getOwnerName() {
+    return ownerName;
+}
+
+public void setOwnerName(String ownerName) {
+    this.ownerName = ownerName;
+}
+
 }

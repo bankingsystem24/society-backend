@@ -1,9 +1,15 @@
 package com.society.backend.service;
 
+import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
+import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
+import com.society.backend.entity.Society;
 import com.society.backend.exception.ResourceNotFoundException;
+import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.MemberRepository;
+import com.society.backend.repository.SocietyRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +21,11 @@ public class MemberService {
     @Autowired
     private MemberRepository repository;
 
+    @Autowired
+    private SocietyRepository societyRepository;
+    @Autowired
+    private FlatRepository flatRepository;
+    
     // Save Member
     public Member save(Member member) {
         return repository.save(member);
@@ -42,6 +53,57 @@ public class MemberService {
         }).toList();
     }
 
+public MemberResponse createMember(MemberRequest req) {
+
+    Member m = new Member();
+
+    m.setName(req.getName());
+    m.setEmail(req.getEmail());
+    m.setMobile(req.getMobile());
+    m.setAddress(req.getAddress());
+    m.setGender(req.getGender());
+    m.setOccupation(req.getOccupation());
+    m.setMemberType(req.getMemberType());
+    m.setActive(true);
+
+    // SOCIETY FIX
+    if (req.getSocietyId() != null) {
+        Society s = societyRepository.findById(req.getSocietyId())
+                .orElseThrow(() -> new RuntimeException("Society not found"));
+        m.setSociety(s);
+    }
+
+    // FLAT FIX
+    if (req.getFlatId() != null) {
+        Flat f = flatRepository.findById(req.getFlatId())
+                .orElseThrow(() -> new RuntimeException("Flat not found"));
+        m.setFlat(f);
+    }
+
+    Member saved = repository.save(m);
+    return mapToResponse(saved);
+}
+
+    private MemberResponse mapToResponse(Member m) {
+        MemberResponse r = new MemberResponse();
+
+        r.setId(m.getId());
+        r.setName(m.getName());
+        r.setEmail(m.getEmail());
+        r.setMobile(m.getMobile());
+        r.setAddress(m.getAddress());
+        r.setGender(m.getGender());
+        r.setOccupation(m.getOccupation());
+        r.setMemberType(m.getMemberType());
+        r.setActive(m.getActive());
+
+        if (m.getFlat() != null) {
+            r.setFlatId(m.getFlat().getId());
+            r.setFlatNo(m.getFlat().getFlatNo());
+        }
+
+        return r;
+    }
     // Get Member By ID
     public MemberResponse getById(Long id) {
         Member member = repository.findById(id)

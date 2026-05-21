@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.society.backend.entity.Flat;
@@ -33,8 +34,18 @@ public class FlatController {
     }
 
     @GetMapping
-    public List<FlatResponse> getFlats() {
-        return service.getAll();
+    public ResponseEntity<List<FlatResponse>> getAllFlats(
+            @RequestParam(required = false) Long societyId) {
+
+        List<FlatResponse> flats;
+
+        if (societyId != null) {
+            flats = service.getBySocietyId(societyId);
+        } else {
+            flats = service.getAll();
+        }
+
+        return ResponseEntity.ok(flats);
     }
 
     @GetMapping("/{id}")

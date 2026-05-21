@@ -39,6 +39,11 @@ public class Member extends SocietyBaseEntity {
     @JoinColumn(name = "flat_id")
     private Flat flat;
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "society_id")
+    private Society society;
+
     // =========================
     // User Relation
     // =========================
@@ -137,5 +142,15 @@ public class Member extends SocietyBaseEntity {
 
     public void setUser(User user) {
         this.user = user;
+     }
+
+    public Society getSociety() {
+        return society;
     }
+
+    public void setSociety(Society society) {
+        this.society = society;
+    }
+
+    
 }

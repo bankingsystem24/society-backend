@@ -1,5 +1,6 @@
 package com.society.backend.controller.auth;
 import com.society.backend.dto.LoginRequest;
+import com.society.backend.dto.LoginResponse;
 import com.society.backend.entity.User;
 import com.society.backend.repository.UserRepository;
 import com.society.backend.security.JwtUtil;
@@ -30,6 +31,10 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
         String token = jwtUtil.generateToken(user.getUsername());
-        return ResponseEntity.ok(token);
+            LoginResponse response = new LoginResponse(
+            token,
+            user.getSociety().getId() 
+    );
+        return ResponseEntity.ok(response);
     }
 }

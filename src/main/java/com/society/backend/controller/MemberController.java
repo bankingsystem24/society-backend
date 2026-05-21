@@ -1,9 +1,11 @@
 package com.society.backend.controller;
 
+import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
 import com.society.backend.entity.Member;
 import com.society.backend.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,10 +20,9 @@ public class MemberController {
 
     // Create Member
     @PostMapping
-    public Member create(@RequestBody Member member) {
-        return service.save(member);
+    public ResponseEntity<MemberResponse> create(@RequestBody MemberRequest request) {
+        return ResponseEntity.ok(service.createMember(request));
     }
-
     // Get All Members
     @GetMapping
     public List<MemberResponse> getAll() {
