@@ -22,83 +22,92 @@ public class UserService {
     @Autowired
     private SocietyRepository societyRepository;
 
-public User save(User user) {
+    public User save(User user) {
 
-    // 🔥 FIX MEMBER
-    if (user.getMember() != null && user.getMember().getId() != null) {
+        // 🔥 FIX MEMBER
+        if (user.getMember() != null && user.getMember().getId() != null) {
 
-        Long memberId = user.getMember().getId();
+            Long memberId = user.getMember().getId();
 
-        Member m = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+            Member m = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new RuntimeException("Member not found"));
 
-        user.setMember(m); // ✅ IMPORTANT FIX
-    } else {
-        user.setMember(null);
-    }
-    User saved = userRepository.save(user);
-    userRepository.flush(); // 🔥 FORCE DB WRITE (IMPORTANT DEBUG STEP)
-    return saved;
-}
-
-public User createUser(UserRequest req) {
-
-    User user = new User();
-
-    user.setUsername(req.getUsername());
-    user.setPassword(req.getPassword());
-    user.setEmail(req.getEmail());
-    user.setMobile(req.getMobile());
-    user.setRole(req.getRole());
-    user.setActive(req.getActive());
-
-    // MEMBER
-    if (req.getMember() != null && req.getMember().getId() != null) {
-        Member m = memberRepository.findById(req.getMember().getId())
-                .orElseThrow(() -> new RuntimeException("Member not found"));
-        user.setMember(m);
+            user.setMember(m); // ✅ IMPORTANT FIX
+        } else {
+            user.setMember(null);
+        }
+        User saved = userRepository.save(user);
+        userRepository.flush(); // 🔥 FORCE DB WRITE (IMPORTANT DEBUG STEP)
+        return saved;
     }
 
-    // SOCIETY
-    if (req.getSociety() != null && req.getSociety().getId() != null) {
-        Society s = societyRepository.findById(req.getSociety().getId())
-                .orElseThrow(() -> new RuntimeException("Society not found"));
-        user.setSociety(s);
+    public User createUser(UserRequest req) {
+
+        User user = new User();
+
+        user.setUsername(req.getUsername());
+        user.setPassword(req.getPassword());
+        user.setEmail(req.getEmail());
+        user.setMobile(req.getMobile());
+        user.setRole(req.getRole());
+        user.setActive(req.getActive());
+
+        // MEMBER
+        if (req.getMember() != null && req.getMember().getId() != null) {
+            Member m = memberRepository.findById(req.getMember().getId())
+                    .orElseThrow(() -> new RuntimeException("Member not found"));
+            user.setMember(m);
+        }
+
+        // SOCIETY
+        if (req.getSociety() != null && req.getSociety().getId() != null) {
+            Society s = societyRepository.findById(req.getSociety().getId())
+                    .orElseThrow(() -> new RuntimeException("Society not found"));
+            user.setSociety(s);
+        }
+
+        return userRepository.save(user);
     }
 
-    return userRepository.save(user);
-}
 
+    public List<UserResponse> getAll(Long societyId) {
 
-    public List<UserResponse> getAll() {
+        if (societyId != null) {
+            return userRepository.findBySocietyId(societyId)
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        } else {
+            return userRepository.findAll()
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        }
+    }
 
-        return userRepository.findAll().stream().map(user -> {
+    private UserResponse toResponse(User user) {
+        UserResponse res = new UserResponse();
 
-            UserResponse res = new UserResponse();
+        res.setId(user.getId());
+        res.setUsername(user.getUsername());
+        res.setEmail(user.getEmail());
+        res.setMobile(user.getMobile());
+        res.setRole(user.getRole());
+        res.setActive(user.getActive());
 
-            res.setId(user.getId());
-            res.setUsername(user.getUsername());
-            res.setEmail(user.getEmail());
-            res.setMobile(user.getMobile());
-            res.setRole(user.getRole());
-            res.setActive(user.getActive());
+        // Society mapping
+        if (user.getSociety() != null) {
+            res.setSocietyId(user.getSociety().getId());
+            res.setSocietyName(user.getSociety().getSocietyName());
+        }
 
-            if (user.getMember() != null) {
+        // Member mapping (if exists in entity)
+        if (user.getMember() != null) {
+            res.setMemberId(user.getMember().getId());
+            res.setMemberName(user.getMember().getName());
+        }
 
-                res.setMemberId(user.getMember().getId());
-                res.setMemberName(user.getMember().getName());
-
-                if (user.getMember().getFlat() != null &&
-                    user.getMember().getFlat().getSociety() != null) {
-
-                    res.setSocietyId(user.getMember().getFlat().getSociety().getId());
-                    res.setSocietyName(user.getMember().getFlat().getSociety().getSocietyName());
-                }
-            }
-
-            return res;
-
-        }).toList();
+        return res;
     }
 
     public UserResponse getById(Long id) {

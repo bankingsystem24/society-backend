@@ -33,8 +33,11 @@ public class AuthController {
         String token = jwtUtil.generateToken(user.getUsername());
             LoginResponse response = new LoginResponse(
             token,
-            user.getSociety().getId() 
+            user.getSociety().getId(),
+            user.getSociety().getSocietyName() 
     );
         return ResponseEntity.ok(response);
     }
+
+
 }

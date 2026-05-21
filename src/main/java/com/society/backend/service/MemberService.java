@@ -23,6 +23,7 @@ public class MemberService {
 
     @Autowired
     private SocietyRepository societyRepository;
+
     @Autowired
     private FlatRepository flatRepository;
     
@@ -32,26 +33,46 @@ public class MemberService {
     }
 
     // Get All Members
-    public List<MemberResponse> getAll() {
-        return repository.findAll().stream().map(member -> {
-
-            MemberResponse res = new MemberResponse();
-
-            res.setId(member.getId());
-            res.setName(member.getName());
-            res.setEmail(member.getEmail());
-            res.setMobile(member.getMobile());
-            res.setAddress(member.getAddress());
-
-            if (member.getFlat() != null) {
-                res.setFlatId(member.getFlat().getId());
-                res.setFlatNo(member.getFlat().getFlatNo());
-            }
-
-            return res;
-
-        }).toList();
+public List<MemberResponse> getAll(Long societyId) {
+    if (societyId != null) {
+        return repository.findBySocietyId(societyId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    } else {
+        return repository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
+}
+
+private MemberResponse toResponse(Member member) {
+    MemberResponse res = new MemberResponse();
+
+    res.setId(member.getId());
+    res.setName(member.getName());
+    res.setMobile(member.getMobile());
+    res.setEmail(member.getEmail());
+    res.setAddress(member.getAddress());
+    res.setGender(member.getGender());
+    res.setOccupation(member.getOccupation());
+    res.setMemberType(member.getMemberType());
+    res.setActive(member.getActive());
+    if (member.getFlat() != null) {
+        res.setFlatId(member.getFlat().getId());
+        res.setFlatNo(member.getFlat().getFlatNo());
+    }
+    
+    // IMPORTANT: society mapping
+    if (member.getSociety() != null) {
+        res.setSocietyId(member.getSociety().getId());
+        res.setSocietyName(member.getSociety().getSocietyName());
+    }
+
+    return res;
+}
+
 
 public MemberResponse createMember(MemberRequest req) {
 

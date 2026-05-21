@@ -23,10 +23,11 @@ public class MemberController {
     public ResponseEntity<MemberResponse> create(@RequestBody MemberRequest request) {
         return ResponseEntity.ok(service.createMember(request));
     }
+    
     // Get All Members
     @GetMapping
-    public List<MemberResponse> getAll() {
-        return service.getAll();
+    public List<MemberResponse> getAll(@RequestParam(required = false) Long societyId) {
+        return service.getAll(societyId);
     }
 
     // Get Member By ID

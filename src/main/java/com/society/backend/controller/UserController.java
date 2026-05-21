@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.society.backend.dto.MemberResponse;
 import com.society.backend.dto.UserRequest;
 import com.society.backend.dto.UserResponse;
 import com.society.backend.entity.User;
@@ -30,11 +31,10 @@ public class UserController {
     // Get All Users
     // =========================
 
-    @GetMapping
-    public ResponseEntity<List<UserResponse>> getAll() {
-
-        return ResponseEntity.ok(service.getAll());
-    }
+ @GetMapping
+public List<UserResponse> getAll(@RequestParam(required = false) Long societyId) {
+    return service.getAll(societyId);
+}
 
     // =========================
     // Get User By ID

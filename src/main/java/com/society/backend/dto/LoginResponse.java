@@ -4,13 +4,15 @@ public class LoginResponse {
 
     private String token;
     private Long societyId;
+    private String societyName;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(String token, Long societyId) {
+    public LoginResponse(String token, Long societyId, String societyName) {
         this.token = token;
         this.societyId = societyId;
+        this.societyName = societyName;
     }
 
     public String getToken() {
@@ -27,5 +29,13 @@ public class LoginResponse {
 
     public void setSocietyId(Long societyId) {
         this.societyId = societyId;
+    }
+
+    public String getSocietyName() {
+        return societyName;
+    }
+
+    public void setSocietyName(String societyName) {
+        this.societyName = societyName;
     }
 }

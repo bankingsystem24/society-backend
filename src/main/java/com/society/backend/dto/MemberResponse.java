@@ -11,6 +11,8 @@ public class MemberResponse {
     private String occupation;
     private String memberType;
     private Boolean active;
+    private Long societyId;
+    private String societyName;
 
     // Flat info (lightweight)
     private Long flatId;
@@ -105,4 +107,20 @@ public class MemberResponse {
     public void setFlatNo(String flatNo) {
         this.flatNo = flatNo;
     }
+    public Long getSocietyId() {
+        return societyId;
+    }
+
+    public void setSocietyId(Long societyId) {
+        this.societyId = societyId;
+    }
+
+    public String getSocietyName() {
+        return societyName;
+    }
+
+    public void setSocietyName(String societyName) {
+        this.societyName = societyName;
+    }
+    
 }
