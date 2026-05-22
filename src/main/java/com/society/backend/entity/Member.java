@@ -34,12 +34,10 @@ public class Member extends SocietyBaseEntity {
     // Flat Relation
     // =========================
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "flat_id")
     private Flat flat;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "society_id")
     private Society society;

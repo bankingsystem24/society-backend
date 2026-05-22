@@ -36,6 +36,16 @@ public class MemberController {
         return service.getById(id);
     }
 
+    @PutMapping("/update-status")
+    public ResponseEntity<?> updateStatus(
+            @RequestParam Long id,
+            @RequestParam Boolean active) {
+
+        service.updateStatus(id, active);
+
+        return ResponseEntity.ok("Status updated");
+    }
+
     // Update Member
     @PutMapping("/{id}")
     public Member update(@PathVariable Long id, @RequestBody Member member) {

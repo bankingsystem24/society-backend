@@ -1,5 +1,8 @@
 package com.society.backend.dto;
 
+import com.society.backend.entity.Flat;
+import com.society.backend.entity.Society;
+
 public class MemberRequest {
 
     private String name;
@@ -10,8 +13,8 @@ public class MemberRequest {
     private String occupation;
     private String memberType;
 
-    private Long societyId;
-    private Long flatId ;
+    private Society society;
+    private Flat flat ;
 
     // getters & setters
 
@@ -36,10 +39,10 @@ public class MemberRequest {
     public String getMemberType() { return memberType; }
     public void setMemberType(String memberType) { this.memberType = memberType; }
 
-    public Long getSocietyId() { return societyId; }
-    public void setSocietyId(Long societyId) { this.societyId = societyId; }
+    public Society getSociety() { return society; }
+    public void setSociety(Society society) { this.society = society; }
 
-    public Long getFlatId() { return flatId; }
-    public void setFlatId(Long flatId) { this.flatId = flatId; }
+    public Flat getFlat() { return flat; }
+    public void setFlat(Flat flat) { this.flat = flat; }
 
 }

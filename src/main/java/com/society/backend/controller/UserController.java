@@ -31,10 +31,10 @@ public class UserController {
     // Get All Users
     // =========================
 
- @GetMapping
-public List<UserResponse> getAll(@RequestParam(required = false) Long societyId) {
-    return service.getAll(societyId);
-}
+    @GetMapping
+    public List<UserResponse> getAll(@RequestParam(required = false) Long societyId) {
+        return service.getAll(societyId);
+    }
 
     // =========================
     // Get User By ID
@@ -46,9 +46,15 @@ public List<UserResponse> getAll(@RequestParam(required = false) Long societyId)
         return ResponseEntity.ok(service.getById(id));
     }
 
-    // =========================
-    // Update User
-    // =========================
+    @PutMapping("/update-status")
+    public ResponseEntity<?> updateStatus(
+            @RequestParam Long id,
+            @RequestParam Boolean active) {
+
+        service.updateStatus(id, active);
+
+        return ResponseEntity.ok("Status updated");
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<User> update(@PathVariable Long id,

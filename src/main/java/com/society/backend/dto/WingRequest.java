@@ -2,26 +2,15 @@ package com.society.backend.dto;
 
 import com.society.backend.entity.Society;
 
-public class WingResponse {
+public class WingRequest {
 
-    private Long id;
     private String wingName;
     private String description;
-    private Integer total_floors;
-    private Integer total_flats;
     private Boolean active;
+    private Integer total_flats;
+    private Integer total_floors;
 
     private Society society;
-
-    // Getters and Setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getWingName() {
         return wingName;
@@ -39,12 +28,12 @@ public class WingResponse {
         this.description = description;
     }
 
-    public Integer getTotal_floors() {
-        return total_floors;
+    public Boolean getActive() {
+        return active;
     }
 
-    public void setTotal_floors(Integer total_floors) {
-        this.total_floors = total_floors;
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     public Integer getTotal_flats() {
@@ -55,12 +44,12 @@ public class WingResponse {
         this.total_flats = total_flats;
     }
 
-    public Boolean getActive() {
-        return active;
+    public Integer getTotal_floors() {
+        return total_floors;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
+    public void setTotal_floors(Integer total_floors) {
+        this.total_floors = total_floors;
     }
 
     public Society getSociety() {
@@ -70,6 +59,4 @@ public class WingResponse {
     public void setSociety(Society society) {
         this.society = society;
     }
-
-
 }

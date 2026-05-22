@@ -150,6 +150,15 @@ public class UserService {
         return null;
     }
 
+    public void updateStatus(Long id, Boolean active) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setActive(active);
+        userRepository.save(user);
+    }
+
     public void delete(Long id) {
         userRepository.deleteById(id);
     }

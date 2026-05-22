@@ -33,77 +33,90 @@ public class MemberService {
     }
 
     // Get All Members
-public List<MemberResponse> getAll(Long societyId) {
-    if (societyId != null) {
-        return repository.findBySocietyId(societyId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    } else {
-        return repository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }
-}
-
-private MemberResponse toResponse(Member member) {
-    MemberResponse res = new MemberResponse();
-
-    res.setId(member.getId());
-    res.setName(member.getName());
-    res.setMobile(member.getMobile());
-    res.setEmail(member.getEmail());
-    res.setAddress(member.getAddress());
-    res.setGender(member.getGender());
-    res.setOccupation(member.getOccupation());
-    res.setMemberType(member.getMemberType());
-    res.setActive(member.getActive());
-    if (member.getFlat() != null) {
-        res.setFlatId(member.getFlat().getId());
-        res.setFlatNo(member.getFlat().getFlatNo());
-    }
-    
-    // IMPORTANT: society mapping
-    if (member.getSociety() != null) {
-        res.setSocietyId(member.getSociety().getId());
-        res.setSocietyName(member.getSociety().getSocietyName());
+    public List<MemberResponse> getAll(Long societyId) {
+        if (societyId != null) {
+            return repository.findBySocietyId(societyId)
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        } else {
+            return repository.findAll()
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        }
     }
 
-    return res;
-}
+    public void updateStatus(Long id, Boolean active) {
 
+        Member member = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
 
-public MemberResponse createMember(MemberRequest req) {
+        member.setActive(active);
 
-    Member m = new Member();
-
-    m.setName(req.getName());
-    m.setEmail(req.getEmail());
-    m.setMobile(req.getMobile());
-    m.setAddress(req.getAddress());
-    m.setGender(req.getGender());
-    m.setOccupation(req.getOccupation());
-    m.setMemberType(req.getMemberType());
-    m.setActive(true);
-
-    // SOCIETY FIX
-    if (req.getSocietyId() != null) {
-        Society s = societyRepository.findById(req.getSocietyId())
-                .orElseThrow(() -> new RuntimeException("Society not found"));
-        m.setSociety(s);
+        repository.save(member);
     }
 
-    // FLAT FIX
-    if (req.getFlatId() != null) {
-        Flat f = flatRepository.findById(req.getFlatId())
-                .orElseThrow(() -> new RuntimeException("Flat not found"));
-        m.setFlat(f);
+    private MemberResponse toResponse(Member member) {
+        MemberResponse res = new MemberResponse();
+
+        res.setId(member.getId());
+        res.setName(member.getName());
+        res.setMobile(member.getMobile());
+        res.setEmail(member.getEmail());
+        res.setAddress(member.getAddress());
+        res.setGender(member.getGender());
+        res.setOccupation(member.getOccupation());
+        res.setMemberType(member.getMemberType());
+        res.setActive(member.getActive());
+        if (member.getFlat() != null) {
+            res.setFlatId(member.getFlat().getId());
+            res.setFlatNo(member.getFlat().getFlatNo());
+        }
+        
+        // IMPORTANT: society mapping
+        if (member.getSociety() != null) {
+            res.setSocietyId(member.getSociety().getId());
+            res.setSocietyName(member.getSociety().getSocietyName());
+        }
+
+        return res;
     }
 
-    Member saved = repository.save(m);
-    return mapToResponse(saved);
-}
+
+    public MemberResponse createMember(MemberRequest req) {
+
+        Member m = new Member();
+
+        m.setName(req.getName());
+        m.setEmail(req.getEmail());
+        m.setMobile(req.getMobile());
+        m.setAddress(req.getAddress());
+        m.setGender(req.getGender());
+        m.setOccupation(req.getOccupation());
+        m.setMemberType(req.getMemberType());
+        m.setActive(true);
+
+        // SOCIETY FIX
+        if (req.getSociety() != null && req.getSociety().getId() != null) {
+
+            Society s = societyRepository.findById(req.getSociety().getId())
+                    .orElseThrow(() -> new RuntimeException("Society not found"));
+
+            m.setSociety(s);
+        }
+
+        if (req.getFlat() != null && req.getFlat().getId() != null) {
+
+            Flat f = flatRepository.findById(req.getFlat().getId())
+                    .orElseThrow(() -> new RuntimeException("Flat not found"));
+
+            m.setFlat(f);
+        }
+
+        Member saved = repository.save(m);
+        return mapToResponse(saved);
+    }
 
     private MemberResponse mapToResponse(Member m) {
         MemberResponse r = new MemberResponse();
