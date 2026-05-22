@@ -17,6 +17,8 @@ import com.society.backend.service.FlatService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+
+import com.society.backend.dto.FlatRequest;
 import com.society.backend.dto.FlatResponse;
 
 @RestController
@@ -29,10 +31,11 @@ public class FlatController {
     // Create Flat
     
     @PostMapping
-    public ResponseEntity<Flat> create(@RequestBody Flat flat) {
-        return ResponseEntity.ok(service.save(flat));
+    public ResponseEntity<FlatResponse> create(@RequestBody FlatRequest request) {
+        return ResponseEntity.ok(service.createFlat(request));
     }
 
+    
     @GetMapping
     public ResponseEntity<List<FlatResponse>> getAllFlats(
             @RequestParam(required = false) Long societyId) {
@@ -47,6 +50,7 @@ public class FlatController {
 
         return ResponseEntity.ok(flats);
     }
+
 
     @GetMapping("/{id}")
     public FlatResponse getById(@PathVariable Long id) {

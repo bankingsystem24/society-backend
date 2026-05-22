@@ -8,6 +8,6 @@ import com.society.backend.entity.Flat;
 
 public interface FlatRepository extends JpaRepository<Flat, Long> {
 
-    List<Flat> findBySociety_Id(Long societyId);
+    List<Flat> findBySocietyId(Long societyId);
 
 }

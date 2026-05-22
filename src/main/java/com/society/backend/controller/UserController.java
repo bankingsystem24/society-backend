@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.society.backend.dto.MemberResponse;
 import com.society.backend.dto.UserRequest;
 import com.society.backend.dto.UserResponse;
 import com.society.backend.entity.User;

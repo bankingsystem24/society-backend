@@ -1,6 +1,5 @@
 package com.society.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.society.backend.enums.Role;
 import jakarta.persistence.*;
 

@@ -1,5 +1,9 @@
 package com.society.backend.dto;
 
+import com.society.backend.entity.Member;
+import com.society.backend.entity.Society;
+import com.society.backend.entity.Wing;
+
 public class FlatResponse {
 
     private Long id;
@@ -10,14 +14,10 @@ public class FlatResponse {
     private Double maintenanceAmount;
     private String status;
 
-    private Long societyId;
-    private String societyName;
-
-    private Long wingId;
-    private String wingName;
-
-    private Long ownerId;
-    private String ownerName;
+    private Society society;
+    private Wing wing;
+    private Member owner;
+    
 
     public Long getId() {
     return id;
@@ -75,52 +75,28 @@ public void setStatus(String status) {
     this.status = status;
 }
 
-public Long getSocietyId() {
-    return societyId;
+public Society getSociety() {
+    return society;
 }
 
-public void setSocietyId(Long societyId) {
-    this.societyId = societyId;
+public void setSociety(Society society){
+    this.society = society; 
 }
 
-public String getSocietyName() {
-    return societyName;
+public Wing getWing(){
+    return wing;
 }
 
-public void setSocietyName(String societyName) {
-    this.societyName = societyName;
+public void setWing(Wing wing){
+    this.wing = wing;
 }
 
-public Long getWingId() {
-    return wingId;
+public Member getOwner(){
+    return owner;
 }
 
-public void setWingId(Long wingId) {
-    this.wingId = wingId;
-}
-
-public String getWingName() {
-    return wingName;
-}
-
-public void setWingName(String wingName) {
-    this.wingName = wingName;
-}
-
-public Long getOwnerId() {
-    return ownerId;
-}
-
-public void setOwnerId(Long ownerId) {
-    this.ownerId = ownerId;
-}
-
-public String getOwnerName() {
-    return ownerName;
-}
-
-public void setOwnerName(String ownerName) {
-    this.ownerName = ownerName;
+public void setOwner(Member owner){
+    this.owner = owner;
 }
 
 }
