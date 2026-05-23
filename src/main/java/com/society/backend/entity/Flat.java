@@ -1,6 +1,6 @@
 package com.society.backend.entity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -22,14 +22,13 @@ public class Flat extends SocietyBaseEntity {
 
     private Double maintenanceAmount;
 
-    private String status; // OCCUPIED / VACANT
+    private String status; // "OCCUPIED" / "VACANT"
 
     private Boolean active = true;
 
     // =========================
     // Wing Relation
     // =========================
-
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "wing_id")
@@ -38,93 +37,53 @@ public class Flat extends SocietyBaseEntity {
     // =========================
     // Owner Relation
     // =========================
-
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "owner_member_id")
     private Member owner;
 
     // =========================
-    // Getters and Setters
+    // Society Relation
+    // =========================
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "society_id")
+    private Society society;
+
+    // =========================
+    // Getters & Setters
     // =========================
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getFlatNo() {
-        return flatNo;
-    }
+    public String getFlatNo() { return flatNo; }
+    public void setFlatNo(String flatNo) { this.flatNo = flatNo; }
 
-    public void setFlatNo(String flatNo) {
-        this.flatNo = flatNo;
-    }
+    public String getFloorNo() { return floorNo; }
+    public void setFloorNo(String floorNo) { this.floorNo = floorNo; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Double getAreaSqFt() { return areaSqFt; }
+    public void setAreaSqFt(Double areaSqFt) { this.areaSqFt = areaSqFt; }
 
-    public String getFloorNo() {
-        return floorNo;
-    }
+    public Integer getBedrooms() { return bedrooms; }
+    public void setBedrooms(Integer bedrooms) { this.bedrooms = bedrooms; }
 
-    public void setFloorNo(String floorNo) {
-        this.floorNo = floorNo;
-    }
+    public Double getMaintenanceAmount() { return maintenanceAmount; }
+    public void setMaintenanceAmount(Double maintenanceAmount) { this.maintenanceAmount = maintenanceAmount; }
 
-    public Double getAreaSqFt() {
-        return areaSqFt;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public void setAreaSqFt(Double areaSqFt) {
-        this.areaSqFt = areaSqFt;
-    }
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
 
-    public Integer getBedrooms() {
-        return bedrooms;
-    }
+    public Wing getWing() { return wing; }
+    public void setWing(Wing wing) { this.wing = wing; }
 
-    public void setBedrooms(Integer bedrooms) {
-        this.bedrooms = bedrooms;
-    }
+    public Member getOwner() { return owner; }
+    public void setOwner(Member owner) { this.owner = owner; }
 
-    public Double getMaintenanceAmount() {
-        return maintenanceAmount;
-    }
-
-    public void setMaintenanceAmount(Double maintenanceAmount) {
-        this.maintenanceAmount = maintenanceAmount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public Wing getWing() {
-        return wing;
-    }
-
-    public void setWing(Wing wing) {
-        this.wing = wing;
-    }
-
-    public Member getOwner() {
-        return owner;
-    }
-
-    public void setOwner(Member owner) {
-        this.owner = owner;
-    }
+    public Society getSociety() { return society; }
+    public void setSociety(Society society) { this.society = society; }
 }

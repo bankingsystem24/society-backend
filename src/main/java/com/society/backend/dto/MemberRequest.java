@@ -13,7 +13,17 @@ public class MemberRequest {
     // Instead of full objects, use IDs only
     private Long societyId;
     private Long flatId;
+    private Boolean active;
 
+    // Getter
+    public Boolean getActive() {
+        return active;
+    }
+
+    // Setter
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
     // =========================
     // Getters & Setters
     // =========================

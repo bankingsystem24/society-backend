@@ -9,7 +9,6 @@ import com.society.backend.dto.FlatResponse;
 import com.society.backend.dto.WingRequest;
 import com.society.backend.dto.WingResponse;
 import com.society.backend.entity.Flat;
-import com.society.backend.entity.Member;
 import com.society.backend.entity.Society;
 import com.society.backend.entity.Wing;
 import com.society.backend.exception.ResourceNotFoundException;
@@ -124,7 +123,7 @@ public class WingService {
     // FLATS BY SOCIETY (kept as-is but safe)
     public List<FlatResponse> getBySocietyIdFlat(Long societyId) {
 
-        List<Flat> flats = flatRepository.findBySocietyId(societyId);
+        List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
         return flats.stream().map(flat -> {
 
@@ -138,26 +137,26 @@ public class WingService {
             res.setMaintenanceAmount(flat.getMaintenanceAmount());
             res.setStatus(flat.getStatus());
 
-            if (flat.getSociety() != null) {
-                Society s = new Society();
-                s.setId(flat.getSociety().getId());
-                s.setSocietyName(flat.getSociety().getSocietyName());
-                res.setSociety(s);
-            }
+        // SOCIETY
+        if (flat.getSociety() != null) {
 
-            if (flat.getWing() != null) {
-                Wing w = new Wing();
-                w.setId(flat.getWing().getId());
-                w.setWingName(flat.getWing().getWingName());
-                res.setWing(w);
-            }
+            res.setSocietyId(flat.getSociety().getId());
+            res.setSocietyName(flat.getSociety().getSocietyName());
+        }
 
-            if (flat.getOwner() != null) {
-                Member m = new Member();
-                m.setId(flat.getOwner().getId());
-                m.setName(flat.getOwner().getName());
-                res.setOwner(m);
-            }
+        // WING
+        if (flat.getWing() != null) {
+
+            res.setWingId(flat.getWing().getId());
+            res.setWingName(flat.getWing().getWingName());
+        }
+
+        // OWNER
+        if (flat.getOwner() != null) {
+
+            res.setOwnerId(flat.getOwner().getId());
+            res.setOwnerName(flat.getOwner().getName());
+        }
 
             return res;
 

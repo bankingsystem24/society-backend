@@ -1,13 +1,17 @@
 package com.society.backend.controller;
+
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.society.backend.dto.UserRequest;
 import com.society.backend.dto.UserResponse;
-import com.society.backend.entity.User;
 import com.society.backend.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -20,57 +24,59 @@ public class UserController {
     // =========================
     // Create User
     // =========================
-
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody UserRequest req) {
-        return ResponseEntity.ok(service.createUser(req));
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest req) {
+        UserResponse createdUser = service.createUser(req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     // =========================
-    // Get All Users
+    // Get All Users (optionally by society)
     // =========================
-
     @GetMapping
-    public List<UserResponse> getAll(@RequestParam(required = false) Long societyId) {
-        return service.getAll(societyId);
+    public ResponseEntity<List<UserResponse>> getAll(@RequestParam(required = false) Long societyId) {
+        List<UserResponse> users = service.getAll(societyId);
+        return ResponseEntity.ok(users);
     }
 
     // =========================
     // Get User By ID
     // =========================
-
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
-
-        return ResponseEntity.ok(service.getById(id));
+        UserResponse user = service.getById(id);
+        return ResponseEntity.ok(user);
     }
 
+    // =========================
+    // Update User Status
+    // =========================
     @PutMapping("/update-status")
-    public ResponseEntity<?> updateStatus(
+    public ResponseEntity<String> updateStatus(
             @RequestParam Long id,
             @RequestParam Boolean active) {
 
         service.updateStatus(id, active);
-
-        return ResponseEntity.ok("Status updated");
+        return ResponseEntity.ok("User status updated successfully");
     }
 
+    // =========================
+    // Update User
+    // =========================
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id,
-                                       @RequestBody User user) {
+    public ResponseEntity<UserResponse> update(@PathVariable Long id,
+                                               @Valid @RequestBody UserRequest req) {
 
-        return ResponseEntity.ok(service.update(id, user));
+        UserResponse updatedUser = service.updateFromRequest(id, req);
+        return ResponseEntity.ok(updatedUser);
     }
 
     // =========================
     // Delete User
     // =========================
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-
         service.delete(id);
-
         return ResponseEntity.ok("User deleted successfully");
     }
 }

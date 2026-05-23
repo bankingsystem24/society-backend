@@ -6,8 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.society.backend.entity.Billing;
-import com.society.backend.entity.Flat;
-import com.society.backend.entity.Society;
 
 @Repository
 public interface BillingRepository extends JpaRepository<Billing, Long> {

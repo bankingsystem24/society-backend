@@ -16,8 +16,15 @@ public class UserRequest {
     private IdRequest society;
 
     // ===== Inner reusable class for { id: X } =====
-    public static class IdRequest {
+    public static final class IdRequest {
         private Long id;
+
+        public IdRequest() {
+        }
+
+        public IdRequest(Long id) {
+            this.id = id;
+        }
 
         public Long getId() {
             return id;

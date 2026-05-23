@@ -1,5 +1,6 @@
 package com.society.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.society.backend.enums.Role;
 import jakarta.persistence.*;
 
@@ -14,6 +15,7 @@ public class User extends SocietyBaseEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -28,12 +30,24 @@ public class User extends SocietyBaseEntity {
 
     private Boolean active = true;
 
-    @ManyToOne
+    // =========================
+    // RELATION
+    // =========================
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
+    // =========================
+    // GETTERS & SETTERS
+    // =========================
+
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -44,15 +58,10 @@ public class User extends SocietyBaseEntity {
         this.username = username;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getPassword() {
         return password;
     }
 
-    // Later store encrypted password using BCrypt
     public void setPassword(String password) {
         this.password = password;
     }
@@ -88,11 +97,12 @@ public class User extends SocietyBaseEntity {
     public void setActive(Boolean active) {
         this.active = active;
     }
+
     public Member getMember() {
         return member;
     }
+
     public void setMember(Member member) {
         this.member = member;
     }
-
 }

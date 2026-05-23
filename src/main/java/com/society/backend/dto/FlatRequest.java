@@ -1,22 +1,49 @@
 package com.society.backend.dto;
 
-import com.society.backend.entity.Member;
-import com.society.backend.entity.Society;
-import com.society.backend.entity.Wing;
-
 public class FlatRequest {
 
     private String flatNo;
+
     private String floorNo;
+
     private Double areaSqFt;
+
     private Integer bedrooms;
+
     private Double maintenanceAmount;
+
     private String status;
+
     private Boolean active;
 
-    private Society society;
-    private Wing wing;
-    private Member owner;
+    // =========================
+    // RELATIONS
+    // =========================
+    private IdRequest society;
+
+    private IdRequest wing;
+
+    private IdRequest owner;
+
+    // =========================
+    // INNER ID CLASS
+    // =========================
+    public static class IdRequest {
+
+        private Long id;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
+
+    // =========================
+    // GETTERS & SETTERS
+    // =========================
 
     public String getFlatNo() {
         return flatNo;
@@ -34,14 +61,6 @@ public class FlatRequest {
         this.floorNo = floorNo;
     }
 
-    public boolean getActive(){
-        return active;
-    }
-
-    public void setActive(boolean active){
-        this.active = active;
-    }
-    
     public Double getAreaSqFt() {
         return areaSqFt;
     }
@@ -74,27 +93,35 @@ public class FlatRequest {
         this.status = status;
     }
 
-    public Society getSociety() {
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public IdRequest getSociety() {
         return society;
     }
 
-    public void setSociety(Society society) {
+    public void setSociety(IdRequest society) {
         this.society = society;
     }
 
-    public Wing getWing() {
+    public IdRequest getWing() {
         return wing;
     }
 
-    public void setWing(Wing wing) {
+    public void setWing(IdRequest wing) {
         this.wing = wing;
     }
 
-    public Member getOwner() {
+    public IdRequest getOwner() {
         return owner;
     }
 
-    public void setOwner(Member owner) {
+    public void setOwner(IdRequest owner) {
         this.owner = owner;
     }
 }

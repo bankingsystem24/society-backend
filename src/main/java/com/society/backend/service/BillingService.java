@@ -1,7 +1,6 @@
 package com.society.backend.service;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,7 @@ public class BillingService {
     // 🔥 AUTO GENERATE MONTHLY BILLS
     public String generateMonthlyBills(Long societyId, String month, int year) {
 
-        List<Flat> flats = flatRepository.findBySocietyId(societyId);
+        List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
         int createdCount = 0;
 

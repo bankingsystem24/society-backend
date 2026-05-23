@@ -1,5 +1,7 @@
 package com.society.backend.service;
+
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,126 +22,174 @@ public class FlatService {
 
     @Autowired
     private FlatRepository flatRepository;
+
     @Autowired
     private SocietyRepository societyRepository;
+
     @Autowired
     private WingRepository wingRepository;
+
     @Autowired
     private MemberRepository memberRepository;
 
-
+    // =========================
+    // CREATE FLAT
+    // =========================
     public FlatResponse createFlat(FlatRequest req) {
 
         Flat flat = new Flat();
 
-        flat.setFlatNo(req.getFlatNo());
-        flat.setFloorNo(req.getFloorNo());
-        flat.setActive(req.getActive());
-        flat.setAreaSqFt(req.getAreaSqFt());
-        flat.setBedrooms(req.getBedrooms());
-        flat.setMaintenanceAmount(req.getMaintenanceAmount());
-        flat.setStatus(req.getStatus());
-
-        // Society
-        if (req.getSociety() != null && req.getSociety().getId() != null) {
-            Society s = societyRepository.findById(req.getSociety().getId())
-                    .orElseThrow(() -> new RuntimeException("Society not found"));
-            flat.setSociety(s);
-        }
-
-        // Wing
-        if (req.getWing() != null && req.getWing().getId() != null) {
-            Wing w = wingRepository.findById(req.getWing().getId())
-                    .orElseThrow(() -> new RuntimeException("Wing not found"));
-            flat.setWing(w);
-        }
-
-        // Owner
-        if (req.getOwner() != null && req.getOwner().getId() != null) {
-            Member m = memberRepository.findById(req.getOwner().getId())
-                    .orElseThrow(() -> new RuntimeException("Owner not found"));
-            flat.setOwner(m);
-        }
+        mapRequestToEntity(req, flat);
 
         Flat saved = flatRepository.save(flat);
 
         return toResponse(saved);
     }
 
-    private FlatResponse toResponse(Flat flat){
-        FlatResponse res = new FlatResponse();
-        res.setId(flat.getId());
-        res.setAreaSqFt(flat.getAreaSqFt());
-        res.setBedrooms(flat.getBedrooms());
-        res.setFlatNo(flat.getFlatNo());
-        res.setFloorNo(flat.getFloorNo());
-        res.setMaintenanceAmount(flat.getMaintenanceAmount());
+    // =========================
+    // GET ALL FLATS
+    // =========================
+    public List<FlatResponse> getAll(Long societyId) {
 
-        if(flat.getSociety() != null) {
-            res.setSociety(flat.getSociety());
+        List<Flat> flats;
+
+        if (societyId != null) {
+            flats = flatRepository.findBySociety_Id(societyId);
+        } else {
+            flats = flatRepository.findAll();
         }
 
-        if(flat.getWing() != null) {
-            res.setWing(flat.getWing());
-        }
-
-        if(flat.getOwner() != null) {
-            res.setOwner(flat.getOwner());
-        }
-
-        return res;
+        return flats.stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-
-    public List<FlatResponse> getAll() {
-
-        List<Flat> flats = flatRepository.findAll();
-
-        return flats.stream().map(flat -> {
-
-            FlatResponse res = new FlatResponse();
-
-            res.setId(flat.getId());
-            res.setFlatNo(flat.getFlatNo());
-            res.setFloorNo(flat.getFloorNo());
-            res.setAreaSqFt(flat.getAreaSqFt());
-            res.setBedrooms(flat.getBedrooms());
-            res.setMaintenanceAmount(flat.getMaintenanceAmount());
-            res.setStatus(flat.getStatus());
-
-            // Society
-            if (flat.getSociety() != null) {
-                Society s = new Society();
-                s.setId(flat.getSociety().getId());
-                s.setSocietyName(flat.getSociety().getSocietyName());
-                res.setSociety(s);
-            }
-
-            // Wing
-            if (flat.getWing() != null) {
-                Wing w = new Wing();
-                w.setId(flat.getWing().getId());
-                w.setWingName(flat.getWing().getWingName());
-                res.setWing(w);
-            }
-
-            // Owner
-            if (flat.getOwner() != null) {
-                Member m = new Member();
-                m.setId(flat.getOwner().getId());
-                m.setName(flat.getOwner().getName());
-                res.setOwner(m);
-            }
-
-            return res;
-
-        }).toList();
-    }
-
+    // =========================
+    // GET FLAT BY ID
+    // =========================
     public FlatResponse getById(Long id) {
 
         Flat flat = flatRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flat not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Flat not found"));
+
+        return toResponse(flat);
+    }
+
+    // =========================
+    // UPDATE FLAT
+    // =========================
+    public FlatResponse update(Long id, FlatRequest req) {
+
+        Flat existing = flatRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Flat not found"));
+
+        mapRequestToEntity(req, existing);
+
+        Flat updated = flatRepository.save(existing);
+
+        return toResponse(updated);
+    }
+
+    // =========================
+    // UPDATE STATUS
+    // =========================
+    public void updateStatus(Long id, Boolean active) {
+
+        Flat flat = flatRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Flat not found"));
+
+        flat.setActive(active);
+
+        flatRepository.save(flat);
+    }
+
+    // =========================
+    // DELETE FLAT
+    // =========================
+    public void delete(Long id) {
+
+        Flat flat = flatRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Flat not found"));
+
+        flatRepository.delete(flat);
+    }
+
+    // =========================
+    // MAP REQUEST → ENTITY
+    // =========================
+    private void mapRequestToEntity(FlatRequest req, Flat flat) {
+
+        flat.setFlatNo(req.getFlatNo());
+        flat.setFloorNo(req.getFloorNo());
+        flat.setAreaSqFt(req.getAreaSqFt());
+        flat.setBedrooms(req.getBedrooms());
+        flat.setMaintenanceAmount(req.getMaintenanceAmount());
+        flat.setStatus(req.getStatus());
+
+        flat.setActive(
+                req.getActive() != null ? req.getActive() : true
+        );
+
+        // =========================
+        // SOCIETY
+        // =========================
+        if (req.getSociety() != null &&
+                req.getSociety().getId() != null) {
+
+            Society society = societyRepository
+                    .findById(req.getSociety().getId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Society not found"));
+
+            flat.setSociety(society);
+
+        } else {
+            flat.setSociety(null);
+        }
+
+        // =========================
+        // WING
+        // =========================
+        if (req.getWing() != null &&
+                req.getWing().getId() != null) {
+
+            Wing wing = wingRepository
+                    .findById(req.getWing().getId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Wing not found"));
+
+            flat.setWing(wing);
+
+        } else {
+            flat.setWing(null);
+        }
+
+        // =========================
+        // OWNER
+        // =========================
+        if (req.getOwner() != null &&
+                req.getOwner().getId() != null) {
+
+            Member owner = memberRepository
+                    .findById(req.getOwner().getId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Owner not found"));
+
+            flat.setOwner(owner);
+
+        } else {
+            flat.setOwner(null);
+        }
+    }
+
+    // =========================
+    // MAP ENTITY → RESPONSE
+    // =========================
+    private FlatResponse toResponse(Flat flat) {
 
         FlatResponse res = new FlatResponse();
 
@@ -150,120 +200,35 @@ public class FlatService {
         res.setBedrooms(flat.getBedrooms());
         res.setMaintenanceAmount(flat.getMaintenanceAmount());
         res.setStatus(flat.getStatus());
+        res.setActive(flat.getActive());
 
-        // Society
+        // =========================
+        // SOCIETY
+        // =========================
         if (flat.getSociety() != null) {
-            Society s = new Society();
-            s.setId(flat.getSociety().getId());
-            s.setSocietyName(flat.getSociety().getSocietyName());
-            res.setSociety(s);
+
+            res.setSocietyId(flat.getSociety().getId());
+            res.setSocietyName(flat.getSociety().getSocietyName());
         }
 
-        // Wing
+        // =========================
+        // WING
+        // =========================
         if (flat.getWing() != null) {
-            Wing w = new Wing();
-            w.setId(flat.getWing().getId());
-            w.setWingName(flat.getWing().getWingName());
-            res.setWing(w);
+
+            res.setWingId(flat.getWing().getId());
+            res.setWingName(flat.getWing().getWingName());
         }
 
-        // Owner
+        // =========================
+        // OWNER
+        // =========================
         if (flat.getOwner() != null) {
-            Member m = new Member();
-            m.setId(flat.getOwner().getId());
-            m.setName(flat.getOwner().getName());
-            res.setOwner(m);
+
+            res.setOwnerId(flat.getOwner().getId());
+            res.setOwnerName(flat.getOwner().getName());
         }
 
         return res;
     }
-
-    public Flat update(Long id, Flat req) {
-
-        Flat existing = flatRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flat not found"));
-
-        existing.setFlatNo(req.getFlatNo());
-        existing.setFloorNo(req.getFloorNo());
-        existing.setAreaSqFt(req.getAreaSqFt());
-        existing.setBedrooms(req.getBedrooms());
-        existing.setMaintenanceAmount(req.getMaintenanceAmount());
-        existing.setStatus(req.getStatus());
-
-        if (req.getSociety() != null) {
-            Society s = societyRepository.findById(req.getSociety().getId())
-                    .orElseThrow(() -> new RuntimeException("Society not found"));
-            existing.setSociety(s);
-        }
-
-        if (req.getWing() != null) {
-            Wing w = wingRepository.findById(req.getWing().getId())
-                    .orElseThrow(() -> new RuntimeException("Wing not found"));
-            existing.setWing(w);
-        }
-
-        if (req.getOwner() != null) {
-            Member m = memberRepository.findById(req.getOwner().getId())
-                    .orElseThrow(() -> new RuntimeException("Owner not found"));
-            existing.setOwner(m);
-        }
-
-        return flatRepository.save(existing);
-    }
-
-    public List<FlatResponse> getBySocietyId(Long societyId) {
-
-        List<Flat> flats = flatRepository.findAll()
-                .stream()
-                .filter(f -> f.getSociety() != null
-                        && f.getSociety().getId().equals(societyId))
-                .toList();
-
-                return flats.stream().map(flat -> {
-
-            FlatResponse res = new FlatResponse();
-
-            res.setId(flat.getId());
-            res.setFlatNo(flat.getFlatNo());
-            res.setFloorNo(flat.getFloorNo());
-            res.setAreaSqFt(flat.getAreaSqFt());
-            res.setBedrooms(flat.getBedrooms());
-            res.setMaintenanceAmount(flat.getMaintenanceAmount());
-            res.setStatus(flat.getStatus());
-
-            // Society
-            if (flat.getSociety() != null) {
-                Society s = new Society();
-                s.setId(flat.getSociety().getId());
-                s.setSocietyName(flat.getSociety().getSocietyName());
-                res.setSociety(s);
-            }
-
-            // Wing
-            if (flat.getWing() != null) {
-                Wing w = new Wing();
-                w.setId(flat.getWing().getId());
-                w.setWingName(flat.getWing().getWingName());
-                res.setWing(w);
-            }
-
-            // Owner
-            if (flat.getOwner() != null) {
-                Member m = new Member();
-                m.setId(flat.getOwner().getId());
-                m.setName(flat.getOwner().getName());
-                res.setOwner(m);
-            }
-
-            return res;
-
-        }).toList();
-    }
-
-    
-    public void delete(Long id) {
-        flatRepository.deleteById(id);
-    }
-
-    
 }
