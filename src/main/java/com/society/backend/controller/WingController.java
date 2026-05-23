@@ -42,12 +42,13 @@ public class WingController {
     }
 
     // UPDATE
-    @PutMapping("/{id}")
-    public ResponseEntity<WingResponse> update(
-            @PathVariable Long id,
-            @RequestBody com.society.backend.entity.Wing wing) {
-        return ResponseEntity.ok(service.update(id, wing));
-    }
+@PutMapping("/{id}")
+public ResponseEntity<WingResponse> update(
+        @PathVariable Long id,
+        @RequestBody WingRequest req) {
+
+    return ResponseEntity.ok(service.update(id, req));
+}
 
     // DELETE
     @DeleteMapping("/{id}")

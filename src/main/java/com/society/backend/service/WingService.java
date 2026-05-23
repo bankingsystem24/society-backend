@@ -72,25 +72,37 @@ public class WingService {
     }
 
     // UPDATE
-    public WingResponse update(Long id, Wing req) {
+    public WingResponse update(Long id, WingRequest req) {
 
         Wing existing = wingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wing not found with id: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Wing not found with id: " + id));
 
         existing.setWingName(req.getWingName());
         existing.setDescription(req.getDescription());
         existing.setActive(req.getActive());
-        existing.setTotalFlats(req.getTotalFlats());
-        existing.setTotalFloors(req.getTotalFloors());
+        existing.setTotalFlats(req.getTotal_flats());
+        existing.setTotalFloors(req.getTotal_floors());
 
-        if (req.getSociety() != null) {
-            existing.setSociety(req.getSociety());
+        // Society
+        if (req.getSociety() != null &&
+                req.getSociety().getId() != null) {
+
+            Society society = societyRepository
+                    .findById(req.getSociety().getId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Society not found"));
+
+            existing.setSociety(society);
         }
 
         Wing updated = wingRepository.save(existing);
+
         return toResponse(updated);
     }
 
+    
     // DELETE
     public void delete(Long id) {
         if (!wingRepository.existsById(id)) {
