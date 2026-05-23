@@ -1,6 +1,8 @@
 package com.society.backend.dto;
 
-public class MemberResponse {
+import java.io.Serializable;
+
+public class MemberResponse implements Serializable {
 
     private Long id;
     private String name;
@@ -11,14 +13,18 @@ public class MemberResponse {
     private String occupation;
     private String memberType;
     private Boolean active;
+
+    // Society Info
     private Long societyId;
     private String societyName;
 
-    // Flat info (lightweight)
+    // Flat Info (lightweight)
     private Long flatId;
     private String flatNo;
 
+    // =========================
     // Getters & Setters
+    // =========================
 
     public Long getId() {
         return id;
@@ -92,21 +98,6 @@ public class MemberResponse {
         this.active = active;
     }
 
-    public Long getFlatId() {
-        return flatId;
-    }
-
-    public void setFlatId(Long flatId) {
-        this.flatId = flatId;
-    }
-
-    public String getFlatNo() {
-        return flatNo;
-    }
-
-    public void setFlatNo(String flatNo) {
-        this.flatNo = flatNo;
-    }
     public Long getSocietyId() {
         return societyId;
     }
@@ -122,5 +113,20 @@ public class MemberResponse {
     public void setSocietyName(String societyName) {
         this.societyName = societyName;
     }
-    
+
+    public Long getFlatId() {
+        return flatId;
+    }
+
+    public void setFlatId(Long flatId) {
+        this.flatId = flatId;
+    }
+
+    public String getFlatNo() {
+        return flatNo;
+    }
+
+    public void setFlatNo(String flatNo) {
+        this.flatNo = flatNo;
+    }
 }

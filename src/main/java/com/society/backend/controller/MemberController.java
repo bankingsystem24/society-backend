@@ -2,8 +2,8 @@ package com.society.backend.controller;
 
 import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
-import com.society.backend.entity.Member;
 import com.society.backend.service.MemberService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,46 +16,64 @@ import java.util.List;
 public class MemberController {
 
     @Autowired
-    private MemberService service;
+    private MemberService memberService;
 
-    // Create Member
+    // =========================
+    // CREATE MEMBER
+    // =========================
     @PostMapping
     public ResponseEntity<MemberResponse> create(@RequestBody MemberRequest request) {
-        return ResponseEntity.ok(service.createMember(request));
+        return ResponseEntity.ok(memberService.createMember(request));
     }
-    
-    // Get All Members
+
+    // =========================
+    // GET ALL MEMBERS
+    // =========================
     @GetMapping
-    public List<MemberResponse> getAll(@RequestParam(required = false) Long societyId) {
-        return service.getAll(societyId);
+    public ResponseEntity<List<MemberResponse>> getAll(
+            @RequestParam(required = false) Long societyId) {
+
+        return ResponseEntity.ok(memberService.getAll(societyId));
     }
 
-    // Get Member By ID
+    // =========================
+    // GET BY ID
+    // =========================
     @GetMapping("/{id}")
-    public MemberResponse getById(@PathVariable Long id) {
-        return service.getById(id);
+    public ResponseEntity<MemberResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(memberService.getById(id));
     }
 
+    // =========================
+    // UPDATE MEMBER
+    // =========================
+    @PutMapping("/{id}")
+    public ResponseEntity<MemberResponse> update(
+            @PathVariable Long id,
+            @RequestBody MemberRequest request) {
+
+        return ResponseEntity.ok(memberService.update(id, request));
+    }
+
+    // =========================
+    // UPDATE STATUS
+    // =========================
     @PutMapping("/update-status")
-    public ResponseEntity<?> updateStatus(
+    public ResponseEntity<String> updateStatus(
             @RequestParam Long id,
             @RequestParam Boolean active) {
 
-        service.updateStatus(id, active);
-
-        return ResponseEntity.ok("Status updated");
+        memberService.updateStatus(id, active);
+        return ResponseEntity.ok("Status updated successfully");
     }
 
-    // Update Member
-    @PutMapping("/{id}")
-    public Member update(@PathVariable Long id, @RequestBody Member member) {
-        return service.update(id, member);
-    }
-
-    // Delete Member
+    // =========================
+    // DELETE MEMBER
+    // =========================
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
-        service.delete(id);
-        return "Member deleted successfully";
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+
+        memberService.delete(id);
+        return ResponseEntity.ok("Member deleted successfully");
     }
 }

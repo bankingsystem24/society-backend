@@ -1,7 +1,6 @@
 package com.society.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -31,31 +30,31 @@ public class Member extends SocietyBaseEntity {
     private Boolean active = true;
 
     // =========================
-    // Flat Relation
+    // RELATIONS
     // =========================
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flat_id")
     private Flat flat;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "society_id")
     private Society society;
 
-    // =========================
-    // User Relation
-    // =========================
-
     @JsonIgnore
-    @OneToOne(mappedBy = "member")
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
     private User user;
 
     // =========================
-    // Getters and Setters
+    // GETTERS & SETTERS
     // =========================
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -64,10 +63,6 @@ public class Member extends SocietyBaseEntity {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getEmail() {
@@ -134,14 +129,6 @@ public class Member extends SocietyBaseEntity {
         this.flat = flat;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-     }
-
     public Society getSociety() {
         return society;
     }
@@ -150,5 +137,11 @@ public class Member extends SocietyBaseEntity {
         this.society = society;
     }
 
-    
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
