@@ -3,44 +3,65 @@ package com.society.backend.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
 
 public interface BillingRepository extends JpaRepository<Billing, Long> {
 
-    // ✅ DUPLICATE CHECK
+    // ================= DUPLICATE CHECK =================
     boolean existsByFlatIdAndMonthAndYear(
             Long flatId,
             String month,
             int year
     );
 
-    // ✅ SOCIETY BILLS
+    // ================= BASIC FETCH =================
     List<Billing> findBySocietyId(Long societyId);
 
-    // ✅ PENDING BILLS
     List<Billing> findBySocietyIdAndStatus(
             Long societyId,
             PaymentStatus status
     );
 
-    // ✅ FILTER : FLAT
+    // ================= FILTERS =================
     List<Billing> findBySocietyIdAndFlatId(
             Long societyId,
             Long flatId
     );
 
-    // ✅ FILTER : MONTH
     List<Billing> findBySocietyIdAndMonth(
             Long societyId,
             String month
     );
 
-    // ✅ FILTER : FLAT + MONTH
     List<Billing> findBySocietyIdAndFlatIdAndMonth(
             Long societyId,
             Long flatId,
             String month
+    );
+
+    // ================= RECEIPT SUPPORT (ADDED) =================
+
+    // 1. Fetch multiple bills by IDs
+    List<Billing> findByIdIn(List<Long> ids);
+
+    // 2. BULK UPDATE after receipt generation
+    @Modifying
+    @Transactional
+    @Query("""
+        UPDATE Billing b
+        SET b.receiptId = :receiptId,
+            b.status = :status,
+            b.paidDate = CURRENT_DATE
+        WHERE b.id IN :ids
+    """)
+    void updateReceiptAndStatus(
+            Long receiptId,
+            PaymentStatus status,
+            List<Long> ids
     );
 }

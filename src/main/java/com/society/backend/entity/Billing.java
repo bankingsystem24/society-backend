@@ -37,6 +37,8 @@ public class Billing {
     private Double maintenanceAmount = 0.0;
     private Double penaltyAmount = 0.0;
     private Double totalAmount = 0.0;
+    @Column(name = "receipt_id")
+    private Long receiptId;
 
     // Payment status
     @Enumerated(EnumType.STRING)
@@ -134,5 +136,11 @@ public class Billing {
 
     public void setCreatedDate(LocalDate createdDate) {
         this.createdDate = createdDate;
+    }
+    public Long getReceiptId() {
+        return receiptId;
+    }
+    public void setReceiptId(Long receiptId) {
+        this.receiptId = receiptId;
     }
 }
