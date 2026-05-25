@@ -9,6 +9,7 @@ public class BillingFilterRequest {
     private Integer fromYear;
     private String month;
     private PaymentStatus status;
+    private Long memberId;
 
     public Long getSocietyId() {
         return societyId;
@@ -16,6 +17,14 @@ public class BillingFilterRequest {
 
     public void setSocietyId(Long societyId) {
         this.societyId = societyId;
+    }
+
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
     }
 
     public Long getFlatId() {

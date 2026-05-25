@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.society.backend.dto.BillingResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.enums.PaymentStatus;
@@ -88,98 +89,115 @@ public class BillingService {
         );
     }
 
-    // 📌 VIEW ALL BILLS WITH FILTER
-    public List<Billing> viewAllBills(
-            Long societyId,
-            Long flatId,
-            Integer fromYear,
-            String month,
-            PaymentStatus status
+public List<BillingResponse> viewAllBills(
+        Long societyId,
+        Long flatId,
+        Integer fromYear,
+        String month,
+        PaymentStatus status,
+        Long memberId
+) {
 
-    ) {
+    List<Billing> bills = billingRepository.findBySocietyId(societyId);
 
-        List<Billing> bills = List.of();
-
-        // ✅ FLAT + MONTH
-        if (flatId != null
-                && month != null
-                && !month.isEmpty()) {
-
-            bills = billingRepository
-                    .findBySocietyIdAndFlatIdAndMonth(
-                            societyId,
-                            flatId,
-                            month
-                    );
-        }
-
-        // ✅ FLAT ONLY
-        else if (flatId != null) {
-
-            bills = billingRepository
-                    .findBySocietyIdAndFlatId(
-                            societyId,
-                            flatId
-                    );
-        }
-
-        // ✅ MONTH ONLY
-        else if (month != null
-                && !month.isEmpty()) {
-
-            bills = billingRepository
-                    .findBySocietyIdAndMonth(
-                            societyId,
-                            month
-                    );
-        }
-
-        // ✅ ALL BILLS
-        else if  (status != null) {
-
-                bills = bills.stream()
-                        .filter(bill -> bill.getStatus().equals(status))
-                        .toList();
-                } else {
-
-            bills = billingRepository
-                    .findBySocietyId(societyId);
-        }
-
-        // ✅ FINANCIAL YEAR FILTER
-        if (fromYear != null) {
-
-            int toYear = fromYear + 1;
-
-            bills = bills.stream()
-                    .filter(bill -> {
-
-                        String m = bill.getMonth().toUpperCase();
-
-                        // APRIL → DECEMBER
-                        if (
-                                m.equals("APRIL") ||
-                                m.equals("MAY") ||
-                                m.equals("JUNE") ||
-                                m.equals("JULY") ||
-                                m.equals("AUGUST") ||
-                                m.equals("SEPTEMBER") ||
-                                m.equals("OCTOBER") ||
-                                m.equals("NOVEMBER") ||
-                                m.equals("DECEMBER")
-                        ) {
-
-                            return bill.getYear() == fromYear;
-                        }
-
-                        // JANUARY → MARCH
-                        return bill.getYear() == toYear;
-                    })
-                    .toList();
-        }
-
-        return bills;
+    // ✅ FLAT FILTER
+    if (flatId != null) {
+        bills = bills.stream()
+                .filter(b -> b.getFlat() != null &&
+                        b.getFlat().getId().equals(flatId))
+                .toList();
     }
 
+    // ✅ MONTH FILTER
+    if (month != null && !month.isEmpty()) {
+        bills = bills.stream()
+                .filter(b -> b.getMonth() != null &&
+                        b.getMonth().equalsIgnoreCase(month))
+                .toList();
+    }
+
+    // ✅ STATUS FILTER (FIXED)
+    if (status != null) {
+        bills = bills.stream()
+                .filter(b -> b.getStatus() != null &&
+                        b.getStatus().equals(status))
+                .toList();
+    }
+
+    if (memberId != null) {
+        bills = bills.stream()
+                .filter(b -> b.getFlat() != null &&
+                        b.getFlat().getOwner() != null &&
+                        b.getFlat().getOwner().getId().equals(memberId))
+                .toList();
+        }
+
+    // ✅ FINANCIAL YEAR FILTER
+    if (fromYear != null) {
+
+        int toYear = fromYear + 1;
+
+        bills = bills.stream()
+                .filter(bill -> {
+
+                    String m = bill.getMonth().toUpperCase();
+
+                    boolean aprToDec =
+                            m.equals("APRIL") || m.equals("MAY") ||
+                            m.equals("JUNE") || m.equals("JULY") ||
+                            m.equals("AUGUST") || m.equals("SEPTEMBER") ||
+                            m.equals("OCTOBER") || m.equals("NOVEMBER") ||
+                            m.equals("DECEMBER");
+
+                    if (aprToDec) {
+                        return bill.getYear() == fromYear;
+                    }
+
+                    return bill.getYear() == toYear;
+                })
+                .toList();
+    }
+
+    return bills.stream().map(b -> {
+
+    BillingResponse dto = new BillingResponse();
+
+    dto.setId(b.getId());
+    dto.setMonth(b.getMonth());
+    dto.setYear(b.getYear());
+
+    dto.setMaintenanceAmount(b.getMaintenanceAmount());
+    dto.setPenaltyAmount(b.getPenaltyAmount());
+    dto.setTotalAmount(b.getTotalAmount());
+
+    dto.setStatus(b.getStatus().name());
+
+    dto.setFlatId(b.getFlat().getId());
+    dto.setFlatNo(b.getFlat().getFlatNo());
+
+    if (b.getFlat().getOwner() != null) {
+        dto.setMemberId(b.getFlat().getOwner().getId());
+        dto.setMemberName(b.getFlat().getOwner().getName());
+    }
+
+    return dto;
+
+}).toList();
+}
+
+public String payBills(List<Long> billIds, String paymentMode) {
+
+    List<Billing> bills = billingRepository.findAllById(billIds);
+
+    for (Billing bill : bills) {
+        bill.setStatus(PaymentStatus.PAID);
+        bill.setPaidDate(LocalDate.now());
+        bill.setPaymentMode(paymentMode);
+    }
+
+    billingRepository.saveAll(bills);
+
+    return "Bills paid successfully";
+}
 
 }

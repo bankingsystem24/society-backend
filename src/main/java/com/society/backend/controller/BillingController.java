@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.society.backend.dto.BillGenerateRequest;
 import com.society.backend.dto.BillingFilterRequest;
+import com.society.backend.dto.BillingResponse;
+import com.society.backend.dto.PaymentRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.service.BillingService;
 
@@ -62,18 +64,28 @@ public class BillingController {
     // VIEW ALL BILLS WITH FILTER
     // =========================
 
-    @PostMapping("/viewAllBills")
-    public ResponseEntity<List<Billing>> viewAllBills(
-            @RequestBody BillingFilterRequest request) {
+@PostMapping("/viewAllBills")
+public ResponseEntity<List<BillingResponse>> viewAllBills(
+        @RequestBody BillingFilterRequest request) {
 
-        return ResponseEntity.ok(
-                billingService.viewAllBills(
-                        request.getSocietyId(),
-                        request.getFlatId(),
-                        request.getFromYear(),
-                        request.getMonth(),
-                        request.getStatus()
-                )
+    return ResponseEntity.ok(
+            billingService.viewAllBills(
+                    request.getSocietyId(),
+                    request.getFlatId(),
+                    request.getFromYear(),
+                    request.getMonth(),
+                    request.getStatus(),
+                    request.getMemberId()
+            )
+    );
+}
+
+        @PutMapping("/pay")
+        public String payBills(@RequestBody PaymentRequest req) {
+
+        return billingService.payBills(
+                req.getBillIds(),
+                req.getPaymentMode()
         );
-    }
+        }
 }
