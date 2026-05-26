@@ -1,6 +1,8 @@
 package com.society.backend.controller.auth;
 import com.society.backend.dto.LoginRequest;
 import com.society.backend.dto.LoginResponse;
+import com.society.backend.dto.MemberLoginRequest;
+import com.society.backend.dto.MemberLoginResponse;
 import com.society.backend.entity.User;
 import com.society.backend.repository.UserRepository;
 import com.society.backend.security.JwtUtil;
@@ -39,5 +41,27 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/memberlogin")
+    public ResponseEntity<?> login(@RequestBody MemberLoginRequest request) {
+        User user = userRepository.findAll()
+                .stream()
+                .filter(u -> u.getUsername().equals(request.getUsername())
+                        && u.getPassword().equals(request.getPassword()))
+                .findFirst()
+                .orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
+        String token = jwtUtil.generateToken(user.getUsername());
+            MemberLoginResponse response = new MemberLoginResponse(
+            token,
+            user.getSociety().getId(),
+            user.getSociety().getSocietyName(),
+            user.getMember().getId(),
+            user.getMember().getName(),
+            user.getRole().name()
+    );
+        return ResponseEntity.ok(response);
+    }
 
 }

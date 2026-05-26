@@ -44,12 +44,18 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
             String month
     );
 
-    // ================= RECEIPT SUPPORT (ADDED) =================
+    // ================= RECEIPT SUPPORT =================
 
-    // 1. Fetch multiple bills by IDs
+    // Fetch multiple bills by IDs
     List<Billing> findByIdIn(List<Long> ids);
 
-    // 2. BULK UPDATE after receipt generation
+    // 🔥 IMPORTANT: for Member Dashboard (via Flat mapping)
+    List<Billing> findByFlatIdIn(List<Long> flatIds);
+
+    // Fetch by receipt
+    List<Billing> findByReceiptId(Long receiptId);
+
+    // ================= BULK UPDATE =================
     @Modifying
     @Transactional
     @Query("""
@@ -64,6 +70,4 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
             PaymentStatus status,
             List<Long> ids
     );
-
-    List<Billing> findByReceiptId(Long receiptId);
 }
