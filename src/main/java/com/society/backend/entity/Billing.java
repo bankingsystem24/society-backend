@@ -41,6 +41,9 @@ public class Billing {
     @Column(name = "receipt_id")
     private Long receiptId;
 
+    @Transient
+    private String receiptNo;
+
     // Payment status
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.PENDING;
@@ -94,6 +97,10 @@ public class Billing {
     public String getMonth() { return month; }
 
     public void setMonth(String month) { this.month = month; }
+
+    public String getReceiptNo() { return receiptNo; }
+
+    public void setReceiptNo(String receiptNo) { this.receiptNo = receiptNo; }
 
     public int getYear() { return year; }
 

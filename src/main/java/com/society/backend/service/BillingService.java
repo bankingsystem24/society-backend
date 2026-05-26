@@ -222,7 +222,17 @@ public class BillingService {
     }
 
 public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
-    return billingRepository.findByFlatIdIn(flatIds);
+        List<Billing> bills = billingRepository.findByFlatIdIn(flatIds);
+
+    bills.forEach(bill -> {
+        if (bill.getReceiptId() != null) {
+            receiptRepository.findById(bill.getReceiptId()).ifPresent(receipt -> {
+                bill.setReceiptNo(receipt.getReceiptNo());
+            });
+        }
+    });
+
+    return bills;
 }
 
 }
