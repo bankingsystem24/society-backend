@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.society.backend.dto.BillingResponse;
 import com.society.backend.dto.ReceiptRequest;
 import com.society.backend.dto.ReceiptResponse;
 import com.society.backend.entity.Billing;
@@ -118,5 +119,61 @@ public List<ReceiptResponse> viewReceipts(
     }).toList();
 }
 
+public List<BillingResponse> getReceiptDetails(Long receiptId) {
+
+    List<Billing> bills =
+            billingRepository.findByReceiptId(receiptId);
+
+    return bills.stream().map(b -> {
+
+        BillingResponse dto = new BillingResponse();
+
+        dto.setId(b.getId());
+
+        dto.setMonth(b.getMonth());
+        dto.setYear(b.getYear());
+
+        dto.setMaintenanceAmount(
+                b.getMaintenanceAmount()
+        );
+
+        dto.setPenaltyAmount(
+                b.getPenaltyAmount()
+        );
+
+        dto.setTotalAmount(
+                b.getTotalAmount()
+        );
+
+        dto.setStatus(
+                b.getStatus().name()
+        );
+
+        if (b.getFlat() != null) {
+
+            dto.setFlatId(
+                    b.getFlat().getId()
+            );
+
+            dto.setFlatNo(
+                    b.getFlat().getFlatNo()
+            );
+
+            if (b.getFlat().getOwner() != null) {
+
+                dto.setMemberId(
+                        b.getFlat().getOwner().getId()
+                );
+
+                dto.setMemberName(
+                        b.getFlat().getOwner().getName()
+                );
+            }
+        }
+
+        return dto;
+
+    }).toList();
+}
 
 }

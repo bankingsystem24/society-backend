@@ -39,4 +39,13 @@ public ResponseEntity<?> viewReceipts(
     );
 }
 
+@GetMapping("/details/{receiptId}")
+public ResponseEntity<?> getReceiptDetails(
+        @PathVariable Long receiptId
+) {
+
+    return ResponseEntity.ok(
+            receiptService.getReceiptDetails(receiptId)
+    );
+}
 }
