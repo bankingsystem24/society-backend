@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import com.society.backend.dto.BillingResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
+import com.society.backend.entity.Receipt;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
+import com.society.backend.repository.ReceiptRepository;
 
 @Service
 public class BillingService {
@@ -21,6 +23,9 @@ public class BillingService {
 
     @Autowired
     private FlatRepository flatRepository;
+
+    @Autowired
+    private ReceiptRepository receiptRepository;
 
     // 🔥 AUTO GENERATE MONTHLY BILLS
     public String generateMonthlyBills(Long societyId, String month, int year) {
@@ -175,14 +180,30 @@ public List<BillingResponse> viewAllBills(
     dto.setFlatId(b.getFlat().getId());
     dto.setFlatNo(b.getFlat().getFlatNo());
 
+    // ✅ MEMBER
     if (b.getFlat().getOwner() != null) {
         dto.setMemberId(b.getFlat().getOwner().getId());
         dto.setMemberName(b.getFlat().getOwner().getName());
     }
 
+    // ✅ RECEIPT
+    dto.setReceiptId(b.getReceiptId());
+
+    if (b.getReceiptId() != null) {
+
+        Receipt receipt = receiptRepository
+                .findById(b.getReceiptId())
+                .orElse(null);
+
+        if (receipt != null) {
+            dto.setReceiptNo(receipt.getReceiptNo());
+        }
+    }
+
     return dto;
 
 }).toList();
+
 }
 
 public String payBills(List<Long> billIds, String paymentMode) {

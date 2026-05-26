@@ -64,4 +64,6 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
             PaymentStatus status,
             List<Long> ids
     );
+
+    List<Billing> findByReceiptId(Long receiptId);
 }

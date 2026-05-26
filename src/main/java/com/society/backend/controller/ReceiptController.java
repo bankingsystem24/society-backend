@@ -25,4 +25,18 @@ public class ReceiptController {
             "Receipt created successfully with No: " + receipt.getReceiptNo()
         );
     }
+
+@PostMapping("/viewReceipts")
+public ResponseEntity<?> viewReceipts(
+        @RequestBody ReceiptRequest req
+) {
+
+    return ResponseEntity.ok(
+            receiptService.viewReceipts(
+                    req.getSocietyId(),
+                    req.getFlatId()
+            )
+    );
+}
+
 }

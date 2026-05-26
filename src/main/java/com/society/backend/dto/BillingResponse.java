@@ -17,7 +17,8 @@ public class BillingResponse {
 
     private Long memberId;
     private String memberName;
-
+    private Long receiptId;
+    private String receiptNo;
     // ======================
     // Getters & Setters
     // ======================
@@ -109,4 +110,22 @@ public class BillingResponse {
     public void setMemberName(String memberName) {
         this.memberName = memberName;
     }
+ 
+    public Long getReceiptId() {
+        return receiptId;
+    }
+
+    public void setReceiptId(Long receiptId) {
+        this.receiptId = receiptId;
+    }
+
+    public String getReceiptNo() {
+        return receiptNo;
+    }
+
+    public void setReceiptNo(String receiptNo) {
+        this.receiptNo = receiptNo;
+    }
+
+
 }

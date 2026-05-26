@@ -1,10 +1,14 @@
 package com.society.backend.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import com.society.backend.dto.ReceiptRequest;
+import com.society.backend.dto.ReceiptResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Receipt;
 import com.society.backend.entity.ReceiptItem;
@@ -55,5 +59,64 @@ public class ReceiptService {
 
         return savedReceipt;
     }
+
+public List<ReceiptResponse> viewReceipts(
+        Long societyId,
+        Long flatId
+) {
+
+    List<Receipt> receipts = receiptRepository.findBySocietyId(societyId);
+
+    // optional flat filter
+    if (flatId != null) {
+        receipts = receipts.stream()
+                .filter(r -> r.getFlatId().equals(flatId))
+                .toList();
+    }
+
+    return receipts.stream().map(r -> {
+
+        ReceiptResponse dto = new ReceiptResponse();
+
+        dto.setId(r.getId());
+        dto.setReceiptNo(r.getReceiptNo());
+        dto.setCreatedAt(r.getCreatedAt().toLocalDate());
+
+        dto.setFlatId(r.getFlatId());
+
+        dto.setTotalAmount(r.getTotalAmount());
+
+        // payment mode
+        List<Billing> bills =
+                billingRepository.findByReceiptId(r.getId());
+
+        if (!bills.isEmpty()) {
+
+            Billing bill = bills.get(0);
+
+            dto.setPaymentMode(bill.getPaymentMode());
+
+            if (bill.getFlat() != null) {
+
+                dto.setFlatNo(bill.getFlat().getFlatNo());
+
+                if (bill.getFlat().getOwner() != null) {
+
+                    dto.setMemberId(
+                            bill.getFlat().getOwner().getId()
+                    );
+
+                    dto.setMemberName(
+                            bill.getFlat().getOwner().getName()
+                    );
+                }
+            }
+        }
+
+        return dto;
+
+    }).toList();
+}
+
 
 }

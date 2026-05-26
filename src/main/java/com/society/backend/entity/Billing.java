@@ -37,6 +37,7 @@ public class Billing {
     private Double maintenanceAmount = 0.0;
     private Double penaltyAmount = 0.0;
     private Double totalAmount = 0.0;
+    
     @Column(name = "receipt_id")
     private Long receiptId;
 
