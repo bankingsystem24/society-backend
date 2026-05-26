@@ -2,6 +2,10 @@ package com.society.backend.controller;
 
 import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
+import com.society.backend.entity.Billing;
+import com.society.backend.entity.Flat;
+import com.society.backend.service.BillingService;
+import com.society.backend.service.FlatService;
 import com.society.backend.service.MemberService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/members")
@@ -17,6 +22,12 @@ public class MemberController {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private FlatService flatService;
+
+    @Autowired
+    private BillingService billingService;
 
     // =========================
     // CREATE MEMBER
@@ -76,4 +87,25 @@ public class MemberController {
         memberService.delete(id);
         return ResponseEntity.ok("Member deleted successfully");
     }
+
+    @GetMapping("/flats")
+    public List<Flat> getMemberFlats(
+            @RequestParam Long societyId,
+            @RequestParam Long memberId
+    ) {
+        return flatService.getFlatsForMember(societyId, memberId);
+    }
+
+    @PostMapping("/bills")
+    public List<Billing> getBills(@RequestBody Map<String, Object> req) {
+
+        List<?> rawList = (List<?>) req.get("flatIds");
+
+        List<Long> flatIds = rawList.stream()
+                .map(id -> Long.valueOf(id.toString()))
+                .toList();
+
+        return billingService.getBillsByFlatIds(flatIds);
+    }
+
 }

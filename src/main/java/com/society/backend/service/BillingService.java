@@ -94,131 +94,135 @@ public class BillingService {
         );
     }
 
-public List<BillingResponse> viewAllBills(
-        Long societyId,
-        Long flatId,
-        Integer fromYear,
-        String month,
-        PaymentStatus status,
-        Long memberId
-) {
+    public List<BillingResponse> viewAllBills(
+            Long societyId,
+            Long flatId,
+            Integer fromYear,
+            String month,
+            PaymentStatus status,
+            Long memberId
+    ) {
 
-    List<Billing> bills = billingRepository.findBySocietyId(societyId);
+        List<Billing> bills = billingRepository.findBySocietyId(societyId);
 
-    // ✅ FLAT FILTER
-    if (flatId != null) {
-        bills = bills.stream()
-                .filter(b -> b.getFlat() != null &&
-                        b.getFlat().getId().equals(flatId))
-                .toList();
-    }
-
-    // ✅ MONTH FILTER
-    if (month != null && !month.isEmpty()) {
-        bills = bills.stream()
-                .filter(b -> b.getMonth() != null &&
-                        b.getMonth().equalsIgnoreCase(month))
-                .toList();
-    }
-
-    // ✅ STATUS FILTER (FIXED)
-    if (status != null) {
-        bills = bills.stream()
-                .filter(b -> b.getStatus() != null &&
-                        b.getStatus().equals(status))
-                .toList();
-    }
-
-    if (memberId != null) {
-        bills = bills.stream()
-                .filter(b -> b.getFlat() != null &&
-                        b.getFlat().getOwner() != null &&
-                        b.getFlat().getOwner().getId().equals(memberId))
-                .toList();
+        // ✅ FLAT FILTER
+        if (flatId != null) {
+            bills = bills.stream()
+                    .filter(b -> b.getFlat() != null &&
+                            b.getFlat().getId().equals(flatId))
+                    .toList();
         }
 
-    // ✅ FINANCIAL YEAR FILTER
-    if (fromYear != null) {
-
-        int toYear = fromYear + 1;
-
-        bills = bills.stream()
-                .filter(bill -> {
-
-                    String m = bill.getMonth().toUpperCase();
-
-                    boolean aprToDec =
-                            m.equals("APRIL") || m.equals("MAY") ||
-                            m.equals("JUNE") || m.equals("JULY") ||
-                            m.equals("AUGUST") || m.equals("SEPTEMBER") ||
-                            m.equals("OCTOBER") || m.equals("NOVEMBER") ||
-                            m.equals("DECEMBER");
-
-                    if (aprToDec) {
-                        return bill.getYear() == fromYear;
-                    }
-
-                    return bill.getYear() == toYear;
-                })
-                .toList();
-    }
-
-    return bills.stream().map(b -> {
-
-    BillingResponse dto = new BillingResponse();
-
-    dto.setId(b.getId());
-    dto.setMonth(b.getMonth());
-    dto.setYear(b.getYear());
-
-    dto.setMaintenanceAmount(b.getMaintenanceAmount());
-    dto.setPenaltyAmount(b.getPenaltyAmount());
-    dto.setTotalAmount(b.getTotalAmount());
-
-    dto.setStatus(b.getStatus().name());
-
-    dto.setFlatId(b.getFlat().getId());
-    dto.setFlatNo(b.getFlat().getFlatNo());
-
-    // ✅ MEMBER
-    if (b.getFlat().getOwner() != null) {
-        dto.setMemberId(b.getFlat().getOwner().getId());
-        dto.setMemberName(b.getFlat().getOwner().getName());
-    }
-
-    // ✅ RECEIPT
-    dto.setReceiptId(b.getReceiptId());
-
-    if (b.getReceiptId() != null) {
-
-        Receipt receipt = receiptRepository
-                .findById(b.getReceiptId())
-                .orElse(null);
-
-        if (receipt != null) {
-            dto.setReceiptNo(receipt.getReceiptNo());
+        // ✅ MONTH FILTER
+        if (month != null && !month.isEmpty()) {
+            bills = bills.stream()
+                    .filter(b -> b.getMonth() != null &&
+                            b.getMonth().equalsIgnoreCase(month))
+                    .toList();
         }
+
+        // ✅ STATUS FILTER (FIXED)
+        if (status != null) {
+            bills = bills.stream()
+                    .filter(b -> b.getStatus() != null &&
+                            b.getStatus().equals(status))
+                    .toList();
+        }
+
+        if (memberId != null) {
+            bills = bills.stream()
+                    .filter(b -> b.getFlat() != null &&
+                            b.getFlat().getOwner() != null &&
+                            b.getFlat().getOwner().getId().equals(memberId))
+                    .toList();
+            }
+
+        // ✅ FINANCIAL YEAR FILTER
+        if (fromYear != null) {
+
+            int toYear = fromYear + 1;
+
+            bills = bills.stream()
+                    .filter(bill -> {
+
+                        String m = bill.getMonth().toUpperCase();
+
+                        boolean aprToDec =
+                                m.equals("APRIL") || m.equals("MAY") ||
+                                m.equals("JUNE") || m.equals("JULY") ||
+                                m.equals("AUGUST") || m.equals("SEPTEMBER") ||
+                                m.equals("OCTOBER") || m.equals("NOVEMBER") ||
+                                m.equals("DECEMBER");
+
+                        if (aprToDec) {
+                            return bill.getYear() == fromYear;
+                        }
+
+                        return bill.getYear() == toYear;
+                    })
+                    .toList();
+        }
+
+        return bills.stream().map(b -> {
+
+        BillingResponse dto = new BillingResponse();
+
+        dto.setId(b.getId());
+        dto.setMonth(b.getMonth());
+        dto.setYear(b.getYear());
+
+        dto.setMaintenanceAmount(b.getMaintenanceAmount());
+        dto.setPenaltyAmount(b.getPenaltyAmount());
+        dto.setTotalAmount(b.getTotalAmount());
+
+        dto.setStatus(b.getStatus().name());
+
+        dto.setFlatId(b.getFlat().getId());
+        dto.setFlatNo(b.getFlat().getFlatNo());
+
+        // ✅ MEMBER
+        if (b.getFlat().getOwner() != null) {
+            dto.setMemberId(b.getFlat().getOwner().getId());
+            dto.setMemberName(b.getFlat().getOwner().getName());
+        }
+
+        // ✅ RECEIPT
+        dto.setReceiptId(b.getReceiptId());
+
+        if (b.getReceiptId() != null) {
+
+            Receipt receipt = receiptRepository
+                    .findById(b.getReceiptId())
+                    .orElse(null);
+
+            if (receipt != null) {
+                dto.setReceiptNo(receipt.getReceiptNo());
+            }
+        }
+
+        return dto;
+
+    }).toList();
+
     }
 
-    return dto;
+    public String payBills(List<Long> billIds, String paymentMode) {
 
-}).toList();
+        List<Billing> bills = billingRepository.findAllById(billIds);
 
-}
+        for (Billing bill : bills) {
+            bill.setStatus(PaymentStatus.PAID);
+            bill.setPaidDate(LocalDate.now());
+            bill.setPaymentMode(paymentMode);
+        }
 
-public String payBills(List<Long> billIds, String paymentMode) {
+        billingRepository.saveAll(bills);
 
-    List<Billing> bills = billingRepository.findAllById(billIds);
-
-    for (Billing bill : bills) {
-        bill.setStatus(PaymentStatus.PAID);
-        bill.setPaidDate(LocalDate.now());
-        bill.setPaymentMode(paymentMode);
+        return "Bills paid successfully";
     }
 
-    billingRepository.saveAll(bills);
-
-    return "Bills paid successfully";
+public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
+    return billingRepository.findByFlatIdIn(flatIds);
 }
 
 }

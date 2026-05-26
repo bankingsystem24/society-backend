@@ -231,4 +231,16 @@ public class FlatService {
 
         return res;
     }
+public List<Flat> getFlatsForMember(Long societyId, Long memberId) {
+
+    return flatRepository.findBySociety_IdAndOwner_Id(
+            societyId,
+            memberId
+    );
+}
+
+
+
+
+
 }

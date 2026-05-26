@@ -50,7 +50,7 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
     List<Billing> findByIdIn(List<Long> ids);
 
     // 🔥 IMPORTANT: for Member Dashboard (via Flat mapping)
-    List<Billing> findByFlatIdIn(List<Long> flatIds);
+   List<Billing> findByFlatIdIn(List<Long> flatIds);
 
     // Fetch by receipt
     List<Billing> findByReceiptId(Long receiptId);
@@ -70,4 +70,5 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
             PaymentStatus status,
             List<Long> ids
     );
+    
 }
