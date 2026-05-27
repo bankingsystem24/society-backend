@@ -52,7 +52,9 @@ public class Billing {
 
     private LocalDate paidDate;
 
+    @Column(name = "payment_mode")
     private String paymentMode;
+    private String transactionId;
 
     // Audit fields
     private LocalDate createdDate;
@@ -151,4 +153,8 @@ public class Billing {
     public void setReceiptId(Long receiptId) {
         this.receiptId = receiptId;
     }
+
+    public String getTransactionId() { return transactionId; }
+
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 }

@@ -1,6 +1,8 @@
 package com.society.backend.entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,6 +28,13 @@ public class Receipt {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    
+    @Column(name = "payment_mode")
+    private String paymentMode;
+
+    private String transactionId;
+
+    private LocalDate receiptDate;
     // ================= GETTERS =================
 
     public Long getId() {
@@ -77,4 +86,30 @@ public class Receipt {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public LocalDate getReceiptDate() {
+        return receiptDate;
+    }
+
+    public void setReceiptDate(LocalDate receiptDate) {
+        this.receiptDate = receiptDate;
+    }
+
 }

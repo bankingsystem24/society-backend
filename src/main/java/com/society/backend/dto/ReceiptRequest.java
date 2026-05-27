@@ -9,6 +9,7 @@ public class ReceiptRequest {
     private Long flatId;
     private Double totalAmount;
     private List<Long> billIds;
+    private String paymentMode;
 
     // ================= GETTERS =================
 
@@ -54,5 +55,12 @@ public class ReceiptRequest {
         this.billIds = billIds;
     }
 
+    public String getPaymentMode(){
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode){
+        this.paymentMode = paymentMode;
+    }
 }
 

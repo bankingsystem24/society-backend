@@ -55,20 +55,23 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
     // Fetch by receipt
     List<Billing> findByReceiptId(Long receiptId);
 
-    // ================= BULK UPDATE =================
-    @Modifying
-    @Transactional
-    @Query("""
-        UPDATE Billing b
-        SET b.receiptId = :receiptId,
-            b.status = :status,
-            b.paidDate = CURRENT_DATE
-        WHERE b.id IN :ids
-    """)
-    void updateReceiptAndStatus(
-            Long receiptId,
-            PaymentStatus status,
-            List<Long> ids
-    );
+@Modifying
+@Transactional
+@Query("""
+    UPDATE Billing b
+    SET b.receiptId = :receiptId,
+        b.status = :status,
+        b.transactionId = :transactionId,
+        b.paymentMode = :paymentMode,
+        b.paidDate = CURRENT_DATE
+    WHERE b.id IN :ids
+""")
+void updateReceiptAndStatus(
+        Long receiptId,
+        PaymentStatus status,
+        String transactionId,
+        String paymentMode,
+        List<Long> ids
+);
     
 }

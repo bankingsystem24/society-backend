@@ -221,18 +221,18 @@ public class BillingService {
         return "Bills paid successfully";
     }
 
-public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
-        List<Billing> bills = billingRepository.findByFlatIdIn(flatIds);
+    public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
+            List<Billing> bills = billingRepository.findByFlatIdIn(flatIds);
 
-    bills.forEach(bill -> {
-        if (bill.getReceiptId() != null) {
-            receiptRepository.findById(bill.getReceiptId()).ifPresent(receipt -> {
-                bill.setReceiptNo(receipt.getReceiptNo());
-            });
-        }
-    });
+        bills.forEach(bill -> {
+            if (bill.getReceiptId() != null) {
+                receiptRepository.findById(bill.getReceiptId()).ifPresent(receipt -> {
+                    bill.setReceiptNo(receipt.getReceiptNo());
+                });
+            }
+        });
 
-    return bills;
-}
+        return bills;
+    }
 
 }
