@@ -10,6 +10,7 @@ public class ReceiptRequest {
     private Double totalAmount;
     private List<Long> billIds;
     private String paymentMode;
+    private String transactionId;
 
     // ================= GETTERS =================
 
@@ -61,6 +62,14 @@ public class ReceiptRequest {
 
     public void setPaymentMode(String paymentMode){
         this.paymentMode = paymentMode;
+    }
+
+    public String getTransactionId(){
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId){
+        this.transactionId = transactionId;
     }
 }
 

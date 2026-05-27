@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.dto.BillingResponse;
 import com.society.backend.entity.Billing;
@@ -206,20 +207,54 @@ public class BillingService {
 
     }
 
-    public String payBills(List<Long> billIds, String paymentMode) {
+@Transactional
+public String payBills(List<Long> billIds, String paymentMode) {
 
-        List<Billing> bills = billingRepository.findAllById(billIds);
+    List<Billing> bills = billingRepository.findAllById(billIds);
 
-        for (Billing bill : bills) {
-            bill.setStatus(PaymentStatus.PAID);
-            bill.setPaidDate(LocalDate.now());
-            bill.setPaymentMode(paymentMode);
-        }
-
-        billingRepository.saveAll(bills);
-
-        return "Bills paid successfully";
+    if (bills.isEmpty()) {
+        return "No bills found";
     }
+
+    double totalAmount = 0;
+
+    for (Billing bill : bills) {
+
+        if (bill.getStatus() == PaymentStatus.PAID) continue;
+
+        bill.setStatus(PaymentStatus.PAID);
+        bill.setPaidDate(LocalDate.now());
+        bill.setPaymentMode(paymentMode);
+
+        totalAmount += bill.getTotalAmount();
+    }
+
+    // =========================
+    // CREATE RECEIPT
+    // =========================
+    Receipt receipt = new Receipt();
+    receipt.setReceiptNo("R-" + System.currentTimeMillis());
+    receipt.setReceiptDate(LocalDate.now());
+    receipt.setPaymentMode(paymentMode);
+    receipt.setTotalAmount(totalAmount);
+
+    Billing first = bills.get(0);
+    receipt.setSocietyId(first.getSociety().getId());
+    receipt.setFlatId(first.getFlat().getId());
+
+    Receipt savedReceipt = receiptRepository.save(receipt);
+
+    // =========================
+    // LINK VIA receiptId (NOT OBJECT)
+    // =========================
+    for (Billing bill : bills) {
+        bill.setReceiptId(savedReceipt.getId());  // ✅ THIS IS THE FIX
+    }
+
+    billingRepository.saveAll(bills);
+
+    return "Bills paid successfully";
+}
 
     public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
             List<Billing> bills = billingRepository.findByFlatIdIn(flatIds);

@@ -65,7 +65,7 @@ public List<ReceiptResponse> viewReceipts(
         dto.setFlatId(r.getFlatId());
 
         dto.setTotalAmount(r.getTotalAmount());
-
+        dto.setTransactionId(r.getTransactionId());
         // payment mode
         List<Billing> bills =
                 billingRepository.findByReceiptId(r.getId());

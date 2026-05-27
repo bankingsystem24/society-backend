@@ -20,6 +20,8 @@ public class ReceiptResponse {
 
     private String paymentMode;
 
+    private String transactionId;
+
     // ================= GETTERS & SETTERS =================
 
     public Long getId() {
@@ -92,5 +94,13 @@ public class ReceiptResponse {
 
     public void setPaymentMode(String paymentMode) {
         this.paymentMode = paymentMode;
+    }
+
+    public String getTransactionId(){
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId){
+        this.transactionId = transactionId;
     }
 }
