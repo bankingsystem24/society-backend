@@ -28,6 +28,9 @@ public class BillingService {
     @Autowired
     private ReceiptRepository receiptRepository;
 
+    @Autowired
+    private com.society.backend.gl.service.JournalService journalService;
+
     // 🔥 AUTO GENERATE MONTHLY BILLS
     public String generateMonthlyBills(Long societyId, String month, int year) {
 
@@ -72,6 +75,14 @@ public class BillingService {
             bill.setCreatedDate(LocalDate.now());
 
             billingRepository.save(bill);
+
+            journalService.createBillJournal(
+                bill.getId(),
+                flat.getId(),
+                flat.getOwner() != null ? flat.getOwner().getId() : null,
+                amount,
+                societyId
+            );
 
             createdCount++;
         }
@@ -238,11 +249,33 @@ public String payBills(List<Long> billIds, String paymentMode) {
     receipt.setPaymentMode(paymentMode);
     receipt.setTotalAmount(totalAmount);
 
+    if (bills == null || bills.isEmpty()) {
+        return "No bills found";
+}
     Billing first = bills.get(0);
+
     receipt.setSocietyId(first.getSociety().getId());
     receipt.setFlatId(first.getFlat().getId());
+    // Long memberId = first.getFlat().getOwner() != null
+    //     ? first.getFlat().getOwner().getId()
+    //     : null;
+
+    Long societyId = first.getSociety() != null
+            ? first.getSociety().getId()
+            : null;
 
     Receipt savedReceipt = receiptRepository.save(receipt);
+
+    journalService.createPaymentJournal(
+            savedReceipt.getId(),
+            first.getFlat().getId(),
+            first.getFlat().getOwner() != null ? first.getFlat().getOwner().getId() : null,
+            totalAmount,
+            paymentMode,
+            societyId
+
+
+    );
 
     // =========================
     // LINK VIA receiptId (NOT OBJECT)
