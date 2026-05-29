@@ -12,7 +12,6 @@ import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Receipt;
 import com.society.backend.enums.PaymentStatus;
-import com.society.backend.gl.service.JournalService;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.ReceiptRepository;
@@ -98,7 +97,7 @@ public class BillingService {
                     ? flat.getOwner().getId()
                     : null;
 
-                    
+
 
             journalService.createMaintenanceBillEntry(
                     savedBill.getId(),

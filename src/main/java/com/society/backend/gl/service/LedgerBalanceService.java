@@ -13,23 +13,39 @@ public class LedgerBalanceService {
     private LedgerBalanceRepository ledgerRepo;
 
     public void updateBalance(Long societyId,
-                            Integer glCode,
-                            Long entityId,
-                            String entityType,
-                            double debit,
-                            double credit) {
+                              Integer glCode,
+                              Long entityId,
+                              String entityType,
+                              double debit,
+                              double credit) {
 
-        final Long finalEntityId;
-        final String finalEntityType;
+        // ================= RULES =================
+        Long resolvedEntityId = entityId;
+        String resolvedEntityType = entityType;
 
-        if (glCode != null && (glCode == 1001 || glCode == 1002)) {
-            finalEntityId = null;
-            finalEntityType = "SOCIETY";
-        } else {
-            finalEntityId = entityId;
-            finalEntityType = entityType;
+        // CASH / BANK / CONTROL ACCOUNTS
+        if (glCode == 1001 || glCode == 1002) {
+            resolvedEntityId = null;
+            resolvedEntityType = "SOCIETY";
         }
-            LedgerBalance ledger = ledgerRepo
+
+        // MEMBER RECEIVABLE
+        if (glCode == 1101) {
+            resolvedEntityId = null;
+            resolvedEntityType = "SOCIETY";
+        }
+
+        // INCOME ACCOUNT
+        if (glCode == 4001) {
+            resolvedEntityId = null;
+            resolvedEntityType = "SOCIETY";
+        }
+
+        final Long finalEntityId = resolvedEntityId;
+        final String finalEntityType = resolvedEntityType;
+
+        // ================= FETCH OR CREATE =================
+        LedgerBalance ledger = ledgerRepo
                 .findBySocietyIdAndGlCodeAndEntityIdAndEntityType(
                         societyId,
                         glCode,
@@ -42,16 +58,28 @@ public class LedgerBalanceService {
                     l.setGlCode(glCode);
                     l.setEntityId(finalEntityId);
                     l.setEntityType(finalEntityType);
+
                     l.setOpeningBalance(0.0);
+                    l.setDebit(0.0);
+                    l.setCredit(0.0);
                     l.setCurrentBalance(0.0);
+
                     return l;
                 });
 
-        double current = ledger.getCurrentBalance() == null ? 0 : ledger.getCurrentBalance();
+        // ================= SAFE NULL HANDLING =================
+        double oldDebit = ledger.getDebit() == null ? 0 : ledger.getDebit();
+        double oldCredit = ledger.getCredit() == null ? 0 : ledger.getCredit();
 
-        current = current + debit - credit;
+        // ================= UPDATE DR/CR =================
+        double newDebit = oldDebit + debit;
+        double newCredit = oldCredit + credit;
 
-        ledger.setCurrentBalance(current);
+        ledger.setDebit(newDebit);
+        ledger.setCredit(newCredit);
+
+        // ================= BALANCE =================
+        ledger.setCurrentBalance(newDebit - newCredit);
 
         ledgerRepo.save(ledger);
     }

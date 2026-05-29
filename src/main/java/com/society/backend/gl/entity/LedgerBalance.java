@@ -10,34 +10,34 @@ public class LedgerBalance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "society_id")
     private Long societyId;
 
-    @Column(name = "gl_code")
     private Integer glCode;
 
-    @Column(name = "entity_type")
-    private String entityType;
-
-    @Column(name = "entity_id")
     private Long entityId;
 
-    @Column(name = "opening_balance")
-    private Double openingBalance;
+    private String entityType;
 
-    @Column(name = "current_balance")
-    private Double currentBalance;
+    // ================= NEW STRUCTURE =================
 
-    // =====================================================
-    // GETTERS & SETTERS
-    // =====================================================
+    @Column(nullable = false)
+    private Double debit = 0.0;
+
+    @Column(nullable = false)
+    private Double credit = 0.0;
+
+    // optional opening balance
+    @Column(nullable = false)
+    private Double openingBalance = 0.0;
+
+    // computed / stored balance
+    @Column(nullable = false)
+    private Double currentBalance = 0.0;
+
+    // ================= GETTERS & SETTERS =================
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Long getSocietyId() {
@@ -56,6 +56,14 @@ public class LedgerBalance {
         this.glCode = glCode;
     }
 
+    public Long getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(Long entityId) {
+        this.entityId = entityId;
+    }
+
     public String getEntityType() {
         return entityType;
     }
@@ -64,12 +72,20 @@ public class LedgerBalance {
         this.entityType = entityType;
     }
 
-    public Long getEntityId() {
-        return entityId;
+    public Double getDebit() {
+        return debit;
     }
 
-    public void setEntityId(Long entityId) {
-        this.entityId = entityId;
+    public void setDebit(Double debit) {
+        this.debit = debit;
+    }
+
+    public Double getCredit() {
+        return credit;
+    }
+
+    public void setCredit(Double credit) {
+        this.credit = credit;
     }
 
     public Double getOpeningBalance() {

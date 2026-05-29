@@ -21,6 +21,8 @@ public class GlMaster {
 
     @Column(name = "account_type", nullable = false, length = 50)
     private String accountType;
+
+    
     // ASSET, LIABILITY, INCOME, EXPENSE, EQUITY
 
     @Column(name = "parent_gl_code")

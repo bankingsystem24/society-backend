@@ -9,12 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.gl.dto.JournalViewDTO;
-import com.society.backend.gl.entity.JournalEntry;
-import com.society.backend.gl.entity.JournalEntryLine;
-import com.society.backend.gl.entity.VoucherType;
-import com.society.backend.gl.repository.JournalEntryLineRepository;
-import com.society.backend.gl.repository.JournalEntryRepository;
-import com.society.backend.gl.repository.JournalViewRepository;
+import com.society.backend.gl.entity.*;
+import com.society.backend.gl.repository.*;
 
 @Service
 @Transactional
@@ -69,7 +65,7 @@ public class JournalService {
 
         JournalEntry savedEntry = journalRepo.save(entry);
 
-        // ================= DEBIT LINE =================
+        // DEBIT LINE
         JournalEntryLine debitLine = new JournalEntryLine();
         debitLine.setJournalId(savedEntry.getId());
         debitLine.setLineNo(1);
@@ -82,7 +78,7 @@ public class JournalService {
         debitLine.setRemarks("Debit Entry");
         lineRepo.save(debitLine);
 
-        // ================= CREDIT LINE =================
+        // CREDIT LINE
         JournalEntryLine creditLine = new JournalEntryLine();
         creditLine.setJournalId(savedEntry.getId());
         creditLine.setLineNo(2);
@@ -118,31 +114,41 @@ public class JournalService {
                 amount,
                 societyId,
 
-                1101,   // DR Member Receivable
+                1101,  // DR Member Receivable
                 amount,
 
-                4001,   // CR Income
+                4001,  // CR Income
                 amount,
 
-                "MEMBER",
-                memberId
+                "SOCIETY",
+                societyId
         );
 
-        // LEDGER UPDATE (MEMBER INCREASE)
+        // LEDGER UPDATE (RECEIVABLE INCREASE)
         ledgerBalanceService.updateBalance(
                 societyId,
                 1101,
-                memberId,
-                "MEMBER",
+                null,
+                "SOCIETY",
                 amount,
                 0.0
+        );
+
+        // LEDGER UPDATE (INCOME)
+        ledgerBalanceService.updateBalance(
+                societyId,
+                4001,
+                null,
+                "SOCIETY",
+                0.0,
+                amount
         );
 
         return journalId;
     }
 
     // =====================================================
-    // RECEIPT ENTRY (FIXED BANK LOGIC)
+    // RECEIPT ENTRY
     // =====================================================
 
     public Long createReceiptEntry(
@@ -165,17 +171,15 @@ public class JournalService {
                 amount,
                 societyId,
 
-                bankGlCode,   // DR BANK
+                bankGlCode, // DR
                 amount,
 
-                1101,         // CR MEMBER
+                1101, // CR
                 amount,
 
-                "MEMBER",
-                memberId
+                "SOCIETY",
+                societyId
         );
-
-        // ================= LEDGER UPDATE =================
 
         // BANK INCREASE
         ledgerBalanceService.updateBalance(
@@ -187,12 +191,12 @@ public class JournalService {
                 0.0
         );
 
-        // MEMBER DECREASE
+        // RECEIVABLE DECREASE
         ledgerBalanceService.updateBalance(
                 societyId,
                 1101,
-                memberId,
-                "MEMBER",
+                null,
+                "SOCIETY",
                 0.0,
                 amount
         );
@@ -201,7 +205,7 @@ public class JournalService {
     }
 
     // =====================================================
-    // EXPENSE ENTRY (FIXED)
+    // EXPENSE ENTRY
     // =====================================================
 
     public Long createExpenseEntry(
@@ -222,22 +226,22 @@ public class JournalService {
                 amount,
                 societyId,
 
-                expenseGlCode,   // DR EXPENSE
+                expenseGlCode,
                 amount,
 
-                1002,           // CR BANK
+                1002,
                 amount,
 
-                "VENDOR",
-                vendorId
+                "SOCIETY",
+                societyId
         );
 
         // EXPENSE INCREASE
         ledgerBalanceService.updateBalance(
                 societyId,
                 expenseGlCode,
-                vendorId,
-                "VENDOR",
+                null,
+                "SOCIETY",
                 amount,
                 0.0
         );
@@ -280,8 +284,8 @@ public class JournalService {
                 amount,
                 creditGlCode,
                 amount,
-                null,
-                null
+                "SOCIETY",
+                societyId
         );
     }
 
