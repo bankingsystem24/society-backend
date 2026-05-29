@@ -4,7 +4,7 @@ import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
-import com.society.backend.service.BillingService;
+import com.society.backend.gl.service.BillingService;
 import com.society.backend.service.FlatService;
 import com.society.backend.service.MemberService;
 

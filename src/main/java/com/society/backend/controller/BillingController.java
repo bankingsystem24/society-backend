@@ -22,10 +22,10 @@ import com.society.backend.dto.PaymentRequest;
 import com.society.backend.dto.VerifyPaymentRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
+import com.society.backend.gl.service.BillingService;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.entity.Receipt;
 import com.society.backend.repository.ReceiptRepository;
-import com.society.backend.service.BillingService;
 
 @RestController
 @RequestMapping("/api/billing")

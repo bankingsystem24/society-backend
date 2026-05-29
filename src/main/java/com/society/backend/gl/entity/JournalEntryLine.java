@@ -10,17 +10,30 @@ public class JournalEntryLine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "journal_id", nullable = false)
     private Long journalId;
 
+    @Column(name = "line_no")
+    private Integer lineNo;
+
+    @Column(name = "gl_code", nullable = false)
     private Integer glCode;
 
-    private Double debitAmount;
+    @Column(name = "debit_amount")
+    private Double debitAmount = 0.0;
 
-    private Double creditAmount;
+    @Column(name = "credit_amount")
+    private Double creditAmount = 0.0;
 
-    private Long flatId;
+    @Column(name = "entity_type", length = 50)
+    private String entityType;
+    // MEMBER / VENDOR / BANK / EMPLOYEE
 
-    private Long memberId;
+    @Column(name = "entity_id")
+    private Long entityId;
+
+    @Column(name = "remarks", length = 300)
+    private String remarks;
 
     @Column(name = "society_id", nullable = false)
     private Long societyId;
@@ -41,6 +54,14 @@ public class JournalEntryLine {
 
     public void setJournalId(Long journalId) {
         this.journalId = journalId;
+    }
+
+    public Integer getLineNo() {
+        return lineNo;
+    }
+
+    public void setLineNo(Integer lineNo) {
+        this.lineNo = lineNo;
     }
 
     public Integer getGlCode() {
@@ -67,20 +88,28 @@ public class JournalEntryLine {
         this.creditAmount = creditAmount;
     }
 
-    public Long getFlatId() {
-        return flatId;
+    public String getEntityType() {
+        return entityType;
     }
 
-    public void setFlatId(Long flatId) {
-        this.flatId = flatId;
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
     }
 
-    public Long getMemberId() {
-        return memberId;
+    public Long getEntityId() {
+        return entityId;
     }
 
-    public void setMemberId(Long memberId) {
-        this.memberId = memberId;
+    public void setEntityId(Long entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     public Long getSocietyId() {

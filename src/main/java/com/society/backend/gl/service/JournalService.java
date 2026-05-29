@@ -1,111 +1,356 @@
 package com.society.backend.gl.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.society.backend.gl.dto.JournalViewDTO;
 import com.society.backend.gl.entity.JournalEntry;
 import com.society.backend.gl.entity.JournalEntryLine;
-import com.society.backend.gl.repository.JournalEntryRepository;
 import com.society.backend.gl.repository.JournalEntryLineRepository;
+import com.society.backend.gl.repository.JournalEntryRepository;
+import com.society.backend.gl.repository.JournalViewRepository;
+import com.society.backend.gl.entity.VoucherType;
 
 @Service
+@Transactional
 public class JournalService {
 
     @Autowired
-    private JournalEntryRepository journalEntryRepository;
+    private JournalEntryRepository journalRepo;
 
     @Autowired
-    private JournalEntryLineRepository journalEntryLineRepository;
+    private JournalEntryLineRepository lineRepo;
 
-    // ================= BILL GENERATION JOURNAL =================
-    @Transactional
-    public void createBillJournal(Long billId,
-                                  Long flatId,
-                                  Long memberId,
-                                  Double amount,
-                                  Long societyId) {
+    @Autowired
+    private JournalViewRepository journalViewRepository;
 
-        // 1. Header
-        JournalEntry journal = new JournalEntry();
-        journal.setEntryDate(LocalDate.now());
-        journal.setNarration("Bill Generated");
-        journal.setReferenceId(billId);
-        journal.setReferenceType("BILL");
-        journal.setSocietyId(societyId);
+    // =====================================================
+    // COMMON JOURNAL ENTRY METHOD
+    // =====================================================
 
-        journal = journalEntryRepository.save(journal);
+    public Long createJournalEntry(
 
-        // 2. Debit Entry (Receivable)
-        JournalEntryLine debit = new JournalEntryLine();
-        debit.setJournalId(journal.getId());
-        debit.setGlCode(1100); // Maintenance Receivable
-        debit.setDebitAmount(amount);
-        debit.setCreditAmount(0.0);
-        debit.setFlatId(flatId);
-        debit.setMemberId(memberId);
-        debit.setSocietyId(societyId);
+            String voucherNo,
+            String voucherType,
 
-        // 3. Credit Entry (Income)
-        JournalEntryLine credit = new JournalEntryLine();
-        credit.setJournalId(journal.getId());
-        credit.setGlCode(3000); // Maintenance Income
-        credit.setDebitAmount(0.0);
-        credit.setCreditAmount(amount);
-        credit.setFlatId(flatId);
-        credit.setMemberId(memberId);
-        credit.setSocietyId(societyId);
+            String narration,
 
-        journalEntryLineRepository.saveAll(List.of(debit, credit));
+            String referenceType,
+            Long referenceId,
+
+            Double totalAmount,
+
+            Long societyId,
+
+            // DEBIT
+            Integer debitGlCode,
+            Double debitAmount,
+
+            // CREDIT
+            Integer creditGlCode,
+            Double creditAmount,
+
+            // ENTITY
+            String entityType,
+            Long entityId
+
+    ) {
+
+        // =================================================
+        // HEADER
+        // =================================================
+
+        JournalEntry entry = new JournalEntry();
+
+        entry.setVoucherNo(voucherNo);
+
+        entry.setEntryDate(LocalDate.now());
+
+        entry.setVoucherType(
+            VoucherType.valueOf(voucherType)
+        );
+
+        entry.setNarration(narration);
+
+        entry.setReferenceType(referenceType);
+
+        entry.setReferenceId(referenceId);
+
+        entry.setTotalAmount(totalAmount);
+
+        entry.setStatus("POSTED");
+
+        entry.setSocietyId(societyId);
+
+        entry.setCreatedAt(LocalDateTime.now());
+
+        JournalEntry savedEntry = journalRepo.save(entry);
+
+        // =================================================
+        // DEBIT LINE
+        // =================================================
+
+        JournalEntryLine debitLine = new JournalEntryLine();
+
+        debitLine.setJournalId(savedEntry.getId());
+
+        debitLine.setLineNo(1);
+
+        debitLine.setGlCode(debitGlCode);
+
+        debitLine.setDebitAmount(
+                debitAmount != null ? debitAmount : 0.0
+        );
+
+        debitLine.setCreditAmount(0.0);
+
+        debitLine.setEntityType(entityType);
+
+        debitLine.setEntityId(entityId);
+
+        debitLine.setRemarks("Debit Entry");
+
+        debitLine.setSocietyId(societyId);
+
+        lineRepo.save(debitLine);
+
+        // =================================================
+        // CREDIT LINE
+        // =================================================
+
+        JournalEntryLine creditLine = new JournalEntryLine();
+
+        creditLine.setJournalId(savedEntry.getId());
+
+        creditLine.setLineNo(2);
+
+        creditLine.setGlCode(creditGlCode);
+
+        creditLine.setDebitAmount(0.0);
+
+        creditLine.setCreditAmount(
+                creditAmount != null ? creditAmount : 0.0
+        );
+
+        creditLine.setEntityType(entityType);
+
+        creditLine.setEntityId(entityId);
+
+        creditLine.setRemarks("Credit Entry");
+
+        creditLine.setSocietyId(societyId);
+
+        lineRepo.save(creditLine);
+
+        return savedEntry.getId();
     }
 
-    // ================= PAYMENT JOURNAL =================
-    @Transactional
-    public void createPaymentJournal(Long receiptId,
-                                     Long flatId,
-                                     Long memberId,
-                                     Double amount,
-                                     String paymentMode,
-                                     Long societyId
-                                     ) {
+    // =====================================================
+    // MAINTENANCE BILL ENTRY
+    // =====================================================
 
-        // 1. Header
-        JournalEntry journal = new JournalEntry();
-        journal.setEntryDate(LocalDate.now());
-        journal.setNarration("Payment Received via " + paymentMode);
-        journal.setReferenceId(receiptId);
-        journal.setReferenceType("PAYMENT");
-        journal.setSocietyId(societyId);
+    public Long createMaintenanceBillEntry(
 
-        journal = journalEntryRepository.save(journal);
+            Long billId,
 
-        // 2. Debit (Bank/Cash)
-        int cashOrBankGl = paymentMode != null && paymentMode.equalsIgnoreCase("CASH")
-                ? 1000
-                : 1010;
+            Long memberId,
 
-        JournalEntryLine debit = new JournalEntryLine();
-        debit.setJournalId(journal.getId());
-        debit.setGlCode(cashOrBankGl);
-        debit.setDebitAmount(amount);
-        debit.setCreditAmount(0.0);
-        debit.setFlatId(flatId);
-        debit.setMemberId(memberId);
-        debit.setSocietyId(societyId);
+            Double amount,
 
-        // 3. Credit (Receivable)
-        JournalEntryLine credit = new JournalEntryLine();
-        credit.setJournalId(journal.getId());
-        credit.setGlCode(1100);
-        credit.setDebitAmount(0.0);
-        credit.setCreditAmount(amount);
-        credit.setFlatId(flatId);
-        credit.setMemberId(memberId);
-        credit.setSocietyId(societyId); 
+            Long societyId
 
-        journalEntryLineRepository.saveAll(List.of(debit, credit));
+    ) {
+
+        return createJournalEntry(
+
+                "BILL-" + billId,
+
+                "BILL",
+
+                "Maintenance Bill Generated",
+
+                "BILL",
+
+                billId,
+
+                amount,
+
+                societyId,
+
+                // DR
+                1101,
+                amount,
+
+                // CR
+                4001,
+                amount,
+
+                "MEMBER",
+
+                memberId
+        );
     }
+
+    // =====================================================
+    // RECEIPT ENTRY
+    // =====================================================
+
+    public Long createReceiptEntry(
+
+            Long receiptId,
+
+            Long memberId,
+
+            Double amount,
+
+            String paymentMode,
+
+            Long societyId
+
+    ) {
+
+        Integer bankGlCode = 1002;
+
+        // CASH ACCOUNT
+        if ("CASH".equalsIgnoreCase(paymentMode)) {
+            bankGlCode = 1001;
+        }
+
+        return createJournalEntry(
+
+                "RCPT-" + receiptId,
+
+                "RECEIPT",
+
+                "Maintenance Payment Received",
+
+                "RECEIPT",
+
+                receiptId,
+
+                amount,
+
+                societyId,
+
+                // DR BANK/CASH
+                bankGlCode,
+                amount,
+
+                // CR MEMBER RECEIVABLE
+                1101,
+                amount,
+
+                "MEMBER",
+
+                memberId
+        );
+    }
+
+    // =====================================================
+    // EXPENSE ENTRY
+    // =====================================================
+
+    public Long createExpenseEntry(
+
+            String voucherNo,
+
+            String narration,
+
+            Integer expenseGlCode,
+
+            Double amount,
+
+            Long vendorId,
+
+            Long societyId
+
+    ) {
+
+        return createJournalEntry(
+
+                voucherNo,
+
+                "PAYMENT",
+
+                narration,
+
+                "EXPENSE",
+
+                vendorId,
+
+                amount,
+
+                societyId,
+
+                // DR EXPENSE
+                expenseGlCode,
+                amount,
+
+                // CR BANK
+                1002,
+                amount,
+
+                "VENDOR",
+
+                vendorId
+        );
+    }
+
+    // =====================================================
+    // GENERAL JOURNAL ENTRY
+    // =====================================================
+
+    public Long createGeneralJournal(
+
+            String voucherNo,
+
+            String narration,
+
+            Integer debitGlCode,
+
+            Integer creditGlCode,
+
+            Double amount,
+
+            Long societyId
+
+    ) {
+
+        return createJournalEntry(
+
+                voucherNo,
+
+                "JOURNAL",
+
+                narration,
+
+                "JOURNAL",
+
+                null,
+
+                amount,
+
+                societyId,
+
+                debitGlCode,
+                amount,
+
+                creditGlCode,
+                amount,
+
+                null,
+                null
+        );
+    }
+
+    public List<JournalViewDTO> getJournal(Long societyId) {
+
+    return journalViewRepository.getJournalView(societyId);
+}
+
 }
