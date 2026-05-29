@@ -23,9 +23,11 @@ import com.society.backend.dto.VerifyPaymentRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.service.BillingService;
+import com.society.backend.gl.service.JournalService;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.entity.Receipt;
 import com.society.backend.repository.ReceiptRepository;
+import com.society.backend.util.RazorpaySignatureUtil;
 
 @RestController
 @RequestMapping("/api/billing")
@@ -41,6 +43,8 @@ public class BillingController {
 
     private final ReceiptRepository receiptRepository;
 
+    private final JournalService journalService;
+
    @Value("${razorpay.key_secret}")
    private String razorpayKeySecret;
 
@@ -50,11 +54,17 @@ public class BillingController {
 public BillingController(
         RazorpayClient razorpayClient,
         BillingRepository billingRepository,
-        ReceiptRepository receiptRepository
+        ReceiptRepository receiptRepository,
+        JournalService journalService,
+        @Value("${razorpay.key_secret}") String razorpayKeySecret,
+        @Value("${razorpay.key_id}") String keyId
 ) {
     this.razorpayClient = razorpayClient;
     this.billingRepository = billingRepository;
     this.receiptRepository = receiptRepository;
+    this.journalService = journalService;
+    this.razorpayKeySecret = razorpayKeySecret;
+    this.keyId = keyId;
 }
     
     // =========================
@@ -150,124 +160,104 @@ public ResponseEntity<List<BillingResponse>> viewAllBills(
                 return response;
         }
 
-        @PostMapping("/verify-payment")
-        public ResponseEntity<?> verifyPayment(
-                @RequestBody VerifyPaymentRequest req
-        ) {
+@PostMapping("/verify-payment")
+public ResponseEntity<?> verifyPayment(
+        @RequestBody VerifyPaymentRequest req
+) {
 
-        try {
+    try {
 
-                JSONObject options = new JSONObject();
+        JSONObject options = new JSONObject();
 
-                options.put(
-                        "razorpay_order_id",
-                        req.getRazorpayOrderId()
-                );
+        options.put("razorpay_order_id", req.getRazorpayOrderId());
+        options.put("razorpay_payment_id", req.getRazorpayPaymentId());
+        options.put("razorpay_signature", req.getRazorpaySignature());
 
-                options.put(
-                        "razorpay_payment_id",
-                        req.getRazorpayPaymentId()
-                );
+        // =========================
+        // VERIFY SIGNATURE
+        // =========================
 
-                options.put(
-                        "razorpay_signature",
-                        req.getRazorpaySignature()
-                );
+        String payload =
+                req.getRazorpayOrderId() + "|" + req.getRazorpayPaymentId();
 
-                // =========================
-                // VERIFY SIGNATURE
-                // =========================
+        String generatedSignature =
+                RazorpaySignatureUtil.hmacSHA256(payload, razorpayKeySecret);
 
-                boolean isValid =
-                        Utils.verifyPaymentSignature(
-                                options,
-                                razorpayKeySecret
-                        );
-
-                if (!isValid) {
-
-                return ResponseEntity.badRequest()
-                        .body("Invalid payment signature");
-                }
-
-                List<Billing> bills =
-                billingRepository.findByIdIn(
-                        req.getBillIds()
-                );
-
-                Billing firstBill = bills.get(0);
-                // =========================
-                // CREATE RECEIPT
-                // =========================
-
-                Receipt receipt = new Receipt();
-
-                // =========================
-                // BASIC DETAILS
-                // =========================
-
-                receipt.setPaymentMode(
-                        req.getPaymentMode()
-                );
-
-                receipt.setTransactionId(
-                        req.getRazorpayPaymentId()
-                );
-
-                receipt.setReceiptDate(
-                        LocalDate.now()
-                );
-
-                receipt.setTotalAmount(
-                        req.getAmount()
-                );
-
-                // =========================
-                // RECEIPT NUMBER
-                // =========================
-
-                receipt.setReceiptNo(
-                        "RCPT-" + System.currentTimeMillis()
-                );
-
-                // =========================
-                // SOCIETY + FLAT
-                // =========================
-
-                receipt.setSocietyId(
-                        firstBill.getSociety().getId()
-                );
-
-                receipt.setFlatId(
-                        firstBill.getFlat().getId()
-                );
-
-                // =========================
-                // SAVE RECEIPT
-                // =========================
-
-                receipt = receiptRepository.save(receipt);
-
-                billingRepository.updateReceiptAndStatus(
-                        receipt.getId(),
-                        PaymentStatus.PAID,
-                        req.getRazorpayPaymentId(),
-                        req.getPaymentMode(),   // 👈 ADD THIS
-                        req.getBillIds()
-                );
+        boolean isValid =
+                generatedSignature.equals(req.getRazorpaySignature());
 
 
-                return ResponseEntity.ok(
-                        "Payment verified successfully"
-                );
-
-        } catch (Exception e) {
-
-                e.printStackTrace();
-
-                return ResponseEntity.internalServerError()
-                        .body(e.toString());
+        if (!isValid) {
+            return ResponseEntity.badRequest()
+                    .body("Invalid payment signature");
         }
+
+        // =========================
+        // FETCH BILLS
+        // =========================
+
+        List<Billing> bills =
+                billingRepository.findByIdIn(req.getBillIds());
+
+        if (bills == null || bills.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("No bills found");
         }
+
+        Billing firstBill = bills.get(0);
+
+        // =========================
+        // CREATE RECEIPT
+        // =========================
+
+        Receipt receipt = new Receipt();
+
+        receipt.setPaymentMode("ONLINE"); // FIXED (important)
+        receipt.setTransactionId(req.getRazorpayPaymentId());
+        receipt.setReceiptDate(LocalDate.now());
+        receipt.setTotalAmount(req.getAmount());
+        receipt.setReceiptNo("RCPT-" + System.currentTimeMillis());
+
+        receipt.setSocietyId(firstBill.getSociety().getId());
+        receipt.setFlatId(firstBill.getFlat().getId());
+
+        Receipt savedReceipt = receiptRepository.save(receipt);
+
+        // =========================
+        // UPDATE BILL STATUS
+        // =========================
+
+        billingRepository.updateReceiptAndStatus(
+                savedReceipt.getId(),
+                PaymentStatus.PAID,
+                req.getRazorpayPaymentId(),
+                "ONLINE",
+                req.getBillIds()
+        );
+
+        // =========================
+        // 🔥 CREATE JOURNAL ENTRY (MISSING PART FIX)
+        // =========================
+
+        journalService.createReceiptEntry(
+                savedReceipt.getId(),
+                firstBill.getFlat().getOwner() != null
+                        ? firstBill.getFlat().getOwner().getId()
+                        : null,
+                req.getAmount(),
+                "ONLINE",
+                firstBill.getSociety().getId()
+        );
+
+        return ResponseEntity.ok("Payment verified successfully");
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+
+        return ResponseEntity.internalServerError()
+                .body(e.toString());
+    }
+}
 
 }

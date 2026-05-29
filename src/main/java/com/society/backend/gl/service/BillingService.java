@@ -91,11 +91,14 @@ public class BillingService {
 
             Billing savedBill = billingRepository.save(bill);
 
+
             // ================= ACCOUNTING ENTRY =================
 
             Long memberId = flat.getOwner() != null
                     ? flat.getOwner().getId()
                     : null;
+
+                    
 
             journalService.createMaintenanceBillEntry(
                     savedBill.getId(),
