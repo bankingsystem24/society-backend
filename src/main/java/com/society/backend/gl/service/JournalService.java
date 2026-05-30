@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.society.backend.entity.AccountingYear;
 import com.society.backend.gl.dto.JournalViewDTO;
 import com.society.backend.gl.entity.*;
 import com.society.backend.gl.repository.*;
+import com.society.backend.repository.AccountingYearRepository;
 
 @Service
 @Transactional
@@ -27,6 +29,9 @@ public class JournalService {
 
     @Autowired
     private LedgerBalanceService ledgerBalanceService;
+
+    @Autowired
+    private AccountingYearRepository accountingYearRepository;
 
     // =====================================================
     // CORE JOURNAL ENTRY
@@ -294,6 +299,14 @@ public class JournalService {
     // =====================================================
 
     public List<JournalViewDTO> getJournal(Long societyId) {
-        return journalViewRepository.getJournalView(societyId);
+        AccountingYear fy = accountingYearRepository
+        .findBySocietyIdAndIsActiveTrue(societyId)
+        .orElseThrow(() -> new RuntimeException("Active FY not found"));
+
+        return journalViewRepository.getJournalView(
+                societyId,
+                fy.getStartDate(),
+                fy.getEndDate()
+        );
     }
 }
