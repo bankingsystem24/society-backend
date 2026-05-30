@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.society.backend.entity.AccountingYear;
+import com.society.backend.repository.AccountingYearRepository;
 import com.society.backend.gl.dto.TrialBalanceDTO;
 import com.society.backend.gl.repository.LedgerBalanceRepository;
 
@@ -14,9 +16,22 @@ public class TrialBalanceService {
     @Autowired
     private LedgerBalanceRepository ledgerRepo;
 
+    @Autowired
+    private AccountingYearRepository accountingYearRepository;
+
     public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
 
-        List<TrialBalanceDTO> list = ledgerRepo.getTrialBalance(societyId);
+        AccountingYear fy = accountingYearRepository
+                .findBySocietyIdAndIsActiveTrue(societyId)
+                .orElseThrow(() ->
+                        new RuntimeException("Active Financial Year not found"));
+
+        List<TrialBalanceDTO> list =
+                ledgerRepo.getTrialBalance(
+                        societyId,
+                        fy.getStartDate(),
+                        fy.getEndDate()
+                );
 
         for (TrialBalanceDTO dto : list) {
 

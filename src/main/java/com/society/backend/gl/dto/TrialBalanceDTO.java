@@ -10,8 +10,26 @@ public class TrialBalanceDTO {
     private String accountType;
     private String balanceType;
 
-    public TrialBalanceDTO() {}
+    // Default Constructor
+    public TrialBalanceDTO() {
+    }
 
+    // Constructor used by JPQL
+    public TrialBalanceDTO(
+            Integer glCode,
+            String accountName,
+            Double debit,
+            Double credit
+    ) {
+        this.glCode = glCode;
+        this.accountName = accountName;
+        this.debit = debit;
+        this.credit = credit;
+        this.balance = (debit != null ? debit : 0.0)
+                     - (credit != null ? credit : 0.0);
+    }
+
+    // Full Constructor
     public TrialBalanceDTO(
             Integer glCode,
             String accountName,
@@ -30,25 +48,59 @@ public class TrialBalanceDTO {
         this.balanceType = balanceType;
     }
 
-    // getters/setters
-    public Integer getGlCode() { return glCode; }
-    public void setGlCode(Integer glCode) { this.glCode = glCode; }
+    public Integer getGlCode() {
+        return glCode;
+    }
 
-    public String getAccountName() { return accountName; }
-    public void setAccountName(String accountName) { this.accountName = accountName; }
+    public void setGlCode(Integer glCode) {
+        this.glCode = glCode;
+    }
 
-    public Double getDebit() { return debit; }
-    public void setDebit(Double debit) { this.debit = debit; }
+    public String getAccountName() {
+        return accountName;
+    }
 
-    public Double getCredit() { return credit; }
-    public void setCredit(Double credit) { this.credit = credit; }
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
 
-    public Double getBalance() { return balance; }
-    public void setBalance(Double balance) { this.balance = balance; }
+    public Double getDebit() {
+        return debit;
+    }
 
-    public String getAccountType() { return accountType; }
-    public void setAccountType(String accountType) { this.accountType = accountType; }
+    public void setDebit(Double debit) {
+        this.debit = debit;
+    }
 
-    public String getBalanceType() { return balanceType; }
-    public void setBalanceType(String balanceType) { this.balanceType = balanceType; }
+    public Double getCredit() {
+        return credit;
+    }
+
+    public void setCredit(Double credit) {
+        this.credit = credit;
+    }
+
+    public Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
+    public String getBalanceType() {
+        return balanceType;
+    }
+
+    public void setBalanceType(String balanceType) {
+        this.balanceType = balanceType;
+    }
 }

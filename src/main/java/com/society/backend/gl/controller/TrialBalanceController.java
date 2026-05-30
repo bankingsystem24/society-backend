@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.society.backend.gl.dto.TrialBalanceDTO;
-import com.society.backend.gl.repository.LedgerBalanceRepository;
+import com.society.backend.gl.service.TrialBalanceService;
 
 @RestController
 @RequestMapping("/api/gl/reports")
@@ -14,10 +14,12 @@ import com.society.backend.gl.repository.LedgerBalanceRepository;
 public class TrialBalanceController {
 
     @Autowired
-    private LedgerBalanceRepository ledgerBalanceRepository;
+    private TrialBalanceService trialBalanceService;
 
     @GetMapping("/trial-balance")
-    public List<TrialBalanceDTO> getTrialBalance(@RequestParam Long societyId) {
-        return ledgerBalanceRepository.getTrialBalance(societyId);
+    public List<TrialBalanceDTO> getTrialBalance(
+            @RequestParam Long societyId) {
+
+        return trialBalanceService.getTrialBalance(societyId);
     }
 }
