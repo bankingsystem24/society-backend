@@ -28,17 +28,27 @@ public class SocietyService {
 
     public Society update(Long id, Society society) {
 
-        Society existing = societyRepository.findById(id).orElse(null);
+        Society existing = societyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Society not found"));
 
-        if (existing != null) {
+        existing.setSocietyName(society.getSocietyName());
+        existing.setRegistrationNumber(society.getRegistrationNumber());
+        existing.setAddress(society.getAddress());
+        existing.setCity(society.getCity());
+        existing.setState(society.getState());
+        existing.setCountry(society.getCountry());
 
-            existing.setSocietyName(society.getSocietyName());
-            existing.setAddress(society.getAddress());
+        // 🔥 THIS WAS MISSING
+        existing.setPinCode(society.getPinCode());
 
-            return societyRepository.save(existing);
-        }
+        existing.setEmail(society.getEmail());
+        existing.setMobile(society.getMobile());
+        existing.setSecretaryName(society.getSecretaryName());
 
-        return null;
+        // 🔥 AUDITOR UPDATE (important)
+        existing.setAuditor(society.getAuditor());
+
+        return societyRepository.save(existing);
     }
 
     public void delete(Long id) {

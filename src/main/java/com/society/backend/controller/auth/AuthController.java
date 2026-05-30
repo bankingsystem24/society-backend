@@ -28,21 +28,43 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+
+        Long societyId = null;
+        String societyName = null;
+        String role = null;
+
         User user = userRepository.findAll()
                 .stream()
                 .filter(u -> u.getUsername().equals(request.getUsername())
                         && u.getPassword().equals(request.getPassword()))
                 .findFirst()
                 .orElse(null);
+
+
         if (user == null) {
+            System.out.println("User is Null");
             return ResponseEntity.status(401).body("Invalid credentials");
-        }
+        } 
+
+
         String token = jwtUtil.generateToken(user.getUsername());
-            LoginResponse response = new LoginResponse(
-            token,
-            user.getSociety().getId(),
-            user.getSociety().getSocietyName() 
-    );
+
+        role = user.getRole().name();
+
+        if (user.getSociety() != null) {
+            societyId = user.getSociety().getId();
+            societyName = user.getSociety().getSocietyName();
+        }
+
+        LoginResponse response = new LoginResponse(
+                token,
+                societyId,
+                societyName,
+                role
+        );
+
+        System.out.println("Response: " + response);
+
         return ResponseEntity.ok(response);
     }
 

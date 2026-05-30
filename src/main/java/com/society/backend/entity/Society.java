@@ -33,6 +33,10 @@ public class Society extends BaseEntity {
 
     private Boolean active = true;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "auditor_id")
+    private User auditor;
+
     // =========================
     // Getters and Setters
     // =========================
@@ -131,5 +135,13 @@ public class Society extends BaseEntity {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public User getAuditor() {
+        return auditor;
+    }
+
+    public void setAuditor(User auditor) {
+        this.auditor = auditor;
     }
 }

@@ -30,6 +30,10 @@ public class User extends SocietyBaseEntity {
 
     private Boolean active = true;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "society_id")
+    private Society society;
+
     // =========================
     // RELATION
     // =========================
@@ -104,5 +108,13 @@ public class User extends SocietyBaseEntity {
 
     public void setMember(Member member) {
         this.member = member;
+    }
+
+    public Society getSociety() {
+        return society;
+    }
+
+    public void setSociety(Society society) {
+        this.society = society;
     }
 }

@@ -7,5 +7,7 @@ public enum Role {
     TREASURER,
     MEMBER,
     SECURITY,
-    MANAGER
+    MANAGER,
+    SUPER_ADMIN,
+    AUDITOR
 }
