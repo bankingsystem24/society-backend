@@ -6,7 +6,12 @@ import com.society.backend.dto.MemberLoginResponse;
 import com.society.backend.entity.User;
 import com.society.backend.repository.UserRepository;
 import com.society.backend.security.JwtUtil;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,8 +64,16 @@ public class AuthController {
             user.getSociety().getSocietyName(),
             user.getMember().getId(),
             user.getMember().getName(),
-            user.getRole().name()
+            user.getRole().name(),
+            user.getActive()
     );
+    if (!user.getActive()) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", "Your account is inactive. Please contact the administrator.");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(error);   
+    }
         return ResponseEntity.ok(response);
     }
 

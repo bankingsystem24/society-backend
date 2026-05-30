@@ -8,18 +8,20 @@ public class MemberLoginResponse {
     private Long memberId;
     private String memberName;
     private String role;
+    private Boolean active;
 
     public MemberLoginResponse() {
     }
 
-    public MemberLoginResponse(String token, Long societyId, String societyName,Long memberId,String memberName, String role) {
+    public MemberLoginResponse(String token, Long societyId, String societyName,Long memberId,String memberName, String role, Boolean active) {
         this.token = token;
         this.societyId = societyId;
         this.societyName = societyName;
         this.memberId = memberId;
         this.memberName = memberName;
         this.role = role;
-    }
+        this.active = active;
+    }   
 
     public String getToken() {
         return token;
@@ -67,4 +69,12 @@ public class MemberLoginResponse {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+}
 }

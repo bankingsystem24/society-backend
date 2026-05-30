@@ -60,8 +60,13 @@ public class MemberLoginService {
                         user.getMember().getId(),
 
                         user.getMember().getName(),
-                        user.getRole().name()
+                        user.getRole().name(),
+                        user.getActive()
                 );
+                
+                if(!response.getActive()) {
+                        throw new RuntimeException("Member account is inactive");
+                }
 
         return response;
     }
