@@ -32,6 +32,9 @@ public class AuthController {
         Long societyId = null;
         String societyName = null;
         String role = null;
+        Long auditorId = null;
+
+        System.out.println("Request: " + request);
 
         User user = userRepository.findAll()
                 .stream()
@@ -46,7 +49,6 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         } 
 
-
         String token = jwtUtil.generateToken(user.getUsername());
 
         role = user.getRole().name();
@@ -60,7 +62,8 @@ public class AuthController {
                 token,
                 societyId,
                 societyName,
-                role
+                role,
+                auditorId = user.getId()
         );
 
         System.out.println("Response: " + response);

@@ -2,7 +2,6 @@ package com.society.backend.service;
 
 import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
-import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.entity.Society;
 import com.society.backend.exception.ResourceNotFoundException;
@@ -152,17 +151,7 @@ public class MemberService {
         // FLAT
         // =========================
 
-        if (req.getFlatId() != null) {
 
-            Flat flat = flatRepository.findById(req.getFlatId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Flat not found"));
-
-            member.setFlat(flat);
-
-        } else {
-            member.setFlat(null);
-        }
     }
 
     // =========================
@@ -191,11 +180,11 @@ public class MemberService {
         }
 
         // FLAT
-        if (member.getFlat() != null) {
+        // if (member.getFlat() != null) {
 
-            res.setFlatId(member.getFlat().getId());
-            res.setFlatNo(member.getFlat().getFlatNo());
-        }
+        //     res.setFlatId(member.getFlat().getId());
+        //     res.setFlatNo(member.getFlat().getFlatNo());
+        // }
 
         return res;
     }

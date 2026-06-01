@@ -10,6 +10,8 @@ import com.society.backend.repository.MemberRepository;
 import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.UserRepository;
 
+import tools.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -177,57 +179,66 @@ public class UserService {
         return res;
     }
 
-    public UserResponse updateFromRequest(Long id, UserRequest req) {
+public UserResponse updateFromRequest(Long id, UserRequest req) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
-
-        // =========================
-        // BASIC FIELDS
-        // =========================
-        user.setUsername(req.getUsername());
-        user.setPassword(req.getPassword()); // later BCrypt
-        user.setEmail(req.getEmail());
-        user.setMobile(req.getMobile());
-        user.setRole(req.getRole());
-        user.setActive(req.getActive());
-
-        // =========================
-        // MEMBER
-        // =========================
-        if (req.getMember() != null &&
-                req.getMember().getId() != null) {
-
-            Member member = memberRepository.findById(req.getMember().getId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Member not found"));
-
-            user.setMember(member);
-
-        } else {
-            user.setMember(null);
-        }
-
-        // =========================
-        // SOCIETY
-        // =========================
-        if (req.getSociety() != null &&
-                req.getSociety().getId() != null) {
-
-            Society society = societyRepository.findById(req.getSociety().getId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Society not found"));
-
-            user.setSociety(society);
-
-        } else {
-            user.setSociety(null);
-        }
-
-        User updated = userRepository.save(user);
-
-        return toResponse(updated);
+    try {
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println("Updating user with ID: " + id);
+        System.out.println("Update request: " + mapper.writeValueAsString(req));
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    User user = userRepository.findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("User not found"));
+
+    // =========================
+    // BASIC FIELDS
+    // =========================
+    user.setUsername(req.getUsername());
+    user.setPassword(req.getPassword()); // Later use BCrypt
+    user.setEmail(req.getEmail());
+    user.setMobile(req.getMobile());
+    user.setRole(req.getRole());
+    user.setActive(req.getActive());
+
+    // =========================
+    // MEMBER
+    // =========================
+    if (req.getMember() != null &&
+            req.getMember().getId() != null) {
+
+        Member member = memberRepository.findById(req.getMember().getId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Member not found"));
+
+        user.setMember(member);
+
+    } else {
+        user.setMember(null);
+    }
+
+    // =========================
+    // SOCIETY
+    // =========================
+    Long societyId = (req.getSociety() != null)
+            ? req.getSociety().getId()
+            : null;
+
+    if (societyId == null || societyId == 0) {
+        user.setSociety(null);
+    } else {
+        Society society = societyRepository.findById(societyId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Society not found"));
+
+        user.setSociety(society);
+    }
+
+    User updated = userRepository.save(user);
+
+    return toResponse(updated);
+}
 
 }

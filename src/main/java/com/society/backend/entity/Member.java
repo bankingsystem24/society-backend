@@ -1,5 +1,7 @@
 package com.society.backend.entity;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -33,9 +35,12 @@ public class Member extends SocietyBaseEntity {
     // RELATIONS
     // =========================
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "flat_id")
-    private Flat flat;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "flat_id")
+    // private Flat flat;
+
+    @OneToMany(mappedBy = "owner")
+    private List<Flat> flats;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "society_id")
@@ -121,12 +126,12 @@ public class Member extends SocietyBaseEntity {
         this.active = active;
     }
 
-    public Flat getFlat() {
-        return flat;
+    public List<Flat> getFlats() {
+        return flats;
     }
 
-    public void setFlat(Flat flat) {
-        this.flat = flat;
+    public void setFlats(List<Flat> flats) {
+        this.flats = flats;
     }
 
     public Society getSociety() {

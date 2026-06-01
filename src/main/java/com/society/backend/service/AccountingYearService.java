@@ -70,11 +70,12 @@ public String setActiveYear(Long societyId, Long yearId) {
     // =====================================================
     // GET ACTIVE YEAR
     // =====================================================
-    public AccountingYear getActiveYear(Long societyId) {
-        return accountingYearRepository
-                .findBySocietyIdAndIsActiveTrue(societyId)
-                .orElseThrow(() -> new RuntimeException("Active year not found"));
-    }
+public AccountingYear getActiveYear(Long societyId) {
+
+    return accountingYearRepository
+            .findBySocietyIdAndIsActiveTrue(societyId)
+            .orElse(null);
+}
 
     // =====================================================
     // GET ALL YEARS
