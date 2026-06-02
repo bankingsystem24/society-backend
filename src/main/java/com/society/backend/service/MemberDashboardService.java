@@ -10,20 +10,15 @@ import org.springframework.stereotype.Service;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
-import com.society.backend.entity.Receipt;
 import com.society.backend.exception.ResourceNotFoundException;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.MemberRepository;
-import com.society.backend.repository.ReceiptRepository;
 @Service
 public class MemberDashboardService {
 
     @Autowired
     private BillingRepository billingRepository;
-
-    @Autowired
-    private ReceiptRepository receiptRepository;
 
     @Autowired
     private MemberRepository memberRepository;

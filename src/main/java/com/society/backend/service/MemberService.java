@@ -5,7 +5,6 @@ import com.society.backend.dto.MemberResponse;
 import com.society.backend.entity.Member;
 import com.society.backend.entity.Society;
 import com.society.backend.exception.ResourceNotFoundException;
-import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.MemberRepository;
 import com.society.backend.repository.SocietyRepository;
 
@@ -23,8 +22,6 @@ public class MemberService {
     @Autowired
     private SocietyRepository societyRepository;
 
-    @Autowired
-    private FlatRepository flatRepository;
 
     // =========================
     // CREATE MEMBER

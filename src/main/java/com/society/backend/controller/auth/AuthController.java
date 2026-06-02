@@ -32,9 +32,6 @@ public class AuthController {
         Long societyId = null;
         String societyName = null;
         String role = null;
-        Long auditorId = null;
-
-        System.out.println("Request: " + request);
 
         User user = userRepository.findAll()
                 .stream()
@@ -45,7 +42,6 @@ public class AuthController {
 
 
         if (user == null) {
-            System.out.println("User is Null");
             return ResponseEntity.status(401).body("Invalid credentials");
         } 
 
@@ -63,10 +59,9 @@ public class AuthController {
                 societyId,
                 societyName,
                 role,
-                auditorId = user.getId()
+                user.getId(),
+                user.getName()
         );
-
-        System.out.println("Response: " + response);
 
         return ResponseEntity.ok(response);
     }

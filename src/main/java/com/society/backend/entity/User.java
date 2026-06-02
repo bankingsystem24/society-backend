@@ -12,6 +12,9 @@ public class User extends SocietyBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = true)
+    private String name;
+
     @Column(nullable = false, unique = true)
     private String username;
 
@@ -60,6 +63,14 @@ public class User extends SocietyBaseEntity {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPassword() {

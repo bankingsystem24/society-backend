@@ -10,6 +10,7 @@ public class UserRequest {
     private String mobile;
     private Role role;
     private Boolean active;
+    private String name;
 
     // Nested objects from frontend (keep same JSON structure)
     private IdRequest member;
@@ -37,6 +38,14 @@ public class UserRequest {
 
     // ===== Getters / Setters =====
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public String getUsername() {
         return username;
     }

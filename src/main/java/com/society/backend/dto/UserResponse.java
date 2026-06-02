@@ -3,43 +3,31 @@ package com.society.backend.dto;
 import com.society.backend.enums.Role;
 
 public class UserResponse {
-
     private Long id;
-
     private String username;
-
     private String email;
-
     private String mobile;
-
     private Role role;
-
     private Boolean active;
-
-    // =========================
-    // MEMBER INFO
-    // =========================
     private Long memberId;
-
     private String memberName;
-
-    // =========================
-    // SOCIETY INFO
-    // =========================
+    private String name;
     private Long societyId;
-
     private String societyName;
-
-    // =========================
-    // GETTERS & SETTERS
-    // =========================
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getUsername() {

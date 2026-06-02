@@ -42,6 +42,7 @@ public class UserService {
         user.setMobile(req.getMobile());
         user.setRole(req.getRole());
         user.setActive(req.getActive());
+        user.setName(req.getName());
 
         // =========================
         // MEMBER
@@ -54,10 +55,9 @@ public class UserService {
             user.setMember(member);
         }
 
-        // =========================
-        // SOCIETY
-        // =========================
-        if (req.getSociety() != null && req.getSociety().getId() != null) {
+        if (req.getSociety() != null
+                && req.getSociety().getId() != null
+                && req.getSociety().getId() > 0) {
 
             Society society = societyRepository.findById(req.getSociety().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Society not found"));
@@ -65,8 +65,15 @@ public class UserService {
             user.setSociety(society);
         }
 
-        User saved = userRepository.save(user);
-        return toResponse(saved);
+        try {
+            User saved = userRepository.save(user);
+            return toResponse(saved);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+        // User saved = userRepository.save(user);
+        // return toResponse(saved);
     }
 
     // =========================
@@ -112,7 +119,7 @@ public class UserService {
         user.setMobile(req.getMobile());
         user.setRole(req.getRole());
         user.setActive(req.getActive());
-
+        user.setName(req.getName());
         // MEMBER
         if (req.getMember() != null && req.getMember().getId() != null) {
             Member member = memberRepository.findById(req.getMember().getId())
@@ -163,6 +170,7 @@ public class UserService {
         res.setMobile(user.getMobile());
         res.setRole(user.getRole());
         res.setActive(user.getActive());
+        res.setName(user.getName());
 
         // SOCIETY SAFE
         if (user.getSociety() != null) {
@@ -183,8 +191,7 @@ public UserResponse updateFromRequest(Long id, UserRequest req) {
 
     try {
         ObjectMapper mapper = new ObjectMapper();
-        System.out.println("Updating user with ID: " + id);
-        System.out.println("Update request: " + mapper.writeValueAsString(req));
+
     } catch (Exception e) {
         e.printStackTrace();
     }
@@ -202,7 +209,7 @@ public UserResponse updateFromRequest(Long id, UserRequest req) {
     user.setMobile(req.getMobile());
     user.setRole(req.getRole());
     user.setActive(req.getActive());
-
+    user.setName(req.getName());
     // =========================
     // MEMBER
     // =========================

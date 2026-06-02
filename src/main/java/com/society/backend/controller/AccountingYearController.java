@@ -46,11 +46,6 @@ public class AccountingYearController {
         Long societyId = Long.valueOf(req.get("societyId").toString());
         String fyCode = req.get("fyCode").toString();
         String username =req.get("username").toString();
-
-        System.out.println("request fyCode:"+ fyCode);
-        System.out.println("request startDate:"+ req.get("startDate"));
-        System.out.println("request endDate:"+ req.get("endDate"));
-
         LocalDate startDate = LocalDate.parse(req.get("startDate").toString());
         LocalDate endDate = LocalDate.parse(req.get("endDate").toString());
 
