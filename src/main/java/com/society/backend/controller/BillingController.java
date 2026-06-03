@@ -1,6 +1,7 @@
 package com.society.backend.controller;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,8 @@ import com.society.backend.dto.PaymentRequest;
 import com.society.backend.dto.VerifyPaymentRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
+import com.society.backend.gl.entity.SocietyBillingPolicy;
+import com.society.backend.gl.repository.SocietyBillingPolicyRepository;
 import com.society.backend.gl.service.BillingService;
 import com.society.backend.gl.service.JournalService;
 import com.society.backend.repository.BillingRepository;
@@ -33,108 +36,106 @@ import com.society.backend.util.RazorpaySignatureUtil;
 @CrossOrigin("*")
 public class BillingController {
 
-    @Autowired
-    private BillingService billingService;
+        @Autowired
+        private BillingService billingService;
 
-    private final RazorpayClient razorpayClient;
+        private final RazorpayClient razorpayClient;
 
-    private final BillingRepository billingRepository;
+        private final BillingRepository billingRepository;
 
-    private final ReceiptRepository receiptRepository;
+        private final ReceiptRepository receiptRepository;
 
-    private final JournalService journalService;
+        private final JournalService journalService;
 
-   @Value("${razorpay.key_secret}")
-   private String razorpayKeySecret;
+        @Autowired
+        private SocietyBillingPolicyRepository societyBillingPolicyRepository;
 
-    @Value("${razorpay.key_id}")
-    private String keyId;
+        @Value("${razorpay.key_secret}")
+        private String razorpayKeySecret;
 
-public BillingController(
-        RazorpayClient razorpayClient,
-        BillingRepository billingRepository,
-        ReceiptRepository receiptRepository,
-        JournalService journalService,
-        @Value("${razorpay.key_secret}") String razorpayKeySecret,
-        @Value("${razorpay.key_id}") String keyId
-) {
-    this.razorpayClient = razorpayClient;
-    this.billingRepository = billingRepository;
-    this.receiptRepository = receiptRepository;
-    this.journalService = journalService;
-    this.razorpayKeySecret = razorpayKeySecret;
-    this.keyId = keyId;
-}
-    
-    // =========================
-    // GENERATE MONTHLY BILLS
-    // =========================
+        @Value("${razorpay.key_id}")
+        private String keyId;
 
-    @PostMapping("/generate")
-    public String generateBills(
-            @RequestBody BillGenerateRequest request) {
+        public BillingController(
+                        RazorpayClient razorpayClient,
+                        BillingRepository billingRepository,
+                        ReceiptRepository receiptRepository,
+                        JournalService journalService,
+                        @Value("${razorpay.key_secret}") String razorpayKeySecret,
+                        @Value("${razorpay.key_id}") String keyId) {
+                this.razorpayClient = razorpayClient;
+                this.billingRepository = billingRepository;
+                this.receiptRepository = receiptRepository;
+                this.journalService = journalService;
+                this.razorpayKeySecret = razorpayKeySecret;
+                this.keyId = keyId;
+        }
 
-        return billingService.generateMonthlyBills(
-                request.getSocietyId(),
-                request.getMonth(),
-                request.getYear()
-        );
-    }
+        // =========================
+        // GENERATE MONTHLY BILLS
+        // =========================
 
-    // =========================
-    // GET SOCIETY BILLS
-    // =========================
+        @PostMapping("/generate")
+        public String generateBills(
+                        @RequestBody BillGenerateRequest request) {
 
-    @GetMapping("/society/{societyId}")
-    public ResponseEntity<List<Billing>> getBySociety(
-            @PathVariable Long societyId) {
+                return billingService.generateMonthlyBills(
+                                request.getSocietyId(),
+                                request.getMonth(),
+                                request.getYear());
+        }
 
-        return ResponseEntity.ok(
-                billingService.getBySociety(societyId));
-    }
+        // =========================
+        // GET SOCIETY BILLS
+        // =========================
 
-    // =========================
-    // GET PENDING BILLS
-    // =========================
+        @GetMapping("/society/{societyId}")
+        public ResponseEntity<List<Billing>> getBySociety(
+                        @PathVariable Long societyId) {
 
-    @GetMapping("/pending/{societyId}")
-    public ResponseEntity<List<Billing>> getPending(
-            @PathVariable Long societyId) {
+                return ResponseEntity.ok(
+                                billingService.getBySociety(societyId));
+        }
 
-        return ResponseEntity.ok(
-                billingService.getPending(societyId));
-    }
+        // =========================
+        // GET PENDING BILLS
+        // =========================
 
-    // =========================
-    // VIEW ALL BILLS WITH FILTER
-    // =========================
+        @GetMapping("/pending/{societyId}")
+        public ResponseEntity<List<Billing>> getPending(
+                        @PathVariable Long societyId) {
 
-@PostMapping("/viewAllBills")
-public ResponseEntity<List<BillingResponse>> viewAllBills(
-        @RequestBody BillingFilterRequest request) {
+                return ResponseEntity.ok(
+                                billingService.getPending(societyId));
+        }
 
-    return ResponseEntity.ok(
-            billingService.viewAllBills(
-                    request.getSocietyId(),
-                    request.getFlatId(),
-                    request.getFromYear(),
-                    request.getMonth(),
-                    request.getStatus(),
-                    request.getMemberId()
-            )
-    );
-}
+        // =========================
+        // VIEW ALL BILLS WITH FILTER
+        // =========================
+
+        @PostMapping("/viewAllBills")
+        public ResponseEntity<List<BillingResponse>> viewAllBills(
+                        @RequestBody BillingFilterRequest request) {
+
+                return ResponseEntity.ok(
+                                billingService.viewAllBills(
+                                                request.getSocietyId(),
+                                                request.getFlatId(),
+                                                request.getFromYear(),
+                                                request.getMonth(),
+                                                request.getStatus(),
+                                                request.getMemberId()));
+        }
 
         @PutMapping("/pay")
         public String payBills(@RequestBody PaymentRequest req) {
 
-        return billingService.payBills(
-                req.getBillIds(),
-                req.getPaymentMode()
-        );
+                return billingService.payBills(
+                                req.getBillIds(),
+                                req.getPaymentMode());
         }
 
-         @PostMapping("/create-order")
+        @PostMapping("/create-order")
         public Map<String, Object> createOrder(@RequestBody CreateOrderRequest req) throws Exception {
 
                 // 1️⃣ Convert amount to paise
@@ -159,104 +160,189 @@ public ResponseEntity<List<BillingResponse>> viewAllBills(
                 return response;
         }
 
-@PostMapping("/verify-payment")
-public ResponseEntity<?> verifyPayment(
-        @RequestBody VerifyPaymentRequest req
-) {
+        @PostMapping("/verify-payment")
+        public ResponseEntity<?> verifyPayment(@RequestBody VerifyPaymentRequest req) {
 
-    try {
+                try {
 
-        JSONObject options = new JSONObject();
+                        // =========================
+                        // LOG REQUEST
+                        // =========================
+                        System.out.println("===== VERIFY PAYMENT =====");
+                        System.out.println("Bill IDs: " + req.getBillIds());
+                        System.out.println("Amount: " + req.getAmount());
+                        System.out.println("OrderId: " + req.getRazorpayOrderId());
+                        System.out.println("PaymentId: " + req.getRazorpayPaymentId());
 
-        options.put("razorpay_order_id", req.getRazorpayOrderId());
-        options.put("razorpay_payment_id", req.getRazorpayPaymentId());
-        options.put("razorpay_signature", req.getRazorpaySignature());
+                        // =========================
+                        // VERIFY SIGNATURE
+                        // =========================
+                        String payload = req.getRazorpayOrderId() + "|" + req.getRazorpayPaymentId();
 
-        // =========================
-        // VERIFY SIGNATURE
-        // =========================
+                        String generatedSignature = RazorpaySignatureUtil.hmacSHA256(payload, razorpayKeySecret);
 
-        String payload =
-                req.getRazorpayOrderId() + "|" + req.getRazorpayPaymentId();
+                        if (!generatedSignature.equals(req.getRazorpaySignature())) {
+                                return ResponseEntity.badRequest().body("Invalid payment signature");
+                        }
 
-        String generatedSignature =
-                RazorpaySignatureUtil.hmacSHA256(payload, razorpayKeySecret);
+                        // =========================
+                        // FETCH BILLS
+                        // =========================
+                        List<Billing> bills = billingRepository.findByIdIn(req.getBillIds());
 
-        boolean isValid =
-                generatedSignature.equals(req.getRazorpaySignature());
+                        if (bills == null || bills.isEmpty()) {
+                                return ResponseEntity.badRequest().body("No bills found");
+                        }
 
+                        Billing firstBill = bills.get(0);
 
-        if (!isValid) {
-            return ResponseEntity.badRequest()
-                    .body("Invalid payment signature");
+                        // =========================
+                        // LOAD POLICY
+                        // =========================
+                        SocietyBillingPolicy policy = societyBillingPolicyRepository
+                                        .findBySociety_Id(firstBill.getSociety().getId())
+                                        .orElse(null);
+
+                        // =========================
+                        // CALCULATE AMOUNTS
+                        // =========================
+
+                        double maintenanceAmount = bills.stream()
+                                        .mapToDouble(b -> b.getMaintenanceAmount() != null ? b.getMaintenanceAmount()
+                                                        : 0.0)
+                                        .sum();
+
+                        double interestAmount = 0.0;
+
+                        if (policy != null) {
+
+                                for (Billing b : bills) {
+
+                                        if (b.getDueDate() == null)
+                                                continue;
+
+                                        LocalDate penaltyStart = b.getDueDate().plusDays(policy.getGraceDays());
+
+                                        if (LocalDate.now().isAfter(penaltyStart)) {
+
+                                                long monthsLate = ChronoUnit.MONTHS.between(
+                                                                penaltyStart.withDayOfMonth(1),
+                                                                LocalDate.now().withDayOfMonth(1));
+
+                                                monthsLate = Math.max(1, monthsLate);
+
+                                                interestAmount += (b.getMaintenanceAmount() != null
+                                                                ? b.getMaintenanceAmount()
+                                                                : 0.0)
+                                                                * policy.getInterestRate()
+                                                                * monthsLate
+                                                                / 1200.0;
+                                        }
+                                }
+                        }
+
+                        double discountAmount = bills.stream()
+                                        .mapToDouble(b -> b.getDiscountAmount() != null ? b.getDiscountAmount() : 0.0)
+                                        .sum();
+
+                        double totalAmount = maintenanceAmount + interestAmount - discountAmount;
+
+                        System.out.println("===== CALCULATED =====");
+                        System.out.println("Maintenance: " + maintenanceAmount);
+                        System.out.println("Interest: " + interestAmount);
+                        System.out.println("Discount: " + discountAmount);
+                        System.out.println("Total: " + totalAmount);
+
+                        // =========================
+                        // CREATE RECEIPT
+                        // =========================
+                        Receipt receipt = new Receipt();
+
+                        receipt.setReceiptNo("RCPT-" + System.currentTimeMillis());
+                        receipt.setReceiptDate(LocalDate.now());
+                        receipt.setPaymentMode("ONLINE");
+                        receipt.setTransactionId(req.getRazorpayPaymentId());
+
+                        receipt.setSocietyId(firstBill.getSociety().getId());
+                        receipt.setFlatId(firstBill.getFlat().getId());
+
+                        receipt.setMaintenanceAmount(maintenanceAmount);
+                        receipt.setInterestAmount(interestAmount);
+                        receipt.setDiscountAmount(discountAmount);
+                        receipt.setTotalAmount(totalAmount);
+
+                        Receipt savedReceipt = receiptRepository.save(receipt);
+
+                        // =========================
+                        // UPDATE BILLS
+                        // =========================
+                        for (Billing bill : bills) {
+
+                                bill.setStatus(PaymentStatus.PAID);
+                                bill.setPaidDate(LocalDate.now());
+                                bill.setPaymentMode("ONLINE");
+                                bill.setReceiptId(savedReceipt.getId());
+
+                                double maintenance = bill.getMaintenanceAmount() != null ? bill.getMaintenanceAmount()
+                                                : 0.0;
+                                double discount = bill.getDiscountAmount() != null ? bill.getDiscountAmount() : 0.0;
+
+                                double interest = 0.0;
+
+                                if (policy != null && bill.getDueDate() != null) {
+
+                                        LocalDate penaltyStart = bill.getDueDate().plusDays(policy.getGraceDays());
+
+                                        if (LocalDate.now().isAfter(penaltyStart)) {
+
+                                                long monthsLate = ChronoUnit.MONTHS.between(
+                                                                penaltyStart.withDayOfMonth(1),
+                                                                LocalDate.now().withDayOfMonth(1));
+
+                                                monthsLate = Math.max(1, monthsLate);
+
+                                                interest = maintenance
+                                                                * policy.getInterestRate()
+                                                                * monthsLate
+                                                                / 1200.0;
+                                        }
+                                }
+
+                                bill.setInterestAmount(interest);
+
+                                double total = maintenance + interest - discount;
+
+                                bill.setTotalAmount(total);
+                        }
+
+                        billingRepository.saveAll(bills);
+
+                        // =========================
+                        // JOURNAL ENTRY
+                        // =========================
+                        Long memberId = firstBill.getFlat().getOwner() != null
+                                        ? firstBill.getFlat().getOwner().getId()
+                                        : null;
+
+                        journalService.createReceiptEntry(
+                                        savedReceipt.getId(),
+                                        memberId,
+                                        maintenanceAmount,
+                                        interestAmount,
+                                        discountAmount,
+                                        totalAmount,
+                                        "ONLINE",
+                                        firstBill.getSociety().getId());
+
+                        return ResponseEntity.ok("Payment verified successfully");
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(e.getMessage());
+                }
         }
-
-        // =========================
-        // FETCH BILLS
-        // =========================
-
-        List<Billing> bills =
-                billingRepository.findByIdIn(req.getBillIds());
-
-        if (bills == null || bills.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body("No bills found");
-        }
-
-        Billing firstBill = bills.get(0);
-
-        // =========================
-        // CREATE RECEIPT
-        // =========================
-
-        Receipt receipt = new Receipt();
-
-        receipt.setPaymentMode("ONLINE"); // FIXED (important)
-        receipt.setTransactionId(req.getRazorpayPaymentId());
-        receipt.setReceiptDate(LocalDate.now());
-        receipt.setTotalAmount(req.getAmount());
-        receipt.setReceiptNo("RCPT-" + System.currentTimeMillis());
-
-        receipt.setSocietyId(firstBill.getSociety().getId());
-        receipt.setFlatId(firstBill.getFlat().getId());
-
-        Receipt savedReceipt = receiptRepository.save(receipt);
-
-        // =========================
-        // UPDATE BILL STATUS
-        // =========================
-
-        billingRepository.updateReceiptAndStatus(
-                savedReceipt.getId(),
-                PaymentStatus.PAID,
-                req.getRazorpayPaymentId(),
-                "ONLINE",
-                req.getBillIds()
-        );
-
-        // =========================
-        // 🔥 CREATE JOURNAL ENTRY (MISSING PART FIX)
-        // =========================
-
-        journalService.createReceiptEntry(
-                savedReceipt.getId(),
-                firstBill.getFlat().getOwner() != null
-                        ? firstBill.getFlat().getOwner().getId()
-                        : null,
-                req.getAmount(),
-                "ONLINE",
-                firstBill.getSociety().getId()
-        );
-
-        return ResponseEntity.ok("Payment verified successfully");
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
-
-        return ResponseEntity.internalServerError()
-                .body(e.toString());
-    }
-}
 
 }

@@ -32,6 +32,15 @@ public class Receipt {
     @Column(name = "payment_mode")
     private String paymentMode;
 
+    @Column(name = "maintenance_amount")
+    private Double maintenanceAmount;
+
+    @Column(name = "interest_amount")
+    private Double interestAmount;
+
+    @Column(name = "discount_amount")
+    private Double discountAmount;
+
     private String transactionId;
 
     private LocalDate receiptDate;
@@ -111,5 +120,31 @@ public class Receipt {
     public void setReceiptDate(LocalDate receiptDate) {
         this.receiptDate = receiptDate;
     }
+
+    public Double getMaintenanceAmount() {
+        return maintenanceAmount;
+    }
+
+    public void setMaintenanceAmount(Double maintenanceAmount) {
+        this.maintenanceAmount = maintenanceAmount;
+    }
+
+    public Double getInterestAmount() {
+        return interestAmount;
+    }
+
+    public void setInterestAmount(Double interestAmount) {
+        this.interestAmount = interestAmount;
+    }
+
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    
 
 }

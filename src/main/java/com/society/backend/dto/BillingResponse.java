@@ -1,5 +1,7 @@
 package com.society.backend.dto;
 
+import java.time.LocalDate;
+
 public class BillingResponse {
 
     private Long id;
@@ -19,6 +21,11 @@ public class BillingResponse {
     private String memberName;
     private Long receiptId;
     private String receiptNo;
+    private Double interestAmount;
+    private Double discountAmount;
+    private LocalDate dueDate;
+
+
     // ======================
     // Getters & Setters
     // ======================
@@ -127,5 +134,28 @@ public class BillingResponse {
         this.receiptNo = receiptNo;
     }
 
+    public Double getInterestAmount() {
+        return interestAmount;
+    }
+
+    public void setInterestAmount(Double interestAmount) {
+        this.interestAmount = interestAmount;
+    }
+
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
 
 }

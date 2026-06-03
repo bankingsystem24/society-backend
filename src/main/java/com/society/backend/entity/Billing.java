@@ -37,7 +37,9 @@ public class Billing {
     private Double maintenanceAmount = 0.0;
     private Double penaltyAmount = 0.0;
     private Double totalAmount = 0.0;
-    
+    private Double interestAmount = 0.0;
+    private Double discountAmount = 0.0;
+
     @Column(name = "receipt_id")
     private Long receiptId;
 
@@ -60,16 +62,15 @@ public class Billing {
     private LocalDate createdDate;
 
     // ================= LIFECYCLE =================
-
     @PrePersist
     public void prePersist() {
-        this.createdDate = LocalDate.now();
-        this.status = PaymentStatus.PENDING;
-        this.totalAmount = calculateTotal();
-    }
 
-    @PreUpdate
-    public void preUpdate() {
+        if (this.createdDate == null) {
+            this.createdDate = LocalDate.now();
+        }
+        if (this.status == null) {
+            this.status = PaymentStatus.PENDING;
+        }
         this.totalAmount = calculateTotal();
     }
 
@@ -79,7 +80,9 @@ public class Billing {
     public Double calculateTotal() {
         double maintenance = maintenanceAmount != null ? maintenanceAmount : 0;
         double penalty = penaltyAmount != null ? penaltyAmount : 0;
-        return maintenance + penalty;
+        double interest = interestAmount != null ? interestAmount : 0;
+        double discount = discountAmount != null ? discountAmount : 0;
+        return maintenance + penalty + interest - discount;
     }
 
     // ================= GETTERS & SETTERS =================
@@ -118,6 +121,18 @@ public class Billing {
 
     public void setPenaltyAmount(Double penaltyAmount) {
         this.penaltyAmount = penaltyAmount;
+    }
+
+    public Double getInterestAmount() { return interestAmount; }
+
+    public void setInterestAmount(Double interestAmount) {
+        this.interestAmount = interestAmount;
+    }
+
+    public Double getDiscountAmount() { return discountAmount; }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public Double getTotalAmount() { return totalAmount; }

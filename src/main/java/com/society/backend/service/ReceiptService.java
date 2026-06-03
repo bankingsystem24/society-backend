@@ -33,6 +33,9 @@ public class ReceiptService {
         receipt.setFlatId(req.getFlatId());
         receipt.setTotalAmount(req.getTotalAmount());
         receipt.setPaymentMode(req.getPaymentMode());
+        receipt.setMaintenanceAmount(req.getMaintenanceAmount());
+        receipt.setInterestAmount(req.getInterestAmount());
+        receipt.setDiscountAmount(req.getDiscountAmount());
 
         Receipt savedReceipt = receiptRepository.save(receipt);
       
@@ -63,6 +66,9 @@ public List<ReceiptResponse> viewReceipts(
         dto.setCreatedAt(r.getCreatedAt().toLocalDate());
 
         dto.setFlatId(r.getFlatId());
+        dto.setMaintenanceAmount(r.getMaintenanceAmount());
+        dto.setInterestAmount(r.getInterestAmount());
+        dto.setDiscountAmount(r.getDiscountAmount());
 
         dto.setTotalAmount(r.getTotalAmount());
         dto.setTransactionId(r.getTransactionId());

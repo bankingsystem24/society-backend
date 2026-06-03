@@ -11,3 +11,4 @@ public interface JournalEntryLineRepository
 
     List<JournalEntryLine> findByJournalId(Long journalId);
 }
+

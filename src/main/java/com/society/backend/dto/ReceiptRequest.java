@@ -7,6 +7,9 @@ public class ReceiptRequest {
     private String receiptNo;
     private Long societyId;
     private Long flatId;
+    private Double maintenanceAmount;
+    private Double interestAmount;
+    private Double discountAmount;
     private Double totalAmount;
     private List<Long> billIds;
     private String paymentMode;
@@ -54,6 +57,30 @@ public class ReceiptRequest {
 
     public void setBillIds(List<Long> billIds) {
         this.billIds = billIds;
+    }
+
+    public Double getMaintenanceAmount() {
+        return maintenanceAmount;
+    }
+
+    public void setMaintenanceAmount(Double maintenanceAmount) {
+        this.maintenanceAmount = maintenanceAmount;
+    }
+
+    public Double getInterestAmount() {
+        return interestAmount;
+    }
+
+    public void setInterestAmount(Double interestAmount) {
+        this.interestAmount = interestAmount;
+    }
+
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public String getPaymentMode(){

@@ -3,23 +3,18 @@ package com.society.backend.dto;
 import java.time.LocalDate;
 
 public class ReceiptResponse {
-
     private Long id;
-
     private String receiptNo;
-
     private LocalDate createdAt;
-
     private Long flatId;
     private String flatNo;
-
     private Long memberId;
     private String memberName;
-
+    private Double maintenanceAmount;
+    private Double interestAmount;
+    private Double discountAmount;
     private Double totalAmount;
-
     private String paymentMode;
-
     private String transactionId;
 
     // ================= GETTERS & SETTERS =================
@@ -78,6 +73,30 @@ public class ReceiptResponse {
 
     public void setMemberName(String memberName) {
         this.memberName = memberName;
+    }
+
+    public Double getMaintenanceAmount() {
+        return maintenanceAmount;
+    }
+
+    public void setMaintenanceAmount(Double maintenanceAmount) {
+        this.maintenanceAmount = maintenanceAmount;
+    }
+
+    public Double getInterestAmount() {
+        return interestAmount;
+    }
+
+    public void setInterestAmount(Double interestAmount) {
+        this.interestAmount = interestAmount;
+    }
+
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public Double getTotalAmount() {
