@@ -3,6 +3,7 @@ package com.society.backend.gl.service;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.society.backend.dto.BillingResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
+import com.society.backend.entity.Member;
 import com.society.backend.entity.Receipt;
 import com.society.backend.gl.entity.SocietyBillingPolicy;
 import com.society.backend.enums.PaymentStatus;
@@ -23,586 +25,605 @@ import com.society.backend.repository.ReceiptRepository;
 @Service
 public class BillingService {
 
-    @Autowired
-    private BillingRepository billingRepository;
+        @Autowired
+        private BillingRepository billingRepository;
 
-    @Autowired
-    private FlatRepository flatRepository;
+        @Autowired
+        private FlatRepository flatRepository;
 
-    @Autowired
-    private ReceiptRepository receiptRepository;
+        @Autowired
+        private ReceiptRepository receiptRepository;
 
-    @Autowired
-    private JournalService journalService;
+        @Autowired
+        private JournalService journalService;
 
-    @Autowired
-    private SocietyBillingPolicyRepository societyBillingPolicyRepository;
+        @Autowired
+        private SocietyBillingPolicyRepository societyBillingPolicyRepository;
 
-    // =====================================================
-    // GENERATE MONTHLY BILLS
-    // =====================================================
+        // =====================================================
+        // GENERATE MONTHLY BILLS
+        // =====================================================
 
-@Transactional
-public String generateMonthlyBills(
-        Long societyId,
-        String month,
-        int year) {
+        @Transactional
+        public String generateMonthlyBills(
+                        Long societyId,
+                        String month,
+                        int year,
+                        Long createdBy) {
 
-    List<Flat> flats = flatRepository.findBySociety_Id(societyId);
+                List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
-    // Fetch policy for society
-    SocietyBillingPolicy policy = societyBillingPolicyRepository
-            .findBySocietyId(societyId)
-            .orElseThrow(() ->
-                    new RuntimeException("Billing policy not found"));
+                // Fetch policy for society
+                SocietyBillingPolicy policy = societyBillingPolicyRepository
+                                .findBySocietyId(societyId)
+                                .orElseThrow(() -> new RuntimeException("Billing policy not found"));
 
-    int createdCount = 0;
+                int createdCount = 0;
 
-    // Convert month name to Month enum
-    Month billingMonth = Month.valueOf(month.toUpperCase());
+                // Convert month name to Month enum
+                Month billingMonth = Month.valueOf(month.toUpperCase());
 
-    // First day of billing month
-    LocalDate billDate = LocalDate.of(year, billingMonth, 1);
+                // Due date from policy
+                LocalDate dueDate = LocalDate.of(
+                                year,
+                                billingMonth,
+                                policy.getBillingDay());
 
-    // Due date from policy
-    LocalDate dueDate = LocalDate.of(
-            year,
-            billingMonth,
-            policy.getBillingDay()
-    );
+                LocalDate finalDueDate = dueDate.plusDays(
+                                policy.getGraceDays() != null ? policy.getGraceDays() : 0);
 
-    LocalDate finalDueDate = dueDate.plusDays(
-        policy.getGraceDays() != null ? policy.getGraceDays() : 0
-);
+                for (Flat flat : flats) {
 
+                        boolean exists = billingRepository
+                                        .existsByFlatIdAndMonthAndYear(
+                                                        flat.getId(),
+                                                        month,
+                                                        year);
 
-    for (Flat flat : flats) {
-
-        boolean exists = billingRepository
-                .existsByFlatIdAndMonthAndYear(
-                        flat.getId(),
-                        month,
-                        year
-                );
-
-        if (exists) {
-            continue;
-        }
-
-        Billing bill = new Billing();
-
-        bill.setSociety(flat.getSociety());
-        bill.setFlat(flat);
-        bill.setMonth(month);
-        bill.setYear(year);
-
-        double amount = flat.getMaintenanceAmount() != null
-                ? flat.getMaintenanceAmount()
-                : 0.0;
-
-        bill.setMaintenanceAmount(amount);
-        bill.setPenaltyAmount(0.0);
-        bill.setTotalAmount(amount);
-        bill.setStatus(PaymentStatus.PENDING);
-
-        // Set bill date and due date
-        bill.setCreatedDate(LocalDate.of(year, billingMonth, 1));
-        bill.setDueDate(finalDueDate);
-
-        Billing savedBill = billingRepository.save(bill);
-
-        Long memberId = flat.getOwner() != null
-                ? flat.getOwner().getId()
-                : null;
-
-        journalService.createMaintenanceBillEntry(
-                savedBill.getId(),
-                memberId,
-                amount,
-                societyId
-        );
-
-        createdCount++;
-    }
-
-    return createdCount + " bills generated successfully for "
-            + month + " " + year;
-}
-    // =====================================================
-    // GET BILLS BY SOCIETY
-    // =====================================================
-
-    public List<Billing> getBySociety(Long societyId) {
-
-        return billingRepository.findBySocietyId(societyId);
-    }
-
-    // =====================================================
-    // GET PENDING BILLS
-    // =====================================================
-
-    public List<Billing> getPending(Long societyId) {
-
-        return billingRepository.findBySocietyIdAndStatus(
-                societyId,
-                PaymentStatus.PENDING
-        );
-    }
-
-    // =====================================================
-    // VIEW ALL BILLS
-    // =====================================================
-
-    public List<BillingResponse> viewAllBills(
-            Long societyId,
-            Long flatId,
-            Integer fromYear,
-            String month,
-            PaymentStatus status,
-            Long memberId
-    ) {
-
-        List<Billing> bills = billingRepository.findBySocietyId(societyId);
-
-        // ================= FLAT FILTER =================
-
-        if (flatId != null) {
-
-            bills = bills.stream()
-                    .filter(b -> b.getFlat() != null
-                            && b.getFlat().getId().equals(flatId))
-                    .toList();
-        }
-
-        // ================= MONTH FILTER =================
-
-        if (month != null && !month.isBlank()) {
-
-            bills = bills.stream()
-                    .filter(b -> b.getMonth() != null
-                            && b.getMonth().equalsIgnoreCase(month))
-                    .toList();
-        }
-
-        // ================= STATUS FILTER =================
-
-        if (status != null) {
-
-            bills = bills.stream()
-                    .filter(b -> b.getStatus() == status)
-                    .toList();
-        }
-
-        // ================= MEMBER FILTER =================
-
-        if (memberId != null) {
-
-            bills = bills.stream()
-                    .filter(b -> b.getFlat() != null
-                            && b.getFlat().getOwner() != null
-                            && b.getFlat().getOwner().getId().equals(memberId))
-                    .toList();
-        }
-
-        // ================= FINANCIAL YEAR FILTER =================
-
-        if (fromYear != null) {
-
-            int toYear = fromYear + 1;
-
-            bills = bills.stream()
-                    .filter(bill -> {
-
-                        if (bill.getMonth() == null) {
-                            return false;
+                        if (exists) {
+                                continue;
                         }
 
-                        String m = bill.getMonth().toUpperCase();
+                        Billing bill = new Billing();
 
-                        boolean aprToDec =
-                                m.equals("APRIL") ||
-                                m.equals("MAY") ||
-                                m.equals("JUNE") ||
-                                m.equals("JULY") ||
-                                m.equals("AUGUST") ||
-                                m.equals("SEPTEMBER") ||
-                                m.equals("OCTOBER") ||
-                                m.equals("NOVEMBER") ||
-                                m.equals("DECEMBER");
+                        bill.setSociety(flat.getSociety());
+                        bill.setFlat(flat);
+                        bill.setMonth(month);
+                        bill.setYear(year);
 
-                        if (aprToDec) {
-                            return bill.getYear() == fromYear;
-                        }
+                        double amount = flat.getMaintenanceAmount() != null
+                                        ? flat.getMaintenanceAmount()
+                                        : 0.0;
 
-                        return bill.getYear() == toYear;
-                    })
-                    .toList();
-        }
+                        bill.setMaintenanceAmount(amount);
+                        bill.setPenaltyAmount(0.0);
+                        bill.setTotalAmount(amount);
+                        bill.setStatus(PaymentStatus.PENDING);
 
-        // Fetch policy once instead of every bill
-        SocietyBillingPolicy policy =
-                societyBillingPolicyRepository
-                        .findBySociety_Id(societyId)
-                        .orElse(null);
+                        // Set bill date and due date
+                        bill.setCreatedDate(LocalDate.of(year, billingMonth, 1));
+                        bill.setDueDate(finalDueDate);
 
-        // ================= DTO MAPPING =================
+                        final Long flatId = flat.getId();
 
-        return bills.stream().map(b -> {
+                        Billing savedBill = billingRepository.save(bill);
 
-            double interest = b.getInterestAmount() != null
-                    ? b.getInterestAmount()
-                    : 0.0;
+                        Member member = flat.getOwner();
 
-            // Calculate live interest for pending bills
-            if (b.getStatus() == PaymentStatus.PENDING
-                    && policy != null
-                    && b.getDueDate() != null
-                    && b.getMaintenanceAmount() != null) {
+                        journalService.createMaintenanceBillEntry(
+                                        savedBill.getId(),
+                                        member,
+                                        amount,
+                                        societyId,
+                                        createdBy,
+                                        flatId);
 
-                LocalDate penaltyStart =
-                        b.getDueDate().plusDays(
-                                policy.getGraceDays() != null
-                                        ? policy.getGraceDays()
-                                        : 0
-                        );
-
-                if (LocalDate.now().isAfter(penaltyStart)) {
-
-                    long monthsLate = ChronoUnit.MONTHS.between(
-                            penaltyStart.withDayOfMonth(1),
-                            LocalDate.now().withDayOfMonth(1)
-                    );
-
-                    monthsLate = Math.max(1, monthsLate);
-
-                    long periods = 0;
-
-                    if (policy.getInterestType() != null) {
-
-                        switch (policy.getInterestType()) {
-
-                            case MONTHLY:
-                                periods = monthsLate;
-                                break;
-
-                            case QUARTERLY:
-                                periods = monthsLate / 3;
-                                break;
-
-                            case HALF_YEARLY:
-                                periods = monthsLate / 6;
-                                break;
-
-                            case YEARLY:
-                                periods = monthsLate / 12;
-                                break;
-                        }
-                    }
-
-                    interest =
-                            b.getMaintenanceAmount()
-                                    * policy.getInterestRate()
-                                    * periods
-                                    / 1200.0;
+                        createdCount++;
                 }
-            }
 
-            BillingResponse dto = new BillingResponse();
+                return createdCount + " bills generated successfully for "
+                                + month + " " + year;
+        }
+        // =====================================================
+        // GET BILLS BY SOCIETY
+        // =====================================================
 
-            dto.setId(b.getId());
-            dto.setMonth(b.getMonth());
-            dto.setYear(b.getYear());
-            dto.setMaintenanceAmount(b.getMaintenanceAmount());
-            dto.setPenaltyAmount(b.getPenaltyAmount());
-            dto.setInterestAmount(interest);
-            dto.setDiscountAmount(b.getDiscountAmount());
-            dto.setDueDate(b.getDueDate());
+        public List<Billing> getBySociety(Long societyId) {
 
-            double totalAmount =
-                    (b.getMaintenanceAmount() != null ? b.getMaintenanceAmount() : 0.0)
-                            + (b.getPenaltyAmount() != null ? b.getPenaltyAmount() : 0.0)
-                            + interest
-                            - (b.getDiscountAmount() != null ? b.getDiscountAmount() : 0.0);
+                return billingRepository.findBySocietyId(societyId);
+        }
 
-            dto.setTotalAmount(totalAmount);
+        // =====================================================
+        // GET PENDING BILLS
+        // =====================================================
 
-            dto.setStatus(
-                    b.getStatus() != null
-                            ? b.getStatus().name()
-                            : null
-            );
+        public List<Billing> getPending(Long societyId) {
 
-            // Flat Details
-            if (b.getFlat() != null) {
+                return billingRepository.findBySocietyIdAndStatus(
+                                societyId,
+                                PaymentStatus.PENDING);
+        }
 
-                dto.setFlatId(b.getFlat().getId());
-                dto.setFlatNo(b.getFlat().getFlatNo());
+        // =====================================================
+        // VIEW ALL BILLS
+        // =====================================================
 
-                // Member Details
+        public List<BillingResponse> viewAllBills(
+                        Long societyId,
+                        Long flatId,
+                        Integer fromYear,
+                        String month,
+                        PaymentStatus status,
+                        Long memberId) {
 
-                if (b.getFlat().getOwner() != null) {
+                List<Billing> bills = billingRepository.findBySocietyId(societyId);
 
-                    dto.setMemberId(
-                            b.getFlat().getOwner().getId()
-                    );
+                // ================= FLAT FILTER =================
 
-                    dto.setMemberName(
-                            b.getFlat().getOwner().getName()
-                    );
+                if (flatId != null) {
+
+                        bills = bills.stream()
+                                        .filter(b -> b.getFlat() != null
+                                                        && b.getFlat().getId().equals(flatId))
+                                        .toList();
                 }
-            }
 
-            // Receipt Details
+                // ================= MONTH FILTER =================
 
-            dto.setReceiptId(b.getReceiptId());
+                if (month != null && !month.isBlank()) {
 
-            if (b.getReceiptId() != null) {
+                        bills = bills.stream()
+                                        .filter(b -> b.getMonth() != null
+                                                        && b.getMonth().equalsIgnoreCase(month))
+                                        .toList();
+                }
 
-                receiptRepository.findById(b.getReceiptId())
-                        .ifPresent(receipt ->
-                                dto.setReceiptNo(receipt.getReceiptNo()));
-            }
+                // ================= STATUS FILTER =================
 
-            return dto;
+                if (status != null) {
 
-        }).toList();
-    }
-    // =====================================================
-    // PAY BILLS
-    // =====================================================
+                        bills = bills.stream()
+                                        .filter(b -> b.getStatus() == status)
+                                        .toList();
+                }
 
-@Transactional
-public String payBills(List<Long> billIds, String paymentMode) {
+                // ================= MEMBER FILTER =================
 
-    List<Billing> bills = billingRepository.findAllById(billIds);
+                if (memberId != null) {
 
-    if (bills.isEmpty()) {
-        return "No bills found";
-    }
+                        bills = bills.stream()
+                                        .filter(b -> b.getFlat() != null
+                                                        && b.getFlat().getOwner() != null
+                                                        && b.getFlat().getOwner().getId().equals(memberId))
+                                        .toList();
+                }
 
-    double totalAmount = 0.0;
+                // ================= FINANCIAL YEAR FILTER =================
 
-    double maintenanceAmount = 0.0;
-    double interestAmount = 0.0;
-    double discountAmount = 0.0;
+                if (fromYear != null) {
 
-    for (Billing bill : bills) {
+                        int toYear = fromYear + 1;
 
-        if (bill.getStatus() == PaymentStatus.PAID) {
-            continue;
-        }
+                        bills = bills.stream()
+                                        .filter(bill -> {
 
-        bill.setStatus(PaymentStatus.PAID);
-        bill.setPaidDate(LocalDate.now());
-        bill.setPaymentMode(paymentMode);
+                                                if (bill.getMonth() == null) {
+                                                        return false;
+                                                }
 
-        double maintenance = bill.getMaintenanceAmount() != null ? bill.getMaintenanceAmount() : 0.0;
-        double discount = bill.getDiscountAmount() != null ? bill.getDiscountAmount() : 0.0;
+                                                String m = bill.getMonth().toUpperCase();
 
-        // ================= INTEREST CALCULATION =================
-        double interest = 0.0;
+                                                boolean aprToDec = m.equals("APRIL") ||
+                                                                m.equals("MAY") ||
+                                                                m.equals("JUNE") ||
+                                                                m.equals("JULY") ||
+                                                                m.equals("AUGUST") ||
+                                                                m.equals("SEPTEMBER") ||
+                                                                m.equals("OCTOBER") ||
+                                                                m.equals("NOVEMBER") ||
+                                                                m.equals("DECEMBER");
 
-        SocietyBillingPolicy policy =
-                societyBillingPolicyRepository
-                        .findBySociety_Id(bill.getSociety().getId())
-                        .orElse(null);
+                                                if (aprToDec) {
+                                                        return bill.getYear() == fromYear;
+                                                }
 
-        if (policy != null && bill.getDueDate() != null) {
+                                                return bill.getYear() == toYear;
+                                        })
+                                        .toList();
+                }
 
-            LocalDate penaltyStart =
-                    bill.getDueDate().plusDays(policy.getGraceDays());
-
-            if (LocalDate.now().isAfter(penaltyStart)) {
-
-                long monthsLate = ChronoUnit.MONTHS.between(
-                        penaltyStart.withDayOfMonth(1),
-                        LocalDate.now().withDayOfMonth(1)
-                );
-
-                monthsLate = Math.max(1, monthsLate);
-
-                interest =
-                        maintenance
-                                * policy.getInterestRate()
-                                * monthsLate
-                                / 1200.0;
-            }
-        }
-
-        // ================= SET BILL VALUES =================
-        bill.setInterestAmount(interest);
-
-        double total = maintenance + interest - discount;
-
-        bill.setTotalAmount(total);
-
-        bill.setReceiptId(null); // set later
-
-        // ================= AGGREGATE =================
-        maintenanceAmount += maintenance;
-        interestAmount += interest;
-        discountAmount += discount;
-        totalAmount += total;
-    }
-
-    // ================= RECEIPT =================
-
-    Billing first = bills.get(0);
-
-    Receipt receipt = new Receipt();
-    receipt.setReceiptNo("RCPT-" + System.currentTimeMillis());
-    receipt.setReceiptDate(LocalDate.now());
-    receipt.setPaymentMode(paymentMode);
-
-    receipt.setMaintenanceAmount(maintenanceAmount);
-    receipt.setInterestAmount(interestAmount);
-    receipt.setDiscountAmount(discountAmount);
-    receipt.setTotalAmount(totalAmount);
-
-    receipt.setSocietyId(first.getSociety().getId());
-    receipt.setFlatId(first.getFlat().getId());
-
-    Receipt savedReceipt = receiptRepository.save(receipt);
-
-    // ================= UPDATE BILLS WITH RECEIPT =================
-
-    for (Billing bill : bills) {
-        bill.setReceiptId(savedReceipt.getId());
-    }
-
-    billingRepository.saveAll(bills);
-
-    // ================= JOURNAL =================
-
-    Long memberId =
-            first.getFlat().getOwner() != null
-                    ? first.getFlat().getOwner().getId()
-                    : null;
-
-    journalService.createReceiptEntry(
-            savedReceipt.getId(),
-            memberId,
-            maintenanceAmount,
-            interestAmount,
-            discountAmount,
-            totalAmount,
-            paymentMode,
-            first.getSociety().getId()
-    );
-
-    return "Bills paid successfully";
-}
-    // =====================================================
-    // GET BILLS BY FLAT IDS
-    // =====================================================
-
-    public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
-
-        List<Billing> bills =
-                billingRepository.findByFlatIdIn(flatIds);
-
-        bills.forEach(bill -> {
-
-            // Receipt No
-
-            if (bill.getReceiptId() != null) {
-
-                receiptRepository.findById(bill.getReceiptId())
-                        .ifPresent(receipt ->
-                                bill.setReceiptNo(
-                                        receipt.getReceiptNo()
-                                ));
-            }
-
-            // Interest Calculation
-
-            double interest =
-                    bill.getInterestAmount() != null
-                            ? bill.getInterestAmount()
-                            : 0.0;
-
-            if (bill.getStatus() == PaymentStatus.PENDING
-                    && bill.getDueDate() != null
-                    && bill.getMaintenanceAmount() != null
-                    && bill.getSociety() != null) {
-
-                SocietyBillingPolicy policy =
-                        societyBillingPolicyRepository
-                                .findBySociety_Id(
-                                        bill.getSociety().getId()
-                                )
+                // Fetch policy once instead of every bill
+                SocietyBillingPolicy policy = societyBillingPolicyRepository
+                                .findBySociety_Id(societyId)
                                 .orElse(null);
 
-                if (policy != null) {
+                // ================= DTO MAPPING =================
 
-                    LocalDate penaltyStart =
-                            bill.getDueDate().plusDays(
-                                    policy.getGraceDays() != null
-                                            ? policy.getGraceDays()
-                                            : 0
-                            );
+                return bills.stream().map(b -> {
 
-                    if (LocalDate.now().isAfter(penaltyStart)) {
+                        double interest = b.getInterestAmount() != null
+                                        ? b.getInterestAmount()
+                                        : 0.0;
 
-                        long monthsLate = ChronoUnit.MONTHS.between(
-                                penaltyStart.withDayOfMonth(1),
-                                LocalDate.now().withDayOfMonth(1)
-                        );
+                        // Calculate live interest for pending bills
+                        if (b.getStatus() == PaymentStatus.PENDING
+                                        && policy != null
+                                        && b.getDueDate() != null
+                                        && b.getMaintenanceAmount() != null) {
 
-                        monthsLate = Math.max(1, monthsLate);
+                                LocalDate penaltyStart = b.getDueDate().plusDays(
+                                                policy.getGraceDays() != null
+                                                                ? policy.getGraceDays()
+                                                                : 0);
 
-                        long periods = 0;
+                                if (LocalDate.now().isAfter(penaltyStart)) {
 
-                        if (policy.getInterestType() != null) {
+                                        long monthsLate = ChronoUnit.MONTHS.between(
+                                                        penaltyStart.withDayOfMonth(1),
+                                                        LocalDate.now().withDayOfMonth(1));
 
-                            switch (policy.getInterestType()) {
+                                        monthsLate = Math.max(1, monthsLate);
 
-                                case MONTHLY:
-                                    periods = monthsLate;
-                                    break;
+                                        long periods = 0;
 
-                                case QUARTERLY:
-                                    periods = monthsLate / 3;
-                                    break;
+                                        if (policy.getInterestType() != null) {
 
-                                case HALF_YEARLY:
-                                    periods = monthsLate / 6;
-                                    break;
+                                                switch (policy.getInterestType()) {
 
-                                case YEARLY:
-                                    periods = monthsLate / 12;
-                                    break;
-                            }
+                                                        case MONTHLY:
+                                                                periods = monthsLate;
+                                                                break;
+
+                                                        case QUARTERLY:
+                                                                periods = monthsLate / 3;
+                                                                break;
+
+                                                        case HALF_YEARLY:
+                                                                periods = monthsLate / 6;
+                                                                break;
+
+                                                        case YEARLY:
+                                                                periods = monthsLate / 12;
+                                                                break;
+                                                }
+                                        }
+
+                                        interest = b.getMaintenanceAmount()
+                                                        * policy.getInterestRate()
+                                                        * periods
+                                                        / 1200.0;
+                                }
                         }
 
-                        interest =
-                                bill.getMaintenanceAmount()
-                                        * policy.getInterestRate()
-                                        * periods
-                                        / 1200.0;
-                    }
+                        BillingResponse dto = new BillingResponse();
+
+                        dto.setId(b.getId());
+                        dto.setMonth(b.getMonth());
+                        dto.setYear(b.getYear());
+                        dto.setMaintenanceAmount(b.getMaintenanceAmount());
+                        dto.setPenaltyAmount(b.getPenaltyAmount());
+                        dto.setInterestAmount(interest);
+                        dto.setDiscountAmount(b.getDiscountAmount());
+                        dto.setDueDate(b.getDueDate());
+
+                        double totalAmount = (b.getMaintenanceAmount() != null ? b.getMaintenanceAmount() : 0.0)
+                                        + (b.getPenaltyAmount() != null ? b.getPenaltyAmount() : 0.0)
+                                        + interest
+                                        - (b.getDiscountAmount() != null ? b.getDiscountAmount() : 0.0);
+
+                        dto.setTotalAmount(totalAmount);
+
+                        dto.setStatus(
+                                        b.getStatus() != null
+                                                        ? b.getStatus().name()
+                                                        : null);
+
+                        // Flat Details
+                        if (b.getFlat() != null) {
+
+                                dto.setFlatId(b.getFlat().getId());
+                                dto.setFlatNo(b.getFlat().getFlatNo());
+
+                                // Member Details
+
+                                if (b.getFlat().getOwner() != null) {
+
+                                        dto.setMemberId(
+                                                        b.getFlat().getOwner().getId());
+
+                                        dto.setMemberName(
+                                                        b.getFlat().getOwner().getName());
+                                }
+                        }
+
+                        // Receipt Details
+
+                        dto.setReceiptId(b.getReceiptId());
+
+                        if (b.getReceiptId() != null) {
+
+                                receiptRepository.findById(b.getReceiptId())
+                                                .ifPresent(receipt -> dto.setReceiptNo(receipt.getReceiptNo()));
+                        }
+
+                        return dto;
+
+                }).toList();
+        }
+        // =====================================================
+        // PAY BILLS
+        // =====================================================
+
+        @Transactional
+        public String payBills(List<Long> billIds, String paymentMode) {
+
+                List<Billing> bills = billingRepository.findAllById(billIds);
+
+                if (bills.isEmpty()) {
+                        return "No bills found";
                 }
-            }
 
-            bill.setInterestAmount(interest);
+                Billing first = bills.get(0);
 
-            double total =
-                    (bill.getMaintenanceAmount() != null
-                            ? bill.getMaintenanceAmount()
-                            : 0.0)
-                    + (bill.getPenaltyAmount() != null
-                            ? bill.getPenaltyAmount()
-                            : 0.0)
-                    + interest
-                    - (bill.getDiscountAmount() != null
-                            ? bill.getDiscountAmount()
-                            : 0.0);
+                Long flatId = first.getFlat().getId();
+                Long societyId = first.getSociety().getId();
 
-            bill.setTotalAmount(total);
-        });
+                // ================= VALIDATION =================
 
-        return bills;
-    }
+                for (Billing bill : bills) {
 
+                        if (!bill.getFlat().getId().equals(flatId)) {
+                                throw new RuntimeException(
+                                                "Selected bills must belong to same flat");
+                        }
+
+                        if (!bill.getSociety().getId().equals(societyId)) {
+                                throw new RuntimeException(
+                                                "Selected bills must belong to same society");
+                        }
+                }
+
+                double totalAmount = 0.0;
+                double maintenanceAmount = 0.0;
+                double interestAmount = 0.0;
+                double discountAmount = 0.0;
+
+                boolean hasUnpaidBills = false;
+
+                // ================= BILL PROCESSING =================
+
+                List<Billing> paidBills = new ArrayList<>();
+
+                SocietyBillingPolicy policy = societyBillingPolicyRepository
+                .findBySociety_Id(societyId)
+                .orElse(null);
+
+                for (Billing bill : bills) {
+
+                        // Skip already paid bills
+                        if (bill.getStatus() == PaymentStatus.PAID) {
+                                continue;
+                        }
+
+                        hasUnpaidBills = true;
+
+                        bill.setStatus(PaymentStatus.PAID);
+                        bill.setPaidDate(LocalDate.now());
+                        bill.setPaymentMode(paymentMode);
+
+                        double maintenance = bill.getMaintenanceAmount() != null
+                                        ? bill.getMaintenanceAmount()
+                                        : 0.0;
+
+                        double discount = bill.getDiscountAmount() != null
+                                        ? bill.getDiscountAmount()
+                                        : 0.0;
+
+                        double interest = 0.0;
+
+
+
+                        if (policy != null && bill.getDueDate() != null) {
+
+                                LocalDate penaltyStart = bill.getDueDate().plusDays(
+                                                policy.getGraceDays() != null
+                                                                ? policy.getGraceDays()
+                                                                : 0);
+
+                                if (LocalDate.now().isAfter(penaltyStart)) {
+
+                                        long monthsLate = ChronoUnit.MONTHS.between(
+                                                        penaltyStart.withDayOfMonth(1),
+                                                        LocalDate.now().withDayOfMonth(1));
+
+                                        monthsLate = Math.max(1, monthsLate);
+
+                                        interest = maintenance
+                                                        * policy.getInterestRate()
+                                                        * monthsLate
+                                                        / 1200.0;
+                                }
+                        }
+
+                        bill.setInterestAmount(interest);
+
+                        double total = maintenance + interest - discount;
+
+                        bill.setTotalAmount(total);
+
+                        maintenanceAmount += maintenance;
+                        interestAmount += interest;
+                        discountAmount += discount;
+                        totalAmount += total;
+
+                        // Track only bills paid in this transaction
+                        paidBills.add(bill);
+                }
+
+                if (!hasUnpaidBills) {
+                        return "All selected bills are already paid";
+                }
+
+                // ================= RECEIPT =================
+
+                Receipt receipt = new Receipt();
+
+                receipt.setReceiptDate(LocalDate.now());
+                receipt.setPaymentMode(paymentMode);
+
+                receipt.setMaintenanceAmount(maintenanceAmount);
+                receipt.setInterestAmount(interestAmount);
+                receipt.setDiscountAmount(discountAmount);
+                receipt.setTotalAmount(totalAmount);
+
+                receipt.setSocietyId(societyId);
+                receipt.setFlatId(flatId);
+
+                Receipt savedReceipt = receiptRepository.save(receipt);
+
+                savedReceipt.setReceiptNo(
+                                "RCPT-" +
+                                                LocalDate.now().getYear() +
+                                                "-" +
+                                                savedReceipt.getId());
+
+                savedReceipt = receiptRepository.save(savedReceipt);
+
+                // ================= UPDATE BILLS =================
+
+                for (Billing bill : paidBills) {
+                        bill.setReceiptId(savedReceipt.getId());
+                }
+
+                billingRepository.saveAll(paidBills);
+
+                // ================= JOURNAL =================
+
+                Long memberId = null;
+
+                if (first.getFlat() != null &&
+                first.getFlat().getOwner() != null) {
+
+                memberId = first.getFlat().getOwner().getId();
+                }
+
+                if (totalAmount > 0) {
+
+                        journalService.createReceiptEntry(
+                                        savedReceipt.getId(),
+                                        memberId,
+                                        maintenanceAmount,
+                                        interestAmount,
+                                        discountAmount,
+                                        totalAmount,
+                                        paymentMode,
+                                        societyId,
+                                        0L,
+                                        flatId);
+                }
+
+                return "Bills paid successfully";
+        }
+
+        // =====================================================
+        // GET BILLS BY FLAT IDS
+        // =====================================================
+
+        public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
+
+                List<Billing> bills = billingRepository.findByFlatIdIn(flatIds);
+
+                bills.forEach(bill -> {
+
+                        // Receipt No
+
+                        if (bill.getReceiptId() != null) {
+
+                                receiptRepository.findById(bill.getReceiptId())
+                                                .ifPresent(receipt -> bill.setReceiptNo(
+                                                                receipt.getReceiptNo()));
+                        }
+
+                        // Interest Calculation
+
+                        double interest = bill.getInterestAmount() != null
+                                        ? bill.getInterestAmount()
+                                        : 0.0;
+
+                        if (bill.getStatus() == PaymentStatus.PENDING
+                                        && bill.getDueDate() != null
+                                        && bill.getMaintenanceAmount() != null
+                                        && bill.getSociety() != null) {
+
+                                SocietyBillingPolicy policy = societyBillingPolicyRepository
+                                                .findBySociety_Id(
+                                                                bill.getSociety().getId())
+                                                .orElse(null);
+
+                                if (policy != null) {
+
+                                        LocalDate penaltyStart = bill.getDueDate().plusDays(
+                                                        policy.getGraceDays() != null
+                                                                        ? policy.getGraceDays()
+                                                                        : 0);
+
+                                        if (LocalDate.now().isAfter(penaltyStart)) {
+
+                                                long monthsLate = ChronoUnit.MONTHS.between(
+                                                                penaltyStart.withDayOfMonth(1),
+                                                                LocalDate.now().withDayOfMonth(1));
+
+                                                monthsLate = Math.max(1, monthsLate);
+
+                                                long periods = 0;
+
+                                                if (policy.getInterestType() != null) {
+
+                                                        switch (policy.getInterestType()) {
+
+                                                                case MONTHLY:
+                                                                        periods = monthsLate;
+                                                                        break;
+
+                                                                case QUARTERLY:
+                                                                        periods = monthsLate / 3;
+                                                                        break;
+
+                                                                case HALF_YEARLY:
+                                                                        periods = monthsLate / 6;
+                                                                        break;
+
+                                                                case YEARLY:
+                                                                        periods = monthsLate / 12;
+                                                                        break;
+                                                        }
+                                                }
+
+                                                interest = bill.getMaintenanceAmount()
+                                                                * policy.getInterestRate()
+                                                                * periods
+                                                                / 1200.0;
+                                        }
+                                }
+                        }
+
+                        bill.setInterestAmount(interest);
+
+                        double total = (bill.getMaintenanceAmount() != null
+                                        ? bill.getMaintenanceAmount()
+                                        : 0.0)
+                                        + (bill.getPenaltyAmount() != null
+                                                        ? bill.getPenaltyAmount()
+                                                        : 0.0)
+                                        + interest
+                                        - (bill.getDiscountAmount() != null
+                                                        ? bill.getDiscountAmount()
+                                                        : 0.0);
+
+                        bill.setTotalAmount(total);
+                });
+
+                return bills;
+        }
 
 }

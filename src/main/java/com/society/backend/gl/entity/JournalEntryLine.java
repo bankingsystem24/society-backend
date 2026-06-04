@@ -1,5 +1,7 @@
 package com.society.backend.gl.entity;
 
+import com.society.backend.entity.Member;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -37,6 +39,13 @@ public class JournalEntryLine {
 
     @Column(name = "society_id", nullable = false)
     private Long societyId;
+
+    @Column(name = "flat_id")
+    private Long flatId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     // ================= GETTERS & SETTERS =================
 
@@ -118,5 +127,21 @@ public class JournalEntryLine {
 
     public void setSocietyId(Long societyId) {
         this.societyId = societyId;
+    }
+
+    public Long getFlatId() {
+        return flatId;
+    }
+
+    public void setFlatId(Long flatId) {
+        this.flatId = flatId;
+    }
+
+    public Member getMember() {
+        return member;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
     }
 }

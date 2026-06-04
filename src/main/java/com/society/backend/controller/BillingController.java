@@ -82,7 +82,8 @@ public class BillingController {
                 return billingService.generateMonthlyBills(
                                 request.getSocietyId(),
                                 request.getMonth(),
-                                request.getYear());
+                                request.getYear(),
+                                request.getCreatedBy());
         }
 
         // =========================
@@ -325,14 +326,17 @@ public class BillingController {
                                         : null;
 
                         journalService.createReceiptEntry(
-                                        savedReceipt.getId(),
-                                        memberId,
-                                        maintenanceAmount,
-                                        interestAmount,
-                                        discountAmount,
-                                        totalAmount,
-                                        "ONLINE",
-                                        firstBill.getSociety().getId());
+                                savedReceipt.getId(),
+                                memberId,
+                                maintenanceAmount,
+                                interestAmount,
+                                discountAmount,
+                                totalAmount,
+                                "ONLINE",
+                                firstBill.getSociety().getId(),
+                                0L,
+                                firstBill.getFlat().getId()
+                        );
 
                         return ResponseEntity.ok("Payment verified successfully");
 

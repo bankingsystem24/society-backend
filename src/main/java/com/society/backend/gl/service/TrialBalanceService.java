@@ -19,32 +19,43 @@ public class TrialBalanceService {
     @Autowired
     private AccountingYearRepository accountingYearRepository;
 
-    public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
+public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
 
-        AccountingYear fy = accountingYearRepository
-                .findBySocietyIdAndIsActiveTrue(societyId)
-                .orElseThrow(() ->
-                        new RuntimeException("Active Financial Year not found"));
+    System.out.println("Fetching Trial Balance for Society ID: " + societyId);
 
-        List<TrialBalanceDTO> list =
-                ledgerRepo.getTrialBalance(
-                        societyId,
-                        fy.getStartDate(),
-                        fy.getEndDate()
-                );
+    AccountingYear fy = accountingYearRepository
+            .findBySocietyIdAndIsActiveTrue(societyId)
+            .orElseThrow(() ->
+                    new RuntimeException("Active Financial Year not found"));
 
-        for (TrialBalanceDTO dto : list) {
+    List<TrialBalanceDTO> list =
+            ledgerRepo.getTrialBalance(
+                    societyId,
+                    fy.getStartDate(),
+                    fy.getEndDate()
+            );
 
-            double balance = dto.getBalance();
+    for (TrialBalanceDTO dto : list) {
 
-            if (balance < 0) {
-                dto.setBalanceType("CREDIT");
-                dto.setBalance(Math.abs(balance));
-            } else {
-                dto.setBalanceType("DEBIT");
-            }
-        }
+    double debit = dto.getDebit() != null ? dto.getDebit() : 0.0;
+    double credit = dto.getCredit() != null ? dto.getCredit() : 0.0;
 
-        return list;
+    double balance = debit - credit;
+
+    if (balance > 0) {
+        dto.setBalanceType("DEBIT");
+        dto.setBalance(balance);
+    } else if (balance < 0) {
+        dto.setBalanceType("CREDIT");
+        dto.setBalance(Math.abs(balance));
+    } else {
+        dto.setBalanceType("BALANCED");
+        dto.setBalance(0.0);
     }
+}
+
+    return list;
+}
+
+
 }

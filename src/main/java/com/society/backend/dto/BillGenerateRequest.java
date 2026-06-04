@@ -5,6 +5,7 @@ public class BillGenerateRequest {
     private Long societyId;
     private String month;
     private int year;
+    private Long createdBy;
 
     public Long getSocietyId() {
         return societyId;
@@ -29,4 +30,12 @@ public class BillGenerateRequest {
     public void setYear(int year) {
         this.year = year;
     }
-} 
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+}

@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.entity.AccountingYear;
+import com.society.backend.entity.Member;
 import com.society.backend.gl.dto.JournalViewDTO;
 import com.society.backend.gl.entity.*;
 import com.society.backend.gl.repository.*;
 import com.society.backend.repository.AccountingYearRepository;
+import com.society.backend.repository.MemberRepository;
 
 @Service
 @Transactional
@@ -34,10 +36,10 @@ public class JournalService {
         private AccountingYearRepository accountingYearRepository;
 
         @Autowired
-        private JournalEntryRepository journalEntryRepository;
+        private JournalEntryLineRepository journalEntryLineRepository;
 
         @Autowired
-        private JournalEntryLineRepository journalEntryLineRepository;
+        private MemberRepository memberRepository;
 
         // =====================================================
         // CORE JOURNAL ENTRY
@@ -51,7 +53,6 @@ public class JournalService {
                         Long referenceId,
                         Double totalAmount,
                         Long societyId,
-
                         Integer debitGlCode,
                         Double debitAmount,
 
@@ -59,7 +60,10 @@ public class JournalService {
                         Double creditAmount,
 
                         String entityType,
-                        Long entityId) {
+                        Long entityId,
+                        Long createdBy,
+                        Long flatId,
+                        Member member) {
 
                 JournalEntry entry = new JournalEntry();
                 entry.setVoucherNo(voucherNo);
@@ -72,6 +76,7 @@ public class JournalService {
                 entry.setStatus("POSTED");
                 entry.setSocietyId(societyId);
                 entry.setCreatedAt(LocalDateTime.now());
+                entry.setCreatedBy(createdBy);
 
                 JournalEntry savedEntry = journalRepo.save(entry);
 
@@ -86,6 +91,8 @@ public class JournalService {
                 debitLine.setEntityId(entityId);
                 debitLine.setSocietyId(societyId);
                 debitLine.setRemarks("Debit Entry");
+                debitLine.setFlatId(flatId);
+                debitLine.setMember(member);
                 lineRepo.save(debitLine);
 
                 // CREDIT LINE
@@ -99,6 +106,8 @@ public class JournalService {
                 creditLine.setEntityId(entityId);
                 creditLine.setSocietyId(societyId);
                 creditLine.setRemarks("Credit Entry");
+                creditLine.setFlatId(flatId);
+                creditLine.setMember(member);
                 lineRepo.save(creditLine);
 
                 return savedEntry.getId();
@@ -110,9 +119,11 @@ public class JournalService {
 
         public Long createMaintenanceBillEntry(
                         Long billId,
-                        Long memberId,
+                        Member member,
                         Double amount,
-                        Long societyId) {
+                        Long societyId,
+                        Long createdBy,
+                        Long flatId) {
 
                 Long journalId = createJournalEntry(
                                 "BILL-" + billId,
@@ -122,15 +133,15 @@ public class JournalService {
                                 billId,
                                 amount,
                                 societyId,
-
                                 1101, // DR Member Receivable
                                 amount,
-
                                 4001, // CR Income
                                 amount,
-
                                 "SOCIETY",
-                                societyId);
+                                societyId,
+                                createdBy,
+                                flatId,
+                                member);
 
                 // LEDGER UPDATE (RECEIVABLE INCREASE)
                 ledgerBalanceService.updateBalance(
@@ -165,14 +176,19 @@ public class JournalService {
                         Double discountAmount,
                         Double totalAmount,
                         String paymentMode,
-                        Long societyId) {
+                        Long societyId,
+                        Long createdBy,
+                        Long flatId) {
 
                 Integer BANK_GL = "CASH".equalsIgnoreCase(paymentMode) ? 1001 : 1002;
-                Integer MAINTENANCE_GL = 4001;
+
+                // IMPORTANT CHANGE: Receivable instead of Maintenance Income
+                Integer RECEIVABLE_GL = 1101;
+
                 Integer INTEREST_GL = 4002;
                 Integer DISCOUNT_GL = 5001;
 
-                // ================= HEADER ONLY =================
+                // ================= HEADER =================
                 JournalEntry entry = new JournalEntry();
                 entry.setVoucherNo("RCPT-" + receiptId);
                 entry.setEntryDate(LocalDate.now());
@@ -184,85 +200,160 @@ public class JournalService {
                 entry.setStatus("POSTED");
                 entry.setSocietyId(societyId);
                 entry.setCreatedAt(LocalDateTime.now());
+                entry.setCreatedBy(createdBy);
 
                 JournalEntry savedEntry = journalRepo.save(entry);
 
                 Long journalId = savedEntry.getId();
-
                 int lineNo = 1;
 
                 // ================= BANK (DR) =================
-                createLine(journalId, lineNo++, BANK_GL, totalAmount, 0.0, "BANK", null, societyId);
+                createLine(
+                                journalId,
+                                lineNo++,
+                                BANK_GL,
+                                totalAmount,
+                                0.0,
+                                "BANK",
+                                null,
+                                societyId,
+                                flatId);
 
-                // ================= MAINTENANCE (CR) =================
-                createLine(journalId, lineNo++, MAINTENANCE_GL, 0.0, maintenanceAmount, "INCOME", memberId, societyId);
+                // ================= RECEIVABLE (CR) =================
+                // This replaces Maintenance Income reversal
+                if (maintenanceAmount != null && maintenanceAmount > 0) {
+                        createLine(
+                                        journalId,
+                                        lineNo++,
+                                        RECEIVABLE_GL,
+                                        0.0,
+                                        maintenanceAmount,
+                                        "SOCIETY",
+                                        memberId,
+                                        societyId,
+                                        flatId);
+                }
 
                 // ================= INTEREST (CR) =================
-                createLine(journalId, lineNo++, INTEREST_GL, 0.0, interestAmount, "INCOME", memberId, societyId);
+                if (interestAmount != null && interestAmount > 0) {
+                        createLine(
+                                        journalId,
+                                        lineNo++,
+                                        INTEREST_GL,
+                                        0.0,
+                                        interestAmount,
+                                        "INCOME",
+                                        memberId,
+                                        societyId,
+                                        flatId);
+                }
 
                 // ================= DISCOUNT (DR) =================
-                createLine(journalId, lineNo++, DISCOUNT_GL, discountAmount, 0.0, "EXPENSE", memberId, societyId);
+                if (discountAmount != null && discountAmount > 0) {
+                        createLine(
+                                        journalId,
+                                        lineNo++,
+                                        DISCOUNT_GL,
+                                        discountAmount,
+                                        0.0,
+                                        "EXPENSE",
+                                        memberId,
+                                        societyId,
+                                        flatId);
+                }
 
-                // ================= LEDGER =================
-                ledgerBalanceService.updateBalance(societyId, BANK_GL, null, "BANK", totalAmount, 0.0);
-
-                ledgerBalanceService.updateBalance(societyId, MAINTENANCE_GL, null, "INCOME", 0.0, maintenanceAmount);
-
-                ledgerBalanceService.updateBalance(societyId, INTEREST_GL, null, "INCOME", 0.0, interestAmount);
-
-                ledgerBalanceService.updateBalance(societyId, DISCOUNT_GL, null, "EXPENSE", discountAmount, 0.0);
-
-                return journalId;
-        } // =====================================================
-          // EXPENSE ENTRY
-          // =====================================================
-
-        public Long createExpenseEntry(
-                        String voucherNo,
-                        String narration,
-                        Integer expenseGlCode,
-                        Double amount,
-                        Long vendorId,
-                        Long societyId) {
-
-                Long journalId = createJournalEntry(
-                                voucherNo,
-                                "PAYMENT",
-                                narration,
-                                "EXPENSE",
-                                vendorId,
-                                amount,
-                                societyId,
-
-                                expenseGlCode,
-                                amount,
-
-                                1002,
-                                amount,
-
-                                "SOCIETY",
-                                societyId);
-
-                // EXPENSE INCREASE
+                // ================= LEDGER UPDATES =================
                 ledgerBalanceService.updateBalance(
                                 societyId,
-                                expenseGlCode,
+                                BANK_GL,
                                 null,
-                                "SOCIETY",
-                                amount,
+                                "BANK",
+                                totalAmount,
                                 0.0);
 
-                // BANK DECREASE
-                ledgerBalanceService.updateBalance(
-                                societyId,
-                                1002,
-                                null,
-                                "SOCIETY",
-                                0.0,
-                                amount);
+                if (maintenanceAmount != null && maintenanceAmount > 0) {
+                        ledgerBalanceService.updateBalance(
+                                        societyId,
+                                        RECEIVABLE_GL,
+                                        null,
+                                        "SOCIETY",
+                                        0.0,
+                                        maintenanceAmount);
+                }
+
+                if (interestAmount != null && interestAmount > 0) {
+                        ledgerBalanceService.updateBalance(
+                                        societyId,
+                                        INTEREST_GL,
+                                        null,
+                                        "INCOME",
+                                        0.0,
+                                        interestAmount);
+                }
+
+                if (discountAmount != null && discountAmount > 0) {
+                        ledgerBalanceService.updateBalance(
+                                        societyId,
+                                        DISCOUNT_GL,
+                                        null,
+                                        "EXPENSE",
+                                        discountAmount,
+                                        0.0);
+                }
 
                 return journalId;
         }
+
+        // =====================================================
+        // EXPENSE ENTRY
+        // =====================================================
+
+        // public Long createExpenseEntry(
+        // String voucherNo,
+        // String narration,
+        // Integer expenseGlCode,
+        // Double amount,
+        // Long vendorId,
+        // Long societyId) {
+
+        // Long journalId = createJournalEntry(
+        // voucherNo,
+        // "PAYMENT",
+        // narration,
+        // "EXPENSE",
+        // vendorId,
+        // amount,
+        // societyId,
+
+        // expenseGlCode,
+        // amount,
+
+        // 1002,
+        // amount,
+
+        // "SOCIETY",
+        // societyId);
+
+        // // EXPENSE INCREASE
+        // ledgerBalanceService.updateBalance(
+        // societyId,
+        // expenseGlCode,
+        // null,
+        // "SOCIETY",
+        // amount,
+        // 0.0);
+
+        // // BANK DECREASE
+        // ledgerBalanceService.updateBalance(
+        // societyId,
+        // 1002,
+        // null,
+        // "SOCIETY",
+        // 0.0,
+        // amount);
+
+        // return journalId;
+        // }
 
         // =====================================================
         // GENERAL JOURNAL
@@ -274,7 +365,13 @@ public class JournalService {
                         Integer debitGlCode,
                         Integer creditGlCode,
                         Double amount,
-                        Long societyId) {
+                        Long societyId,
+                        Long createdBy,
+                        Long flatId,
+                        Long memberId) {
+
+                Member member = memberRepository.findById(memberId)
+                                .orElseThrow(() -> new RuntimeException("Member not found"));
 
                 return createJournalEntry(
                                 voucherNo,
@@ -289,7 +386,10 @@ public class JournalService {
                                 creditGlCode,
                                 amount,
                                 "SOCIETY",
-                                societyId);
+                                societyId,
+                                createdBy,
+                                null,
+                                member);
         }
 
         // =====================================================
@@ -315,7 +415,8 @@ public class JournalService {
                         Double credit,
                         String entityType,
                         Long entityId,
-                        Long societyId) {
+                        Long societyId,
+                        Long flatId) {
                 JournalEntryLine line = new JournalEntryLine();
 
                 line.setJournalId(journalId);
@@ -326,6 +427,7 @@ public class JournalService {
                 line.setEntityType(entityType);
                 line.setEntityId(entityId);
                 line.setSocietyId(societyId);
+                line.setFlatId(flatId);
                 line.setRemarks("AUTO");
 
                 journalEntryLineRepository.save(line);

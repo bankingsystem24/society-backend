@@ -9,9 +9,6 @@ import com.society.backend.exception.ResourceNotFoundException;
 import com.society.backend.repository.MemberRepository;
 import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.UserRepository;
-
-import tools.jackson.databind.ObjectMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -190,8 +187,6 @@ public class UserService {
 public UserResponse updateFromRequest(Long id, UserRequest req) {
 
     try {
-        ObjectMapper mapper = new ObjectMapper();
-
     } catch (Exception e) {
         e.printStackTrace();
     }

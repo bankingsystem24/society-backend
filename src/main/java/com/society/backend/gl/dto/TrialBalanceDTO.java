@@ -6,47 +6,27 @@ public class TrialBalanceDTO {
     private String accountName;
     private Double debit;
     private Double credit;
+
+    // computed fields (not from DB)
     private Double balance;
-    private String accountType;
     private String balanceType;
 
     // Default Constructor
     public TrialBalanceDTO() {
     }
 
-    // Constructor used by JPQL
-    public TrialBalanceDTO(
-            Integer glCode,
-            String accountName,
-            Double debit,
-            Double credit
-    ) {
+    // ✅ JPQL Constructor (ONLY use this in query)
+    public TrialBalanceDTO(Integer glCode,
+                           String accountName,
+                           Double debit,
+                           Double credit) {
         this.glCode = glCode;
         this.accountName = accountName;
         this.debit = debit;
         this.credit = credit;
-        this.balance = (debit != null ? debit : 0.0)
-                     - (credit != null ? credit : 0.0);
     }
 
-    // Full Constructor
-    public TrialBalanceDTO(
-            Integer glCode,
-            String accountName,
-            Double debit,
-            Double credit,
-            Double balance,
-            String accountType,
-            String balanceType
-    ) {
-        this.glCode = glCode;
-        this.accountName = accountName;
-        this.debit = debit;
-        this.credit = credit;
-        this.balance = balance;
-        this.accountType = accountType;
-        this.balanceType = balanceType;
-    }
+    // Getters & Setters
 
     public Integer getGlCode() {
         return glCode;
@@ -86,14 +66,6 @@ public class TrialBalanceDTO {
 
     public void setBalance(Double balance) {
         this.balance = balance;
-    }
-
-    public String getAccountType() {
-        return accountType;
-    }
-
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
     }
 
     public String getBalanceType() {

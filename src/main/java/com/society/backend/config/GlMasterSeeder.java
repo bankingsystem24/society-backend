@@ -72,6 +72,7 @@ create(3070, "INCOME", "Rental Income"),
 
 create(3080, "INCOME", "Event Contribution Income"),
 create(3090, "INCOME", "Miscellaneous Income"),
+create(4002, "INCOME", "Interest Income"),
 
 // ================= EXPENSES =================
 

@@ -7,9 +7,6 @@ import jakarta.persistence.*;
 public class GlMaster {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "gl_code", unique = true, nullable = false)
     private Integer glCode;
 
@@ -37,13 +34,6 @@ public class GlMaster {
 
     // ================= GETTERS & SETTERS =================
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Integer getGlCode() {
         return glCode;

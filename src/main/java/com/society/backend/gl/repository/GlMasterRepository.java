@@ -1,5 +1,7 @@
 package com.society.backend.gl.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.society.backend.gl.entity.GlMaster;
 
@@ -9,4 +11,7 @@ public interface GlMasterRepository
     GlMaster findByGlCodeAndSocietyId(
             Integer glCode,
             Long societyId);
+
+        List<GlMaster> findBySocietyIdOrderByGlCodeAsc(Long societyId);
+
 }
