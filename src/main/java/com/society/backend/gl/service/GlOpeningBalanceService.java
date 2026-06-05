@@ -2,8 +2,12 @@ package com.society.backend.gl.service;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.society.backend.entity.Society;
+import com.society.backend.gl.dto.GlOpeningBalanceRequest;
 import com.society.backend.gl.entity.GlOpeningBalance;
 import com.society.backend.gl.repository.GlOpeningBalanceRepository;
+import com.society.backend.repository.SocietyRepository;
 
 @Service
 public class GlOpeningBalanceService {
@@ -11,48 +15,42 @@ public class GlOpeningBalanceService {
     @Autowired
     private GlOpeningBalanceRepository glOpeningBalanceRepository;
 
+    @Autowired
+    private SocietyRepository societyRepository;
+
     // ================= GET ALL =================
     public List<GlOpeningBalance> getAllOpeningBySociety(Long societyId) {
         return glOpeningBalanceRepository.findBySocietyId(societyId);
     }
 
-    // ================= CREATE =================
-    public GlOpeningBalance save(GlOpeningBalance entity) {
+    public GlOpeningBalance save(GlOpeningBalance entity, Long societyId) {
 
-        // optional safety: prevent duplicate GL per FY
-        GlOpeningBalance existing = glOpeningBalanceRepository
-                .findBySocietyIdAndGlCodeAndFinancialYearId(
-                        entity.getSociety().getId(),
-                        entity.getGlCode(),
-                        entity.getFinancialYearId()
-                );
+        Society society = societyRepository.findById(societyId)
+                .orElseThrow(() -> new RuntimeException("Society not found"));
 
-        if (existing != null) {
-            throw new RuntimeException("Opening balance already exists for this GL and year");
-        }
+        entity.setSociety(society);
 
         return glOpeningBalanceRepository.save(entity);
     }
 
     // ================= UPDATE =================
-    public GlOpeningBalance update(Long id, GlOpeningBalance entity) {
+public GlOpeningBalance update(Long id, GlOpeningBalanceRequest request) {
 
-        GlOpeningBalance existing = glOpeningBalanceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Opening Balance not found"));
+    GlOpeningBalance existing = glOpeningBalanceRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Record not found"));
 
-        existing.setGlCode(entity.getGlCode());
-        existing.setOpeningDebit(entity.getOpeningDebit());
-        existing.setOpeningCredit(entity.getOpeningCredit());
+    Society society = societyRepository.findById(request.getSocietyId())
+            .orElseThrow(() -> new RuntimeException("Society not found"));
 
-        double balance = (entity.getOpeningDebit() != null ? entity.getOpeningDebit() : 0)
-                       - (entity.getOpeningCredit() != null ? entity.getOpeningCredit() : 0);
+    existing.setSociety(society);
+    existing.setFinancialYearId(request.getFinancialYearId());
+    existing.setGlCode(request.getGlCode());
+    existing.setOpeningDebit(request.getOpeningDebit());
+    existing.setOpeningCredit(request.getOpeningCredit());
+    existing.setOpeningBalance(request.getOpeningBalance());
 
-        existing.setOpeningBalance(balance);
-        existing.setFinancialYearId(entity.getFinancialYearId());
-        existing.setSociety(entity.getSociety());
-
-        return glOpeningBalanceRepository.save(existing);
-    }
+    return glOpeningBalanceRepository.save(existing);
+}
 
     // ================= DELETE =================
     public void delete(Long id) {

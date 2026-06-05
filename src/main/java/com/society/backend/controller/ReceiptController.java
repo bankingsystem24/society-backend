@@ -26,26 +26,28 @@ public class ReceiptController {
         );
     }
 
-@PostMapping("/viewReceipts")
-public ResponseEntity<?> viewReceipts(
-        @RequestBody ReceiptRequest req
-) {
+    @PostMapping("/viewReceipts")
+    public ResponseEntity<?> viewReceipts(
+            @RequestBody ReceiptRequest req
+    ) {
 
-    return ResponseEntity.ok(
-            receiptService.viewReceipts(
-                    req.getSocietyId(),
-                    req.getFlatId()
-            )
-    );
-}
+        return ResponseEntity.ok(
+                receiptService.viewReceipts(
+                        req.getSocietyId(),
+                        req.getFlatId()
+                )
+        );
+    }
 
-@GetMapping("/details/{receiptId}")
-public ResponseEntity<?> getReceiptDetails(
-        @PathVariable Long receiptId
-) {
+    @GetMapping("/details/{receiptId}")
+    public ResponseEntity<?> getReceiptDetails(
+            @PathVariable Long receiptId
+    ) {
 
-    return ResponseEntity.ok(
-            receiptService.getReceiptDetails(receiptId)
-    );
-}
+        return ResponseEntity.ok(
+                receiptService.getReceiptDetails(receiptId)
+        );
+    }
+
+    
 }

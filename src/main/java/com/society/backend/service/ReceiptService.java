@@ -121,7 +121,12 @@ public List<BillingResponse> getReceiptDetails(Long receiptId) {
         dto.setMaintenanceAmount(
                 b.getMaintenanceAmount()
         );
-
+        dto.setInterestAmount(
+                b.getInterestAmount()
+        );
+        dto.setDiscountAmount(
+                b.getDiscountAmount()
+        );
         dto.setPenaltyAmount(
                 b.getPenaltyAmount()
         );
