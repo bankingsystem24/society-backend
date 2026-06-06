@@ -34,6 +34,8 @@ public class LedgerBalance {
     @Column(nullable = false)
     private Double currentBalance = 0.0;
 
+    
+
     // ================= GETTERS & SETTERS =================
 
     public Long getId() {

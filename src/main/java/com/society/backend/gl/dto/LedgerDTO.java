@@ -5,26 +5,46 @@ import java.time.LocalDate;
 public class LedgerDTO {
 
     private LocalDate entryDate;
-
     private String voucherNo;
-
     private String voucherType;
-
     private String narration;
-
     private Double debitAmount;
-
     private Double creditAmount;
-
     private Double balance;
-
     private Integer glCode;
-
     private String accountHead;
+    private String balanceType;
 
-    // =====================================================
+    public LedgerDTO() {
+    }
+
+    public LedgerDTO(
+            LocalDate entryDate,
+            String voucherNo,
+            String voucherType,
+            String narration,
+            Double debitAmount,
+            Double creditAmount,
+            Double balance,
+            Integer glCode,
+            String accountHead,
+            String balanceType
+    ) {
+        this.entryDate = entryDate;
+        this.voucherNo = voucherNo;
+        this.voucherType = voucherType;
+        this.narration = narration;
+        this.debitAmount = debitAmount;
+        this.creditAmount = creditAmount;
+        this.balance = balance;
+        this.glCode = glCode;
+        this.accountHead = accountHead;
+        this.balanceType = balanceType;
+    }
+
+    // =========================
     // GETTERS & SETTERS
-    // =====================================================
+    // =========================
 
     public LocalDate getEntryDate() {
         return entryDate;
@@ -98,45 +118,11 @@ public class LedgerDTO {
         this.accountHead = accountHead;
     }
 
-    public LedgerDTO(
+    public String getBalanceType() {
+        return balanceType;
+    }
 
-        LocalDate entryDate,
-
-        String voucherNo,
-
-        String voucherType,
-
-        String narration,
-
-        Double debitAmount,
-
-        Double creditAmount,
-
-        Double balance,
-
-        Integer glCode,
-
-        String accountHead
-
-) {
-
-    this.entryDate = entryDate;
-
-    this.voucherNo = voucherNo;
-
-    this.voucherType = voucherType;
-
-    this.narration = narration;
-
-    this.debitAmount = debitAmount;
-
-    this.creditAmount = creditAmount;
-
-    this.balance = balance;
-
-    this.glCode = glCode;
-
-    this.accountHead = accountHead;
-}
-
+    public void setBalanceType(String balanceType) {
+        this.balanceType = balanceType;
+    }
 }

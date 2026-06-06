@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import com.society.backend.entity.AccountingYear;
 import com.society.backend.repository.AccountingYearRepository;
 import com.society.backend.gl.dto.TrialBalanceDTO;
+import com.society.backend.gl.entity.GlOpeningBalance;
+import com.society.backend.gl.repository.GlOpeningBalanceRepository;
 import com.society.backend.gl.repository.LedgerBalanceRepository;
 
 @Service
@@ -19,43 +21,55 @@ public class TrialBalanceService {
     @Autowired
     private AccountingYearRepository accountingYearRepository;
 
-public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
+    @Autowired
+    private GlOpeningBalanceRepository glOpeningBalanceRepository;
 
-    System.out.println("Fetching Trial Balance for Society ID: " + societyId);
+    public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
 
-    AccountingYear fy = accountingYearRepository
-            .findBySocietyIdAndIsActiveTrue(societyId)
-            .orElseThrow(() ->
-                    new RuntimeException("Active Financial Year not found"));
+        AccountingYear fy = accountingYearRepository
+                .findBySocietyIdAndIsActiveTrue(societyId)
+                .orElseThrow(() -> new RuntimeException("Active Financial Year not found"));
 
-    List<TrialBalanceDTO> list =
-            ledgerRepo.getTrialBalance(
-                    societyId,
-                    fy.getStartDate(),
-                    fy.getEndDate()
-            );
+        List<TrialBalanceDTO> list = ledgerRepo.getTrialBalance(
+                societyId,
+                fy.getStartDate(),
+                fy.getEndDate());
 
-    for (TrialBalanceDTO dto : list) {
+        for (TrialBalanceDTO dto : list) {
 
-    double debit = dto.getDebit() != null ? dto.getDebit() : 0.0;
-    double credit = dto.getCredit() != null ? dto.getCredit() : 0.0;
+            GlOpeningBalance ob = glOpeningBalanceRepository
+                    .findBySocietyIdAndGlCodeAndFinancialYearId(
+                            societyId,
+                            dto.getGlCode(),
+                            fy.getId());
 
-    double balance = debit - credit;
+            double opening = 0.0;
 
-    if (balance > 0) {
-        dto.setBalanceType("DEBIT");
-        dto.setBalance(balance);
-    } else if (balance < 0) {
-        dto.setBalanceType("CREDIT");
-        dto.setBalance(Math.abs(balance));
-    } else {
-        dto.setBalanceType("BALANCED");
-        dto.setBalance(0.0);
+            if (ob != null && ob.getOpeningBalance() != null) {
+                opening = ob.getOpeningBalance();
+            }
+
+            double debit = dto.getDebit() != null
+                    ? dto.getDebit()
+                    : 0.0;
+
+            double credit = dto.getCredit() != null
+                    ? dto.getCredit()
+                    : 0.0;
+
+            double closing = opening + debit - credit;
+
+            dto.setOpeningBalance(Math.abs(opening));
+            dto.setOpeningType(
+                    opening >= 0 ? "DR" : "CR");
+
+            dto.setClosingBalance(Math.abs(closing));
+            dto.setClosingType(
+                    closing >= 0 ? "DR" : "CR");
+
+        }
+
+        return list;
     }
-}
-
-    return list;
-}
-
 
 }

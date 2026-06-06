@@ -82,7 +82,7 @@ public class JournalService {
 
                 // DEBIT LINE
                 JournalEntryLine debitLine = new JournalEntryLine();
-                debitLine.setJournalId(savedEntry.getId());
+                debitLine.setJournalEntry(savedEntry);
                 debitLine.setLineNo(1);
                 debitLine.setGlCode(debitGlCode);
                 debitLine.setDebitAmount(debitAmount != null ? debitAmount : 0.0);
@@ -97,7 +97,7 @@ public class JournalService {
 
                 // CREDIT LINE
                 JournalEntryLine creditLine = new JournalEntryLine();
-                creditLine.setJournalId(savedEntry.getId());
+                creditLine.setJournalEntry(savedEntry);
                 creditLine.setLineNo(2);
                 creditLine.setGlCode(creditGlCode);
                 creditLine.setDebitAmount(0.0);
@@ -168,6 +168,7 @@ public class JournalService {
         // RECEIPT ENTRY
         // =====================================================
 
+        @Transactional
         public Long createReceiptEntry(
                         Long receiptId,
                         Long memberId,
@@ -180,20 +181,44 @@ public class JournalService {
                         Long createdBy,
                         Long flatId) {
 
-                Integer BANK_GL = "CASH".equalsIgnoreCase(paymentMode) ? 1001 : 1002;
+                Integer receiptGl;
 
-                // IMPORTANT CHANGE: Receivable instead of Maintenance Income
+                switch (paymentMode.toUpperCase()) {
+
+                        case "CASH":
+                                receiptGl = 1001; // Cash In Hand
+                                break;
+
+                        case "UPI":
+                        case "NEFT":
+                        case "RTGS":
+                        case "IMPS":
+                        case "CHEQUE":
+                        case "CARD":
+                        case "NETBANKING":
+                                receiptGl = 1010; // Bank - Savings Account
+                                break;
+
+                        default:
+                                throw new RuntimeException(
+                                                "Unsupported Payment Mode: " + paymentMode);
+                }
+
                 Integer RECEIVABLE_GL = 1101;
-
-                Integer INTEREST_GL = 4002;
                 Integer DISCOUNT_GL = 5001;
 
+                // Total receivable being settled
+                double receivableAmount = (maintenanceAmount != null ? maintenanceAmount : 0.0)
+                                + (interestAmount != null ? interestAmount : 0.0);
+
                 // ================= HEADER =================
+
                 JournalEntry entry = new JournalEntry();
+
                 entry.setVoucherNo("RCPT-" + receiptId);
                 entry.setEntryDate(LocalDate.now());
                 entry.setVoucherType(VoucherType.RECEIPT);
-                entry.setNarration("Maintenance + Interest Collection");
+                entry.setNarration("Bill Payment Receipt");
                 entry.setReferenceType("RECEIPT");
                 entry.setReferenceId(receiptId);
                 entry.setTotalAmount(totalAmount);
@@ -207,51 +232,25 @@ public class JournalService {
                 Long journalId = savedEntry.getId();
                 int lineNo = 1;
 
-                // ================= BANK (DR) =================
+                // ================= CASH/BANK DR =================
+
                 createLine(
-                                journalId,
+                                savedEntry,
                                 lineNo++,
-                                BANK_GL,
+                                receiptGl,
                                 totalAmount,
                                 0.0,
-                                "BANK",
+                                "ASSET",
                                 null,
                                 societyId,
                                 flatId);
 
-                // ================= RECEIVABLE (CR) =================
-                // This replaces Maintenance Income reversal
-                if (maintenanceAmount != null && maintenanceAmount > 0) {
-                        createLine(
-                                        journalId,
-                                        lineNo++,
-                                        RECEIVABLE_GL,
-                                        0.0,
-                                        maintenanceAmount,
-                                        "SOCIETY",
-                                        memberId,
-                                        societyId,
-                                        flatId);
-                }
+                // ================= DISCOUNT DR =================
 
-                // ================= INTEREST (CR) =================
-                if (interestAmount != null && interestAmount > 0) {
-                        createLine(
-                                        journalId,
-                                        lineNo++,
-                                        INTEREST_GL,
-                                        0.0,
-                                        interestAmount,
-                                        "INCOME",
-                                        memberId,
-                                        societyId,
-                                        flatId);
-                }
-
-                // ================= DISCOUNT (DR) =================
                 if (discountAmount != null && discountAmount > 0) {
+
                         createLine(
-                                        journalId,
+                                        savedEntry,
                                         lineNo++,
                                         DISCOUNT_GL,
                                         discountAmount,
@@ -262,48 +261,50 @@ public class JournalService {
                                         flatId);
                 }
 
+                // ================= RECEIVABLE CR =================
+
+                createLine(
+                                savedEntry,
+                                lineNo++,
+                                RECEIVABLE_GL,
+                                0.0,
+                                receivableAmount,
+                                "MEMBER",
+                                memberId,
+                                societyId,
+                                flatId);
+
                 // ================= LEDGER UPDATES =================
+
                 ledgerBalanceService.updateBalance(
                                 societyId,
-                                BANK_GL,
+                                receiptGl,
                                 null,
-                                "BANK",
+                                "ASSET",
                                 totalAmount,
                                 0.0);
 
-                if (maintenanceAmount != null && maintenanceAmount > 0) {
-                        ledgerBalanceService.updateBalance(
-                                        societyId,
-                                        RECEIVABLE_GL,
-                                        null,
-                                        "SOCIETY",
-                                        0.0,
-                                        maintenanceAmount);
-                }
-
-                if (interestAmount != null && interestAmount > 0) {
-                        ledgerBalanceService.updateBalance(
-                                        societyId,
-                                        INTEREST_GL,
-                                        null,
-                                        "INCOME",
-                                        0.0,
-                                        interestAmount);
-                }
-
                 if (discountAmount != null && discountAmount > 0) {
+
                         ledgerBalanceService.updateBalance(
                                         societyId,
                                         DISCOUNT_GL,
-                                        null,
+                                        memberId,
                                         "EXPENSE",
                                         discountAmount,
                                         0.0);
                 }
 
+                ledgerBalanceService.updateBalance(
+                                societyId,
+                                RECEIVABLE_GL,
+                                memberId,
+                                "MEMBER",
+                                0.0,
+                                receivableAmount);
+
                 return journalId;
         }
-
         // =====================================================
         // GENERAL JOURNAL
         // =====================================================
@@ -357,7 +358,7 @@ public class JournalService {
         }
 
         private void createLine(
-                        Long journalId,
+                        JournalEntry journalEntry,
                         int lineNo,
                         Integer glCode,
                         Double debit,
@@ -368,7 +369,7 @@ public class JournalService {
                         Long flatId) {
                 JournalEntryLine line = new JournalEntryLine();
 
-                line.setJournalId(journalId);
+                line.setJournalEntry(journalEntry);
                 line.setLineNo(lineNo);
                 line.setGlCode(glCode);
                 line.setDebitAmount(debit != null ? debit : 0.0);

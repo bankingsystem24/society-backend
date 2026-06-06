@@ -2,6 +2,7 @@ package com.society.backend.gl.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.*;
 
@@ -12,6 +13,9 @@ public class JournalEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+@OneToMany(mappedBy = "journalEntry", fetch = FetchType.LAZY)
+private List<JournalEntryLine> lines;
 
     @Column(name = "voucher_no", unique = true, nullable = false, length = 50)
     private String voucherNo;
@@ -145,4 +149,14 @@ public class JournalEntry {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+
+public List<JournalEntryLine> getLines() {
+    return lines;
+}
+
+public void setLines(List<JournalEntryLine> lines) {
+    this.lines = lines;
+}
+
 }

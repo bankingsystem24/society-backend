@@ -12,8 +12,9 @@ public class JournalEntryLine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "journal_id", nullable = false)
-    private Long journalId;
+    @ManyToOne
+    @JoinColumn(name = "journal_id")
+    private JournalEntry journalEntry;
 
     @Column(name = "line_no")
     private Integer lineNo;
@@ -57,12 +58,12 @@ public class JournalEntryLine {
         this.id = id;
     }
 
-    public Long getJournalId() {
-        return journalId;
+    public JournalEntry getJournalEntry() {
+        return journalEntry;
     }
 
-    public void setJournalId(Long journalId) {
-        this.journalId = journalId;
+    public void setJournalEntry(JournalEntry journalEntry) {
+        this.journalEntry = journalEntry;
     }
 
     public Integer getLineNo() {

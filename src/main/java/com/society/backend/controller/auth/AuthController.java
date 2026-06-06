@@ -32,7 +32,6 @@ public class AuthController {
         Long societyId = null;
         String societyName = null;
         String role = null;
-        Long memberId = null;
 
         User user = userRepository.findAll()
                 .stream()

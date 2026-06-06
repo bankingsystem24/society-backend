@@ -9,6 +9,5 @@ import com.society.backend.gl.entity.JournalEntryLine;
 public interface JournalEntryLineRepository
         extends JpaRepository<JournalEntryLine, Long> {
 
-    List<JournalEntryLine> findByJournalId(Long journalId);
+    List<JournalEntryLine> findByJournalEntryId(Long journalId);
 }
-

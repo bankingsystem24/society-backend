@@ -4,29 +4,40 @@ public class TrialBalanceDTO {
 
     private Integer glCode;
     private String accountName;
+
+    // Opening
+    private Double openingBalance;
+    private String openingType;
+
+    // Period Movement
     private Double debit;
     private Double credit;
 
-    // computed fields (not from DB)
-    private Double balance;
-    private String balanceType;
+    // Closing
+    private Double closingBalance;
+    private String closingType;
+
+    private String accountType;
+    private String groupName;
 
     // Default Constructor
     public TrialBalanceDTO() {
     }
 
-    // ✅ JPQL Constructor (ONLY use this in query)
-    public TrialBalanceDTO(Integer glCode,
-                           String accountName,
-                           Double debit,
-                           Double credit) {
+    // Existing JPQL Constructor
+    public TrialBalanceDTO(
+            Integer glCode,
+            String accountName,
+            Double debit,
+            Double credit,
+            String groupName) {
+
         this.glCode = glCode;
         this.accountName = accountName;
         this.debit = debit;
         this.credit = credit;
+        this.groupName = groupName;
     }
-
-    // Getters & Setters
 
     public Integer getGlCode() {
         return glCode;
@@ -42,6 +53,22 @@ public class TrialBalanceDTO {
 
     public void setAccountName(String accountName) {
         this.accountName = accountName;
+    }
+
+    public Double getOpeningBalance() {
+        return openingBalance;
+    }
+
+    public void setOpeningBalance(Double openingBalance) {
+        this.openingBalance = openingBalance;
+    }
+
+    public String getOpeningType() {
+        return openingType;
+    }
+
+    public void setOpeningType(String openingType) {
+        this.openingType = openingType;
     }
 
     public Double getDebit() {
@@ -60,19 +87,36 @@ public class TrialBalanceDTO {
         this.credit = credit;
     }
 
-    public Double getBalance() {
-        return balance;
+    public Double getClosingBalance() {
+        return closingBalance;
     }
 
-    public void setBalance(Double balance) {
-        this.balance = balance;
+    public void setClosingBalance(Double closingBalance) {
+        this.closingBalance = closingBalance;
     }
 
-    public String getBalanceType() {
-        return balanceType;
+    public String getClosingType() {
+        return closingType;
     }
 
-    public void setBalanceType(String balanceType) {
-        this.balanceType = balanceType;
+    public void setClosingType(String closingType) {
+        this.closingType = closingType;
+    }
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
+    
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }

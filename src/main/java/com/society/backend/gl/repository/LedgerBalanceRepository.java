@@ -20,17 +20,23 @@ public interface LedgerBalanceRepository
             Long entityId,
             String entityType);
 
+    Optional<LedgerBalance> findBySocietyIdAndGlCode(
+        Long societyId,
+        Integer glCode);
+
 @Query("""
 SELECT new com.society.backend.gl.dto.TrialBalanceDTO(
     gm.glCode,
     gm.accountName,
     SUM(COALESCE(jl.debitAmount,0)),
-    SUM(COALESCE(jl.creditAmount,0))
+    SUM(COALESCE(jl.creditAmount,0)),
+    gm.groupName
+
 )
 FROM JournalEntryLine jl
 JOIN GlMaster gm ON gm.glCode = jl.glCode
 WHERE jl.societyId = :societyId
-GROUP BY gm.glCode, gm.accountName
+GROUP BY gm.glCode, gm.accountName, gm.groupName
 ORDER BY gm.glCode
 """)
 
