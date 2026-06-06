@@ -1,6 +1,9 @@
 package com.society.backend.gl.entity;
 
 import java.time.LocalDate;
+
+import com.society.backend.entity.Society;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -27,7 +30,9 @@ public class ExpenseVoucher {
 
     private Long journalId;
 
-    private Long societyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "society_id", nullable = false)
+    private Society society;
     
     public Long getId() {
         return id;
@@ -101,11 +106,11 @@ public class ExpenseVoucher {
         this.journalId = journalId;
     }
 
-    public Long getSocietyId() {
-        return societyId;
+    public Society getSociety() {
+        return society;
     }
 
-    public void setSocietyId(Long societyId) {
-        this.societyId = societyId;
+    public void setSociety(Society society) {
+        this.society = society;
     }
 }

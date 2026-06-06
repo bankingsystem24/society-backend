@@ -305,57 +305,6 @@ public class JournalService {
         }
 
         // =====================================================
-        // EXPENSE ENTRY
-        // =====================================================
-
-        // public Long createExpenseEntry(
-        // String voucherNo,
-        // String narration,
-        // Integer expenseGlCode,
-        // Double amount,
-        // Long vendorId,
-        // Long societyId) {
-
-        // Long journalId = createJournalEntry(
-        // voucherNo,
-        // "PAYMENT",
-        // narration,
-        // "EXPENSE",
-        // vendorId,
-        // amount,
-        // societyId,
-
-        // expenseGlCode,
-        // amount,
-
-        // 1002,
-        // amount,
-
-        // "SOCIETY",
-        // societyId);
-
-        // // EXPENSE INCREASE
-        // ledgerBalanceService.updateBalance(
-        // societyId,
-        // expenseGlCode,
-        // null,
-        // "SOCIETY",
-        // amount,
-        // 0.0);
-
-        // // BANK DECREASE
-        // ledgerBalanceService.updateBalance(
-        // societyId,
-        // 1002,
-        // null,
-        // "SOCIETY",
-        // 0.0,
-        // amount);
-
-        // return journalId;
-        // }
-
-        // =====================================================
         // GENERAL JOURNAL
         // =====================================================
 

@@ -13,10 +13,10 @@ public class GlMasterController {
     @Autowired
     private GlMasterService glMasterService;
 
-@GetMapping
-public List<GlMaster> getGlMaster(@RequestParam Long societyId) {
-    return glMasterService.getAllBySociety(societyId);
-}
+    @GetMapping
+    public List<GlMaster> getGlMaster(@RequestParam Long societyId) {
+        return glMasterService.getAllBySociety(societyId);
+    }
 
 
 }
