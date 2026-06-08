@@ -46,85 +46,101 @@ public class BillingService {
 
         @Transactional
         public String generateMonthlyBills(
-                        Long societyId,
-                        String month,
-                        int year,
-                        Long createdBy) {
+                Long societyId,
+                String month,
+                int year,
+                Long createdBy) {
 
-                List<Flat> flats = flatRepository.findBySociety_Id(societyId);
+        List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
-                // Fetch policy for society
-                SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                .findBySocietyId(societyId)
-                                .orElseThrow(() -> new RuntimeException("Billing policy not found"));
+        if (flats == null || flats.isEmpty()) {
+                return "No flats found for society";
+        }
 
-                int createdCount = 0;
+        SocietyBillingPolicy policy = societyBillingPolicyRepository
+                .findBySocietyId(societyId)
+                .orElseThrow(() -> new RuntimeException("Billing policy not found"));
 
-                // Convert month name to Month enum
-                Month billingMonth = Month.valueOf(month.toUpperCase());
+        Month billingMonth;
+        try {
+                billingMonth = Month.valueOf(month.toUpperCase());
+        } catch (Exception e) {
+                throw new RuntimeException("Invalid month: " + month);
+        }
 
-                // Due date from policy
-                LocalDate dueDate = LocalDate.of(
-                                year,
-                                billingMonth,
-                                policy.getBillingDay());
+        LocalDate dueDate = LocalDate.of(year, billingMonth, policy.getBillingDay());
 
-                LocalDate finalDueDate = dueDate.plusDays(
-                                policy.getGraceDays() != null ? policy.getGraceDays() : 0);
+        LocalDate finalDueDate = dueDate.plusDays(
+                policy.getGraceDays() != null ? policy.getGraceDays() : 0
+        );
 
-                for (Flat flat : flats) {
+        int createdCount = 0;
 
-                        boolean exists = billingRepository
-                                        .existsByFlatIdAndMonthAndYear(
-                                                        flat.getId(),
-                                                        month,
-                                                        year);
+        for (Flat flat : flats) {
 
-                        if (exists) {
-                                continue;
-                        }
+                if (flat == null) continue;
+                if (flat.getId() == null) continue;
+                if (flat.getOwner() == null || flat.getOwner().getId() == null) continue;
 
-                        Billing bill = new Billing();
+                boolean exists = billingRepository.existsByFlatIdAndMonthAndYear(
+                        flat.getId(),
+                        month,
+                        year
+                );
 
-                        bill.setSociety(flat.getSociety());
-                        bill.setFlat(flat);
-                        bill.setMonth(month);
-                        bill.setYear(year);
+                if (exists) continue;
 
-                        double amount = flat.getMaintenanceAmount() != null
-                                        ? flat.getMaintenanceAmount()
-                                        : 0.0;
+                double amount = flat.getMaintenanceAmount() != null
+                        ? flat.getMaintenanceAmount()
+                        : 0.0;
 
-                        bill.setMaintenanceAmount(amount);
-                        bill.setPenaltyAmount(0.0);
-                        bill.setTotalAmount(amount);
-                        bill.setStatus(PaymentStatus.PENDING);
+                Billing bill = new Billing();
+                bill.setSociety(flat.getSociety());
+                bill.setFlat(flat);
+                bill.setMonth(month);
+                bill.setYear(year);
+                bill.setMaintenanceAmount(amount);
+                bill.setPenaltyAmount(0.0);
+                bill.setTotalAmount(amount);
+                bill.setStatus(PaymentStatus.PENDING);
+                bill.setCreatedDate(LocalDate.of(year, billingMonth, 1));
+                bill.setDueDate(finalDueDate);
 
-                        // Set bill date and due date
-                        bill.setCreatedDate(LocalDate.of(year, billingMonth, 1));
-                        bill.setDueDate(finalDueDate);
+                Billing savedBill = billingRepository.save(bill);
 
-                        final Long flatId = flat.getId();
+                Member member = flat.getOwner();
 
-                        Billing savedBill = billingRepository.save(bill);
+                // ================= IMPORTANT FIX =================
+                // DO NOT hide journal errors
+                try {
+                Long journalId = journalService.createMaintenanceBillEntry(
+                        savedBill.getId(),
+                        member,
+                        amount,
+                        societyId,
+                        createdBy,
+                        flat.getId()
+                );
 
-                        Member member = flat.getOwner();
-
-                        journalService.createMaintenanceBillEntry(
-                                        savedBill.getId(),
-                                        member,
-                                        amount,
-                                        societyId,
-                                        createdBy,
-                                        flatId);
-
-                        createdCount++;
+                if (journalId == null) {
+                        throw new RuntimeException("Journal not created for bill " + savedBill.getId());
                 }
 
-                return createdCount + " bills generated successfully for "
-                                + month + " " + year;
+                } catch (Exception e) {
+                throw new RuntimeException(
+                        "Journal failed for billId=" + savedBill.getId()
+                                + " -> " + e.getMessage()
+                );
+                }
+
+                createdCount++;
         }
-        // =====================================================
+
+        return createdCount + " bills generated successfully for " + month + " " + year;
+        }
+
+
+// =====================================================
         // GET BILLS BY SOCIETY
         // =====================================================
 

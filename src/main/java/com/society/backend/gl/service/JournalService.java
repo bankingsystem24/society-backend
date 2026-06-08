@@ -117,52 +117,58 @@ public class JournalService {
         // BILL ENTRY
         // =====================================================
 
-        public Long createMaintenanceBillEntry(
-                        Long billId,
-                        Member member,
-                        Double amount,
-                        Long societyId,
-                        Long createdBy,
-                        Long flatId) {
+public Long createMaintenanceBillEntry(
+        Long billId,
+        Member member,
+        Double amount,
+        Long societyId,
+        Long createdBy,
+        Long flatId) {
 
-                Long journalId = createJournalEntry(
-                                "BILL-" + billId,
-                                "BILL",
-                                "Maintenance Bill Generated",
-                                "BILL",
-                                billId,
-                                amount,
-                                societyId,
-                                1101, // DR Member Receivable
-                                amount,
-                                4001, // CR Income
-                                amount,
-                                "SOCIETY",
-                                societyId,
-                                createdBy,
-                                flatId,
-                                member);
+    final Integer RECEIVABLE_GL = 1101;
+    final Integer INCOME_GL = 3000; // ✅ FIXED (NOT 4001)
 
-                // LEDGER UPDATE (RECEIVABLE INCREASE)
-                ledgerBalanceService.updateBalance(
-                                societyId,
-                                1101,
-                                null,
-                                "SOCIETY",
-                                amount,
-                                0.0);
+    Long journalId = createJournalEntry(
+            "BILL-" + billId,
+            "BILL",
+            "Maintenance Bill Generated",
+            "BILL",
+            billId,
+            amount,
+            societyId,
+            RECEIVABLE_GL,
+            amount,
+            INCOME_GL,
+            amount,
+            "MEMBER",
+            member != null ? member.getId() : null,
+            createdBy,
+            flatId,
+            member
+    );
 
-                // LEDGER UPDATE (INCOME)
-                ledgerBalanceService.updateBalance(
-                                societyId,
-                                4001,
-                                null,
-                                "SOCIETY",
-                                0.0,
-                                amount);
+    // ================= LEDGER UPDATE =================
 
-                return journalId;
-        }
+    ledgerBalanceService.updateBalance(
+            societyId,
+            RECEIVABLE_GL,
+            member != null ? member.getId() : null,
+            "MEMBER",
+            amount,
+            0.0
+    );
+
+    ledgerBalanceService.updateBalance(
+            societyId,
+            INCOME_GL,
+            null,
+            "SOCIETY",
+            0.0,
+            amount
+    );
+
+    return journalId;
+}
 
         // =====================================================
         // RECEIPT ENTRY
