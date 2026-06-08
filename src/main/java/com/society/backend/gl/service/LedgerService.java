@@ -26,15 +26,16 @@ public List<LedgerDTO> getLedger(Long societyId, Integer glCode) {
             .findBySocietyIdAndIsActiveTrue(societyId)
             .orElseThrow(() -> new RuntimeException("Active Financial Year not found"));
 
-    Double openingBalance = repository.getOpeningBalance(
+                System.out.println("My output:"+societyId+" "+glCode+" "+fy.getStartDate());
+    Double opening = repository.getOpeningBalance(
             societyId,
             glCode,
-            fy.getStartDate()
+            fy.getId()
     );
 
-    double runningBalance = openingBalance != null ? openingBalance : 0.0;
+    double runningBalance = (opening != null ? opening : 0.0);
 
-    List<LedgerDTO> list = repository.getLedger(
+    List<LedgerDTO> txns = repository.getLedger(
             societyId,
             glCode,
             fy.getStartDate(),
@@ -43,26 +44,31 @@ public List<LedgerDTO> getLedger(Long societyId, Integer glCode) {
 
     List<LedgerDTO> result = new ArrayList<>();
 
-    // ✅ 1. ADD OPENING ROW
+    // =========================
+    // 1. OPENING ROW (FIXED)
+    // =========================
     result.add(new LedgerDTO(
             fy.getStartDate().minusDays(1),
             "OPENING",
             "OPENING",
             "Opening Balance",
-            0.0,
-            0.0,
+            runningBalance > 0 ? runningBalance : 0.0,
+            runningBalance < 0 ? Math.abs(runningBalance) : 0.0,
             runningBalance,
             glCode,
             "Opening Balance",
             runningBalance >= 0 ? "DR" : "CR"
     ));
 
-    // 2. Process transactions
-    for (LedgerDTO dto : list) {
+    // =========================
+    // 2. TRANSACTIONS
+    // =========================
+    for (LedgerDTO dto : txns) {
 
-        runningBalance +=
-                (dto.getDebitAmount() != null ? dto.getDebitAmount() : 0)
-              - (dto.getCreditAmount() != null ? dto.getCreditAmount() : 0);
+        double debit = dto.getDebitAmount() != null ? dto.getDebitAmount() : 0.0;
+        double credit = dto.getCreditAmount() != null ? dto.getCreditAmount() : 0.0;
+
+        runningBalance = runningBalance + debit - credit;
 
         dto.setBalance(runningBalance);
         dto.setBalanceType(runningBalance >= 0 ? "DR" : "CR");

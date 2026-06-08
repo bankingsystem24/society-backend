@@ -41,17 +41,17 @@ List<LedgerDTO> getLedger(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("""
-                SELECT COALESCE(SUM(jl.debitAmount),0) - COALESCE(SUM(jl.creditAmount),0)
-                FROM JournalEntry je
-                JOIN JournalEntryLine jl ON je.id = jl.journalEntry.id
-                WHERE je.societyId = :societyId
-                  AND jl.glCode = :glCode
-                  AND je.entryDate < :startDate
-            """)
-    Double getOpeningBalance(
-            @Param("societyId") Long societyId,
-            @Param("glCode") Integer glCode,
-            @Param("startDate") LocalDate startDate);
-
+@Query("""
+    SELECT 
+        COALESCE(g.openingBalance, 0)
+    FROM GlOpeningBalance g
+    WHERE g.society.id = :societyId
+      AND g.glCode = :glCode
+      AND g.financialYearId = :financialYearId
+""")
+Double getOpeningBalance(
+    @Param("societyId") Long societyId,
+    @Param("glCode") Integer glCode,
+    @Param("financialYearId") Long financialYearId
+);
 }

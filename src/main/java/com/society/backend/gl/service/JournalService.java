@@ -117,58 +117,55 @@ public class JournalService {
         // BILL ENTRY
         // =====================================================
 
-public Long createMaintenanceBillEntry(
-        Long billId,
-        Member member,
-        Double amount,
-        Long societyId,
-        Long createdBy,
-        Long flatId) {
+        public Long createMaintenanceBillEntry(
+                        Long billId,
+                        Member member,
+                        Double amount,
+                        Long societyId,
+                        Long createdBy,
+                        Long flatId) {
 
-    final Integer RECEIVABLE_GL = 1101;
-    final Integer INCOME_GL = 3000; // ✅ FIXED (NOT 4001)
+                final Integer RECEIVABLE_GL = 1101;
+                final Integer INCOME_GL = 3000; // ✅ FIXED (NOT 4001)
 
-    Long journalId = createJournalEntry(
-            "BILL-" + billId,
-            "BILL",
-            "Maintenance Bill Generated",
-            "BILL",
-            billId,
-            amount,
-            societyId,
-            RECEIVABLE_GL,
-            amount,
-            INCOME_GL,
-            amount,
-            "MEMBER",
-            member != null ? member.getId() : null,
-            createdBy,
-            flatId,
-            member
-    );
+                Long journalId = createJournalEntry(
+                                "BILL-" + billId,
+                                "BILL",
+                                "Maintenance Bill Generated",
+                                "BILL",
+                                billId,
+                                amount,
+                                societyId,
+                                RECEIVABLE_GL,
+                                amount,
+                                INCOME_GL,
+                                amount,
+                                "MEMBER",
+                                member != null ? member.getId() : null,
+                                createdBy,
+                                flatId,
+                                member);
 
-    // ================= LEDGER UPDATE =================
+                // ================= LEDGER UPDATE =================
 
-    ledgerBalanceService.updateBalance(
-            societyId,
-            RECEIVABLE_GL,
-            member != null ? member.getId() : null,
-            "MEMBER",
-            amount,
-            0.0
-    );
+                ledgerBalanceService.updateBalance(
+                                societyId,
+                                RECEIVABLE_GL,
+                                member != null ? member.getId() : null,
+                                "MEMBER",
+                                amount,
+                                0.0);
 
-    ledgerBalanceService.updateBalance(
-            societyId,
-            INCOME_GL,
-            null,
-            "SOCIETY",
-            0.0,
-            amount
-    );
+                ledgerBalanceService.updateBalance(
+                                societyId,
+                                INCOME_GL,
+                                null,
+                                "SOCIETY",
+                                0.0,
+                                amount);
 
-    return journalId;
-}
+                return journalId;
+        }
 
         // =====================================================
         // RECEIPT ENTRY
@@ -192,7 +189,7 @@ public Long createMaintenanceBillEntry(
                 switch (paymentMode.toUpperCase()) {
 
                         case "CASH":
-                                receiptGl = 1001; // Cash In Hand
+                                receiptGl = 1000; // Cash In Hand
                                 break;
 
                         case "UPI":
@@ -202,7 +199,7 @@ public Long createMaintenanceBillEntry(
                         case "CHEQUE":
                         case "CARD":
                         case "NETBANKING":
-                                receiptGl = 1010; // Bank - Savings Account
+                                receiptGl = 1001; // Bank - Savings Account
                                 break;
 
                         default:
@@ -210,12 +207,13 @@ public Long createMaintenanceBillEntry(
                                                 "Unsupported Payment Mode: " + paymentMode);
                 }
 
-                Integer RECEIVABLE_GL = 1101;
-                Integer DISCOUNT_GL = 5001;
+                Integer RECEIVABLE_GL = 1100;
+                Integer DISCOUNT_GL = 5100;
 
                 // Total receivable being settled
                 double receivableAmount = (maintenanceAmount != null ? maintenanceAmount : 0.0)
-                                + (interestAmount != null ? interestAmount : 0.0);
+                                + (interestAmount != null ? interestAmount : 0.0)
+                                - (discountAmount != null ? discountAmount : 0.0);
 
                 // ================= HEADER =================
 
