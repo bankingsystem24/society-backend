@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.entity.AccountingYear;
+import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.gl.dto.JournalViewDTO;
 import com.society.backend.gl.entity.*;
 import com.society.backend.gl.repository.*;
 import com.society.backend.repository.AccountingYearRepository;
+import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.MemberRepository;
 
 @Service
@@ -40,6 +42,9 @@ public class JournalService {
 
         @Autowired
         private MemberRepository memberRepository;
+
+        @Autowired
+        private FlatRepository flatRepository;
 
         // =====================================================
         // CORE JOURNAL ENTRY
@@ -238,47 +243,31 @@ public class JournalService {
 
                 // ================= CASH/BANK DR =================
 
-                createLine(
-                                savedEntry,
-                                lineNo++,
-                                receiptGl,
-                                totalAmount,
-                                0.0,
-                                "ASSET",
-                                null,
-                                societyId,
-                                flatId);
+                // DR CASH/BANK
+                createLine(entry, lineNo++, receiptGl,
+                                totalAmount, 0.0,
+                                "RECEIPT", null, societyId, flatId);
 
-                // ================= DISCOUNT DR =================
-
-                if (discountAmount != null && discountAmount > 0) {
-
-                        createLine(
-                                        savedEntry,
-                                        lineNo++,
-                                        DISCOUNT_GL,
-                                        discountAmount,
-                                        0.0,
-                                        "EXPENSE",
-                                        memberId,
-                                        societyId,
-                                        flatId);
+                // CR MAINTENANCE
+                if (maintenanceAmount > 0) {
+                        createLine(entry, lineNo++, RECEIVABLE_GL,
+                                        0.0, maintenanceAmount,
+                                        "MAINTENANCE", memberId, societyId, flatId);
                 }
 
-                // ================= RECEIVABLE CR =================
+                // CR INTEREST
+                if (interestAmount > 0) {
+                        createLine(entry, lineNo++, RECEIVABLE_GL,
+                                        0.0, interestAmount,
+                                        "INTEREST", memberId, societyId, flatId);
+                }
 
-                createLine(
-                                savedEntry,
-                                lineNo++,
-                                RECEIVABLE_GL,
-                                0.0,
-                                receivableAmount,
-                                "MEMBER",
-                                memberId,
-                                societyId,
-                                flatId);
-
-                // ================= LEDGER UPDATES =================
+                // DR DISCOUNT (if applicable)
+                if (discountAmount > 0) {
+                        createLine(entry, lineNo++, DISCOUNT_GL,
+                                        discountAmount, 0.0,
+                                        "DISCOUNT", memberId, societyId, flatId);
+                }
 
                 ledgerBalanceService.updateBalance(
                                 societyId,
@@ -383,6 +372,13 @@ public class JournalService {
                 line.setSocietyId(societyId);
                 line.setFlatId(flatId);
                 line.setRemarks("AUTO");
+
+                Flat flat = flatRepository.findById(flatId)
+                                .orElseThrow(() -> new RuntimeException("Flat not found"));
+
+                Member member = flat.getOwner();
+
+                line.setMember(member);
 
                 journalEntryLineRepository.save(line);
         }
