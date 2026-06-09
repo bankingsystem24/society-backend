@@ -178,126 +178,120 @@ public class JournalService {
 
         @Transactional
         public Long createReceiptEntry(
-                        Long receiptId,
-                        Long memberId,
-                        Double maintenanceAmount,
-                        Double interestAmount,
-                        Double discountAmount,
-                        Double totalAmount,
-                        String paymentMode,
-                        Long societyId,
-                        Long createdBy,
-                        Long flatId) {
+                Long receiptId,
+                Long memberId,
+                Double maintenanceAmount,
+                Double interestAmount,
+                Double discountAmount,
+                Double totalAmount,
+                String paymentMode,
+                Long societyId,
+                Long createdBy,
+                Long flatId) {
 
-                Integer receiptGl;
+        Integer receiptGl;
 
-                switch (paymentMode.toUpperCase()) {
+        // ================= PAYMENT MODE TO GL =================
+        switch (paymentMode.toUpperCase()) {
+                case "CASH":
+                receiptGl = 1000;
+                break;
 
-                        case "CASH":
-                                receiptGl = 1000; // Cash In Hand
-                                break;
+                case "UPI":
+                case "NEFT":
+                case "RTGS":
+                case "IMPS":
+                case "CHEQUE":
+                case "CARD":
+                case "NETBANKING":
+                receiptGl = 1001;
+                break;
 
-                        case "UPI":
-                        case "NEFT":
-                        case "RTGS":
-                        case "IMPS":
-                        case "CHEQUE":
-                        case "CARD":
-                        case "NETBANKING":
-                                receiptGl = 1001; // Bank - Savings Account
-                                break;
-
-                        default:
-                                throw new RuntimeException(
-                                                "Unsupported Payment Mode: " + paymentMode);
-                }
-
-                Integer RECEIVABLE_GL = 1100;
-                Integer DISCOUNT_GL = 5100;
-
-                // Total receivable being settled
-                double receivableAmount = (maintenanceAmount != null ? maintenanceAmount : 0.0)
-                                + (interestAmount != null ? interestAmount : 0.0)
-                                - (discountAmount != null ? discountAmount : 0.0);
-
-                // ================= HEADER =================
-
-                JournalEntry entry = new JournalEntry();
-
-                entry.setVoucherNo("RCPT-" + receiptId);
-                entry.setEntryDate(LocalDate.now());
-                entry.setVoucherType(VoucherType.RECEIPT);
-                entry.setNarration("Bill Payment Receipt");
-                entry.setReferenceType("RECEIPT");
-                entry.setReferenceId(receiptId);
-                entry.setTotalAmount(totalAmount);
-                entry.setStatus("POSTED");
-                entry.setSocietyId(societyId);
-                entry.setCreatedAt(LocalDateTime.now());
-                entry.setCreatedBy(createdBy);
-
-                JournalEntry savedEntry = journalRepo.save(entry);
-
-                Long journalId = savedEntry.getId();
-                int lineNo = 1;
-
-                // ================= CASH/BANK DR =================
-
-                // DR CASH/BANK
-                createLine(entry, lineNo++, receiptGl,
-                                totalAmount, 0.0,
-                                "RECEIPT", null, societyId, flatId);
-
-                // CR MAINTENANCE
-                if (maintenanceAmount > 0) {
-                        createLine(entry, lineNo++, RECEIVABLE_GL,
-                                        0.0, maintenanceAmount,
-                                        "MAINTENANCE", memberId, societyId, flatId);
-                }
-
-                // CR INTEREST
-                if (interestAmount > 0) {
-                        createLine(entry, lineNo++, RECEIVABLE_GL,
-                                        0.0, interestAmount,
-                                        "INTEREST", memberId, societyId, flatId);
-                }
-
-                // DR DISCOUNT (if applicable)
-                if (discountAmount > 0) {
-                        createLine(entry, lineNo++, DISCOUNT_GL,
-                                        discountAmount, 0.0,
-                                        "DISCOUNT", memberId, societyId, flatId);
-                }
-
-                ledgerBalanceService.updateBalance(
-                                societyId,
-                                receiptGl,
-                                null,
-                                "ASSET",
-                                totalAmount,
-                                0.0);
-
-                if (discountAmount != null && discountAmount > 0) {
-
-                        ledgerBalanceService.updateBalance(
-                                        societyId,
-                                        DISCOUNT_GL,
-                                        memberId,
-                                        "EXPENSE",
-                                        discountAmount,
-                                        0.0);
-                }
-
-                ledgerBalanceService.updateBalance(
-                                societyId,
-                                RECEIVABLE_GL,
-                                memberId,
-                                "MEMBER",
-                                0.0,
-                                receivableAmount);
-
-                return journalId;
+                default:
+                throw new RuntimeException("Unsupported Payment Mode: " + paymentMode);
         }
+
+        Integer DISCOUNT_GL = 5100;
+        Integer INTEREST_GL = 3020;
+
+        // ================= HEADER ENTRY =================
+        JournalEntry entry = new JournalEntry();
+        entry.setVoucherNo("RCPT-" + receiptId);
+        entry.setEntryDate(LocalDate.now());
+        entry.setVoucherType(VoucherType.RECEIPT);
+        entry.setNarration("Bill Payment Receipt");
+        entry.setReferenceType("RECEIPT");
+        entry.setReferenceId(receiptId);
+        entry.setTotalAmount(totalAmount);
+        entry.setStatus("POSTED");
+        entry.setSocietyId(societyId);
+        entry.setCreatedAt(LocalDateTime.now());
+        entry.setCreatedBy(createdBy);
+
+        JournalEntry savedEntry = journalRepo.save(entry);
+
+        int lineNo = 1;
+
+        // ================= DR CASH / BANK =================
+        createLine(
+                savedEntry,
+                lineNo++,
+                receiptGl,
+                totalAmount,
+                0.0,
+                "RECEIPT",
+                receiptId,
+                societyId,
+                flatId
+        );
+
+        // ================= CR MAINTENANCE =================
+        if (maintenanceAmount != null && maintenanceAmount > 0) {
+                createLine(
+                        savedEntry,
+                        lineNo++,
+                        1101,
+                        0.0,
+                        maintenanceAmount,
+                        "MAINTENANCE RECEIVABLE",
+                        memberId,
+                        societyId,
+                        flatId
+                );
+        }
+
+        if (interestAmount != null && interestAmount > 0) {
+        createLine(
+                savedEntry,
+                lineNo++,
+                INTEREST_GL,
+                0.0,
+                interestAmount,
+                "INTEREST",
+                memberId,
+                societyId,
+                flatId
+        );
+        }
+
+        // ================= DR DISCOUNT =================
+        if (discountAmount != null && discountAmount > 0) {
+                createLine(
+                        savedEntry,
+                        lineNo++,
+                        DISCOUNT_GL,
+                        discountAmount,
+                        0.0,
+                        "DISCOUNT",
+                        memberId,
+                        societyId,
+                        flatId
+                );
+        }
+
+        return savedEntry.getId();
+        }
+
         // =====================================================
         // GENERAL JOURNAL
         // =====================================================
