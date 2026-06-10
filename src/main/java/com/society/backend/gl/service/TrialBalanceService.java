@@ -1,16 +1,19 @@
 package com.society.backend.gl.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.society.backend.entity.AccountingYear;
-import com.society.backend.repository.AccountingYearRepository;
 import com.society.backend.gl.dto.TrialBalanceDTO;
 import com.society.backend.gl.entity.GlOpeningBalance;
 import com.society.backend.gl.repository.GlOpeningBalanceRepository;
 import com.society.backend.gl.repository.LedgerBalanceRepository;
+import com.society.backend.repository.AccountingYearRepository;
 
 @Service
 public class TrialBalanceService {
@@ -24,52 +27,69 @@ public class TrialBalanceService {
     @Autowired
     private GlOpeningBalanceRepository glOpeningBalanceRepository;
 
+    private double safe(Double value) {
+        return value == null ? 0.0 : value;
+    }
+
     public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
 
+        System.out.println("Trial Balance Start - societyId: " + societyId);
+
+        // 1. Get Active Financial Year
         AccountingYear fy = accountingYearRepository
                 .findBySocietyIdAndIsActiveTrue(societyId)
-                .orElseThrow(() -> new RuntimeException("Active Financial Year not found"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Active Financial Year not found for societyId: " + societyId));
 
+        // 2. Get ledger period data
         List<TrialBalanceDTO> list = ledgerRepo.getTrialBalance(
                 societyId,
                 fy.getStartDate(),
-                fy.getEndDate());
+                fy.getEndDate()
+        );
 
+        // 3. BULK FETCH opening balances (FIXED APPROACH)
+        List<GlOpeningBalance> openingList =
+                glOpeningBalanceRepository
+                        .findBySociety_IdAndFinancialYearId(societyId, fy.getId());
+
+        // 4. Convert to Map (glCode -> OpeningBalance)
+        Map<Integer, GlOpeningBalance> openingMap = openingList.stream()
+                .collect(Collectors.toMap(
+                        GlOpeningBalance::getGlCode,
+                        Function.identity(),
+                        (a, b) -> a // handle duplicates safely
+                ));
+
+        // 5. Process Trial Balance
         for (TrialBalanceDTO dto : list) {
 
-            GlOpeningBalance ob = glOpeningBalanceRepository
-                    .findBySocietyIdAndGlCodeAndFinancialYearId(
-                            societyId,
-                            dto.getGlCode(),
-                            fy.getId());
+            GlOpeningBalance ob = openingMap.get(dto.getGlCode());
 
-            double opening = 0.0;
+            double openingDebit = ob != null ? safe(ob.getOpeningDebit()) : 0.0;
+            double openingCredit = ob != null ? safe(ob.getOpeningCredit()) : 0.0;
 
-            if (ob != null && ob.getOpeningBalance() != null) {
-                opening = ob.getOpeningBalance();
-            }
+            double periodDebit = safe(dto.getDebit());
+            double periodCredit = safe(dto.getCredit());
 
-            double debit = dto.getDebit() != null
-                    ? dto.getDebit()
-                    : 0.0;
+            // Opening Balance
+            double openingNet = openingDebit - openingCredit;
 
-            double credit = dto.getCredit() != null
-                    ? dto.getCredit()
-                    : 0.0;
+            dto.setOpeningBalance(Math.abs(openingNet));
+            dto.setOpeningType(openingNet >= 0 ? "DR" : "CR");
 
-            double closing = opening + debit - credit;
+            // Period values
+            dto.setDebit(periodDebit);
+            dto.setCredit(periodCredit);
 
-            dto.setOpeningBalance(Math.abs(opening));
-            dto.setOpeningType(
-                    opening >= 0 ? "DR" : "CR");
+            // Closing Balance
+            double periodNet = periodDebit - periodCredit;
+            double closingNet = openingNet + periodNet;
 
-            dto.setClosingBalance(Math.abs(closing));
-            dto.setClosingType(
-                    closing >= 0 ? "DR" : "CR");
-
+            dto.setClosingBalance(Math.abs(closingNet));
+            dto.setClosingType(closingNet >= 0 ? "DR" : "CR");
         }
 
         return list;
     }
-
 }

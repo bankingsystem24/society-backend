@@ -31,6 +31,7 @@ public class GlOpeningBalance {
     @Column(name = "opening_balance")
     private Double openingBalance = 0.0;
 
+
     // ================= GETTERS & SETTERS =================
 
     public Long getId() {
@@ -88,4 +89,5 @@ public class GlOpeningBalance {
     public void setOpeningBalance(Double openingBalance) {
         this.openingBalance = openingBalance;
     }
+
 }

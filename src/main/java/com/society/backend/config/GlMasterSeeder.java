@@ -98,7 +98,9 @@ public class GlMasterSeeder {
                 create(5020, "RESERVES", "Repair Fund", societyId),
                 create(5030, "RESERVES", "Parking Fund", societyId),
                 create(5040, "RESERVES", "Building Maintenance Reserve", societyId),
-                create(5050, "RESERVES", "Emergency Fund", societyId)
+                create(5050, "RESERVES", "Emergency Fund", societyId),
+                create(5999, "RESERVES", "Opening Balance Equity", societyId)
+
             );
 
             repo.saveAll(list);

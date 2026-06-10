@@ -21,7 +21,6 @@ public class TrialBalanceController {
             @RequestParam Long societyId) {
                 System.out.println("Received request for Trial Balance with Society ID: " + societyId);
                 
-
         return trialBalanceService.getTrialBalance(societyId);
     }
 }

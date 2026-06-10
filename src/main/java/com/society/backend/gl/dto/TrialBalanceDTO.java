@@ -13,6 +13,9 @@ public class TrialBalanceDTO {
     private Double debit;
     private Double credit;
 
+    private Double openingDebit;
+    private Double openingCredit;
+
     // Closing
     private Double closingBalance;
     private String closingType;
@@ -25,19 +28,23 @@ public class TrialBalanceDTO {
     }
 
     // Existing JPQL Constructor
-    public TrialBalanceDTO(
-            Integer glCode,
-            String accountName,
-            Double debit,
-            Double credit,
-            String groupName) {
+public TrialBalanceDTO(
+        Integer glCode,
+        String accountName,
+        Double openingDebit,
+        Double openingCredit,
+        Double debit,
+        Double credit,
+        String groupName) {
 
-        this.glCode = glCode;
-        this.accountName = accountName;
-        this.debit = debit;
-        this.credit = credit;
-        this.groupName = groupName;
-    }
+    this.glCode = glCode;
+    this.accountName = accountName;
+    this.openingDebit = openingDebit;
+    this.openingCredit = openingCredit;
+    this.debit = debit;
+    this.credit = credit;
+    this.groupName = groupName;
+}
 
     public Integer getGlCode() {
         return glCode;
@@ -118,5 +125,21 @@ public class TrialBalanceDTO {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+        public Double getOpeningDebit() {
+        return openingDebit;
+    }
+
+    public void setOpeningDebit(Double openingDebit) {
+        this.openingDebit = openingDebit;
+    }
+
+    public Double getOpeningCredit() {
+        return openingCredit;
+    }
+
+    public void setopeningCredit(Double openingCredit) {
+        this.openingCredit = openingCredit;
     }
 }

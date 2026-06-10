@@ -135,13 +135,13 @@ public class ExpenseVoucherService {
         switch (paymentMode.toUpperCase()) {
 
             case "CASH":
-                return 1010; // Cash Account GL
+                return 1000; // Cash Account GL
 
             case "BANK":
-                return 1020; // Bank Account GL
+                return 1001; // Bank Account GL
 
             case "UPI":
-                return 1020; // Bank Account GL
+                return 1001; // Bank Account GL
 
             default:
                 throw new RuntimeException(

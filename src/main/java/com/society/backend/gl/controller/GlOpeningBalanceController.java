@@ -32,13 +32,13 @@ public class GlOpeningBalanceController {
         return service.getAllOpeningBySociety(societyId);
     }
 
-    @PostMapping("/save")
-    public GlOpeningBalance save(
-            @RequestBody GlOpeningBalance entity,
-            @RequestParam Long societyId
-    ) {
-        return service.save(entity, societyId);
-    }
+@PostMapping("/save")
+public GlOpeningBalance save(
+        @RequestBody GlOpeningBalanceRequest request,
+        @RequestParam Long societyId) {
+
+    return service.save(request, societyId);
+}
 
 @PutMapping("/{id}")
 public GlOpeningBalance update(

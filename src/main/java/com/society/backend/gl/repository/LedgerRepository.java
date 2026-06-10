@@ -43,12 +43,18 @@ List<LedgerDTO> getLedger(
 
 @Query("""
     SELECT 
-        COALESCE(g.openingBalance, 0)
+        CASE 
+            WHEN g.openingDebit IS NOT NULL AND g.openingDebit <> 0 
+                THEN COALESCE(g.openingDebit, 0)
+            ELSE 
+                COALESCE(-g.openingCredit, 0)
+        END
     FROM GlOpeningBalance g
     WHERE g.society.id = :societyId
       AND g.glCode = :glCode
       AND g.financialYearId = :financialYearId
 """)
+
 Double getOpeningBalance(
     @Param("societyId") Long societyId,
     @Param("glCode") Integer glCode,

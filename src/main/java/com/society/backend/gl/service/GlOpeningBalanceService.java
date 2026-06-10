@@ -20,19 +20,43 @@ public class GlOpeningBalanceService {
 
     // ================= GET ALL =================
     public List<GlOpeningBalance> getAllOpeningBySociety(Long societyId) {
-        return glOpeningBalanceRepository.findBySocietyId(societyId);
+        return glOpeningBalanceRepository.findBySociety_Id(societyId);
     }
 
-    public GlOpeningBalance save(GlOpeningBalance entity, Long societyId) {
+    public GlOpeningBalance save(
+            GlOpeningBalanceRequest request,
+            Long societyId) {
 
-        Society society = societyRepository.findById(societyId)
-                .orElseThrow(() -> new RuntimeException("Society not found"));
+        try {
 
-        entity.setSociety(society);
+            Society society = societyRepository.findById(societyId)
+                    .orElseThrow(() -> new RuntimeException("Society not found"));
 
-        return glOpeningBalanceRepository.save(entity);
+            // Main Entry
+            GlOpeningBalance mainEntry = new GlOpeningBalance();
+            mainEntry.setSociety(society);
+            mainEntry.setFinancialYearId(request.getFinancialYearId());
+            mainEntry.setGlCode(request.getGlCode());
+            mainEntry.setOpeningDebit(request.getOpeningDebit());
+            mainEntry.setOpeningCredit(request.getOpeningCredit());
+
+            GlOpeningBalance savedMain =
+                    glOpeningBalanceRepository.save(mainEntry);
+
+            return savedMain;
+
+        } catch (Exception e) {
+
+            System.out.println("ERROR TYPE = " + e.getClass().getName());
+            System.out.println("ERROR MSG = " + e.getMessage());
+
+            e.printStackTrace();
+
+            throw e;
+        }
     }
 
+    
     // ================= UPDATE =================
 public GlOpeningBalance update(Long id, GlOpeningBalanceRequest request) {
 

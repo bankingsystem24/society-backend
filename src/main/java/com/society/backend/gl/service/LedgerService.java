@@ -33,6 +33,8 @@ public List<LedgerDTO> getLedger(Long societyId, Integer glCode) {
             fy.getId()
     );
 
+    System.out.println("Opening Balance = " + (opening != null ? opening : 0.0));
+    
     double runningBalance = (opening != null ? opening : 0.0);
 
     List<LedgerDTO> txns = repository.getLedger(
