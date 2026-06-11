@@ -167,15 +167,6 @@ public class BillingController {
                 try {
 
                         // =========================
-                        // LOG REQUEST
-                        // =========================
-                        System.out.println("===== VERIFY PAYMENT =====");
-                        System.out.println("Bill IDs: " + req.getBillIds());
-                        System.out.println("Amount: " + req.getAmount());
-                        System.out.println("OrderId: " + req.getRazorpayOrderId());
-                        System.out.println("PaymentId: " + req.getRazorpayPaymentId());
-
-                        // =========================
                         // VERIFY SIGNATURE
                         // =========================
                         String payload = req.getRazorpayOrderId() + "|" + req.getRazorpayPaymentId();
@@ -247,12 +238,6 @@ public class BillingController {
                                         .sum();
 
                         double totalAmount = maintenanceAmount + interestAmount - discountAmount;
-
-                        System.out.println("===== CALCULATED =====");
-                        System.out.println("Maintenance: " + maintenanceAmount);
-                        System.out.println("Interest: " + interestAmount);
-                        System.out.println("Discount: " + discountAmount);
-                        System.out.println("Total: " + totalAmount);
 
                         // =========================
                         // CREATE RECEIPT

@@ -47,9 +47,6 @@ public class GlOpeningBalanceService {
 
         } catch (Exception e) {
 
-            System.out.println("ERROR TYPE = " + e.getClass().getName());
-            System.out.println("ERROR MSG = " + e.getMessage());
-
             e.printStackTrace();
 
             throw e;

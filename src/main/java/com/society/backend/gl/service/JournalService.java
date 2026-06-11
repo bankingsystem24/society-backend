@@ -376,4 +376,59 @@ public class JournalService {
 
                 journalEntryLineRepository.save(line);
         }
+
+        // =====================================================
+// SINKING FUND ENTRY
+// =====================================================
+
+public Long createSinkingFundEntry(
+        Long sinkingFundId,
+        Member member,
+        Double amount,
+        Long societyId,
+        Long createdBy,
+        Long flatId) {
+
+    final Integer RECEIVABLE_GL = 1101;
+    final Integer SINKING_FUND_GL = 5010;
+
+    Long journalId = createJournalEntry(
+            "SF-" + sinkingFundId,
+            "BILL",
+            "Sinking Fund Generated",
+            "SINKING_FUND",
+            sinkingFundId,
+            amount,
+            societyId,
+            RECEIVABLE_GL,
+            amount,
+            SINKING_FUND_GL,
+            amount,
+            "MEMBER",
+            member != null ? member.getId() : null,
+            createdBy,
+            flatId,
+            member);
+
+    // ================= LEDGER UPDATE =================
+
+    ledgerBalanceService.updateBalance(
+            societyId,
+            RECEIVABLE_GL,
+            member != null ? member.getId() : null,
+            "MEMBER",
+            amount,
+            0.0);
+
+    ledgerBalanceService.updateBalance(
+            societyId,
+            SINKING_FUND_GL,
+            null,
+            "SOCIETY",
+            0.0,
+            amount);
+
+    return journalId;
+}
+        
 }

@@ -9,7 +9,6 @@ import com.society.backend.exception.ResourceNotFoundException;
 import com.society.backend.repository.MemberRepository;
 import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,14 +16,18 @@ import java.util.List;
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
+    private final SocietyRepository societyRepository;
 
-    @Autowired
-    private MemberRepository memberRepository;
+    public UserService(UserRepository userRepository, 
+                        MemberRepository memberRepository,
+                        SocietyRepository societyRepository){
+            this.userRepository = userRepository;
+            this.memberRepository = memberRepository;
+            this.societyRepository = societyRepository;
 
-    @Autowired
-    private SocietyRepository societyRepository;
+    };
 
     // =========================
     // CREATE USER

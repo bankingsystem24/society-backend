@@ -26,15 +26,12 @@ public List<LedgerDTO> getLedger(Long societyId, Integer glCode) {
             .findBySocietyIdAndIsActiveTrue(societyId)
             .orElseThrow(() -> new RuntimeException("Active Financial Year not found"));
 
-                System.out.println("My output:"+societyId+" "+glCode+" "+fy.getStartDate());
     Double opening = repository.getOpeningBalance(
             societyId,
             glCode,
             fy.getId()
     );
-
-    System.out.println("Opening Balance = " + (opening != null ? opening : 0.0));
-    
+   
     double runningBalance = (opening != null ? opening : 0.0);
 
     List<LedgerDTO> txns = repository.getLedger(

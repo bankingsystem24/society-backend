@@ -2,7 +2,6 @@ package com.society.backend.controller;
 
 import com.society.backend.entity.AccountingYear;
 import com.society.backend.service.AccountingYearService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -14,8 +13,11 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class AccountingYearController {
 
-    @Autowired
-    private AccountingYearService accountingYearService;
+    private final AccountingYearService accountingYearService;
+
+    public AccountingYearController(AccountingYearService accountingYearService){
+        this.accountingYearService = accountingYearService;
+    };
 
     // =====================================================
     // GET ALL YEARS BY SOCIETY

@@ -51,7 +51,6 @@ public class ExpenseVoucherService {
                 request.getVendorId());
         voucher.setSociety(society);
 
-        System.out.println("Voucher"+voucher);
         
         ExpenseVoucher savedVoucher = expenseVoucherRepository.save(voucher);
 

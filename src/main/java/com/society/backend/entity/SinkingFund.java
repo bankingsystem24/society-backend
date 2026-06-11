@@ -40,7 +40,11 @@ public class SinkingFund {
     // Payment status
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.PENDING;
+    
     private LocalDate paidDate;
+
+    @Column(name = "receipt_id")
+    private Long receiptId;
 
     @Column(name = "payment_mode")
     private String paymentMode;
@@ -152,4 +156,10 @@ public class SinkingFund {
 
     public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 
+    public Long getReceiptId() {
+        return receiptId;
+    }
+    public void setReceiptId(Long receiptId) {
+        this.receiptId = receiptId;
+    }
 }

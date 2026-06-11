@@ -19,8 +19,7 @@ public class TrialBalanceController {
     @GetMapping("/trial-balance")
     public List<TrialBalanceDTO> getTrialBalance(
             @RequestParam Long societyId) {
-                System.out.println("Received request for Trial Balance with Society ID: " + societyId);
-                
+               
         return trialBalanceService.getTrialBalance(societyId);
     }
 }

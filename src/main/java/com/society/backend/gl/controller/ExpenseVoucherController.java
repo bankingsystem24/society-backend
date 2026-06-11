@@ -24,9 +24,6 @@ public class ExpenseVoucherController {
     @PostMapping
     public ExpenseVoucher save(
             @RequestBody ExpenseVoucherRequest request) {
-            
-                System.out.println("In Controller");
-
         return expenseVoucherService.save(request);
     }
 

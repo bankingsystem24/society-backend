@@ -1,8 +1,10 @@
 package com.society.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.society.backend.dto.SinkingFundPaymentRequest;
 import com.society.backend.dto.SinkingFundRequest;
 import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.entity.SinkingFund;
@@ -15,13 +17,16 @@ import java.util.List;
 @CrossOrigin
 public class SinkingFundController {
 
-    @Autowired
-    private SinkingFundService service;
+    private final SinkingFundService sinkingFundService;
+
+    public SinkingFundController(SinkingFundService sinkingFundService){
+        this.sinkingFundService = sinkingFundService;
+    };
 
     // CREATE / GENERATE SINGLE RECORD
 @PostMapping("/generate")
 public void generate(@RequestBody SinkingFundRequest request) {
-    service.generate(
+    sinkingFundService.generate(
         request.getSocietyId(),
         request.getMonth(),
         request.getYear(),
@@ -46,7 +51,7 @@ public void generate(@RequestBody SinkingFundRequest request) {
     // GET ALL
     @GetMapping
     public List<SinkingFundResponse> getAll(@RequestParam Long societyId) {
-        return service.getAll(societyId);
+        return sinkingFundService.getAll(societyId);
     }
 
     // GET BY FLAT (VERY USEFUL)
@@ -55,6 +60,17 @@ public void generate(@RequestBody SinkingFundRequest request) {
             @RequestParam Long societyId,
             @RequestParam Long flatId
     ) {
-        return service.getByFlat(societyId, flatId);
+        return sinkingFundService.getByFlat(societyId, flatId);
+    }
+
+    @PutMapping("/pay")
+    public ResponseEntity<String> pay(
+            @RequestBody SinkingFundPaymentRequest request) {
+
+        sinkingFundService.pay(
+                request.getSinkingFundIds(),
+                request.getPaymentMode());
+
+        return ResponseEntity.ok("Payment successful");
     }
 }

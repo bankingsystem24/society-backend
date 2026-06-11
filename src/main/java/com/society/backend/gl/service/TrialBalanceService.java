@@ -33,8 +33,6 @@ public class TrialBalanceService {
 
     public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
 
-        System.out.println("Trial Balance Start - societyId: " + societyId);
-
         // 1. Get Active Financial Year
         AccountingYear fy = accountingYearRepository
                 .findBySocietyIdAndIsActiveTrue(societyId)
