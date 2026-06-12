@@ -14,4 +14,6 @@ public interface FlatRepository extends JpaRepository<Flat, Long> {
 
     List<Flat> findBySociety_IdAndOwner_Id(Long societyId, Long ownerId);
 
+    
+
 }

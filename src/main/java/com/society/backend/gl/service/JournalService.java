@@ -430,5 +430,56 @@ public Long createSinkingFundEntry(
 
     return journalId;
 }
-        
+      
+public Long createContributionEntry(
+        Long contributionId,
+        Member member,
+        Double amount,
+        Long societyId,
+        Long createdBy,
+        Long flatId) {
+
+    final Integer RECEIVABLE_GL = 1101;
+    final Integer CONTRIBUTION_INCOME_GL = 3002; 
+
+    Long journalId = createJournalEntry(
+            "CONTRIB-" + contributionId,
+            "BILL",
+            "Contribution Generated",
+            "CONTRIBUTION",
+            contributionId,
+            amount,
+            societyId,
+            RECEIVABLE_GL,
+            amount,
+            CONTRIBUTION_INCOME_GL,
+            amount,
+            "MEMBER",
+            member != null ? member.getId() : null,
+            createdBy,
+            flatId,
+            member
+    );
+
+    // ================= LEDGER UPDATE =================
+
+    ledgerBalanceService.updateBalance(
+            societyId,
+            RECEIVABLE_GL,
+            member != null ? member.getId() : null,
+            "MEMBER",
+            amount,
+            0.0);
+
+    ledgerBalanceService.updateBalance(
+            societyId,
+            CONTRIBUTION_INCOME_GL,
+            null,
+            "SOCIETY",
+            0.0,
+            amount);
+
+    return journalId;
+}
+
 }

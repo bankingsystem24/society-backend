@@ -62,6 +62,7 @@ public class GlMasterSeeder {
                 // ================= INCOME =================
                 create(3000, "INCOME", "Maintenance Income", societyId),
                 create(3001, "INCOME", "Member Maintenance Income", societyId),
+                create(3002, "INCOME", "Member Contribution Income", societyId),
                 create(3010, "INCOME", "Late Fee / Penalty Income", societyId),
                 create(3020, "INCOME", "Interest Income", societyId),
                 create(3030, "INCOME", "Parking Charges Income", societyId),

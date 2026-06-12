@@ -11,6 +11,7 @@ public class DiscountPolicyRequest {
     private BigDecimal discountPercent;
     private LocalDate effectiveFrom;
     private LocalDate effectiveTo;
+    private String createdBy;
 
     public Long getSocietyId() {
         return societyId;
@@ -26,6 +27,14 @@ public class DiscountPolicyRequest {
 
     public void setPolicyName(String policyName) {
         this.policyName = policyName;
+    }
+
+    public String getcreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
     public Boolean getActive() {

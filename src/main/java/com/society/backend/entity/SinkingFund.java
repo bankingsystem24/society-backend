@@ -11,45 +11,33 @@ public class SinkingFund {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     // Society
     @ManyToOne
     @JoinColumn(name = "society_id", nullable = false)
     private Society society;
-
     // flat
     @ManyToOne
     @JoinColumn(name = "flat_id", nullable = false)
     private Flat flat;
-
     // Billing period
     @Column(nullable = false)
     private String month;
-
     @Column(nullable = false)
     private int year;
-
     // Amounts
     private Double amount = 0.0;
-
     // Audit
     private Long createdBy;
-
     private LocalDate createdDate;
-
     // Payment status
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.PENDING;
-    
     private LocalDate paidDate;
-
     @Column(name = "receipt_id")
     private Long receiptId;
-
     @Column(name = "payment_mode")
     private String paymentMode;
     private String transactionId;
-
     // ================= LIFECYCLE =================
     @PrePersist
     public void prePersist() {
