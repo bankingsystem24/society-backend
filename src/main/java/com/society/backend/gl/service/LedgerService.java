@@ -2,10 +2,7 @@ package com.society.backend.gl.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.society.backend.entity.AccountingYear;
 import com.society.backend.gl.dto.LedgerDTO;
 import com.society.backend.gl.repository.LedgerRepository;
@@ -14,11 +11,16 @@ import com.society.backend.repository.AccountingYearRepository;
 @Service
 public class LedgerService {
 
-    @Autowired
-    private LedgerRepository repository;
+    private final LedgerRepository repository;
+    private final AccountingYearRepository accountingYearRepository;
 
-    @Autowired
-    private AccountingYearRepository accountingYearRepository;
+    public LedgerService(LedgerRepository repository,
+    AccountingYearRepository accountingYearRepository
+    ){
+        this.repository = repository;
+        this.accountingYearRepository = accountingYearRepository;
+
+    }
 
 public List<LedgerDTO> getLedger(Long societyId, Integer glCode) {
 

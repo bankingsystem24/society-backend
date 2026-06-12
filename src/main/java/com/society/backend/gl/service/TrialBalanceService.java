@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.society.backend.entity.AccountingYear;
 import com.society.backend.gl.dto.TrialBalanceDTO;
 import com.society.backend.gl.entity.GlOpeningBalance;
@@ -18,14 +15,19 @@ import com.society.backend.repository.AccountingYearRepository;
 @Service
 public class TrialBalanceService {
 
-    @Autowired
-    private LedgerBalanceRepository ledgerRepo;
+    private final LedgerBalanceRepository ledgerRepo;
+    private final AccountingYearRepository accountingYearRepository;
+    private final GlOpeningBalanceRepository glOpeningBalanceRepository;
 
-    @Autowired
-    private AccountingYearRepository accountingYearRepository;
+    public TrialBalanceService(LedgerBalanceRepository ledgerRepo,
+    AccountingYearRepository accountingYearRepository,
+    GlOpeningBalanceRepository glOpeningBalanceRepository
+    ){
+        this.ledgerRepo = ledgerRepo;
+        this.accountingYearRepository = accountingYearRepository;
+        this.glOpeningBalanceRepository = glOpeningBalanceRepository;
 
-    @Autowired
-    private GlOpeningBalanceRepository glOpeningBalanceRepository;
+    }
 
     private double safe(Double value) {
         return value == null ? 0.0 : value;

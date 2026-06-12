@@ -1,6 +1,5 @@
 package com.society.backend.gl.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.society.backend.gl.entity.LedgerBalance;
@@ -9,8 +8,11 @@ import com.society.backend.gl.repository.LedgerBalanceRepository;
 @Service
 public class LedgerBalanceService {
 
-    @Autowired
-    private LedgerBalanceRepository ledgerRepo;
+    private final LedgerBalanceRepository ledgerRepo;
+
+    public LedgerBalanceService(LedgerBalanceRepository ledgerRepo){
+        this.ledgerRepo = ledgerRepo;
+    }
 
     public void updateBalance(Long societyId,
                               Integer glCode,

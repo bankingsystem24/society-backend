@@ -2,7 +2,6 @@ package com.society.backend.gl.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.society.backend.gl.entity.Vendor;
@@ -11,8 +10,10 @@ import com.society.backend.gl.repository.VendorRepository;
 @Service
 public class VendorService {
 
-    @Autowired
-    private VendorRepository vendorRepository;
+    private final VendorRepository vendorRepository;
+    public VendorService(VendorRepository vendorRepository){
+        this.vendorRepository = vendorRepository;
+    }
 
     public Vendor save(Vendor vendor) {
         return vendorRepository.save(vendor);

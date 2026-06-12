@@ -9,8 +9,11 @@ import com.society.backend.gl.repository.GlMasterRepository;
 @Service
 public class GlMasterService {
 
-    @Autowired
-    private GlMasterRepository glMasterRepository;
+    private final GlMasterRepository glMasterRepository;
+
+    public GlMasterService(GlMasterRepository glMasterRepository){
+        this.glMasterRepository = glMasterRepository;
+    };
 
     public List<GlMaster> getAllBySociety(Long societyId) {
         return glMasterRepository.findBySocietyIdOrderByGlCodeAsc(societyId);

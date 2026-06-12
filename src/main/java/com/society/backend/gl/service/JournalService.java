@@ -3,11 +3,8 @@ package com.society.backend.gl.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.society.backend.entity.AccountingYear;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
@@ -22,29 +19,30 @@ import com.society.backend.repository.MemberRepository;
 @Transactional
 public class JournalService {
 
-        @Autowired
-        private JournalEntryRepository journalRepo;
+        private final JournalEntryRepository journalRepo;
+        private final JournalEntryLineRepository lineRepo;
+        private final JournalViewRepository journalViewRepository;
+        private final LedgerBalanceService ledgerBalanceService;
+        private final AccountingYearRepository accountingYearRepository;
+        private final MemberRepository memberRepository;
+        private final FlatRepository flatRepository;
 
-        @Autowired
-        private JournalEntryLineRepository lineRepo;
-
-        @Autowired
-        private JournalViewRepository journalViewRepository;
-
-        @Autowired
-        private LedgerBalanceService ledgerBalanceService;
-
-        @Autowired
-        private AccountingYearRepository accountingYearRepository;
-
-        @Autowired
-        private JournalEntryLineRepository journalEntryLineRepository;
-
-        @Autowired
-        private MemberRepository memberRepository;
-
-        @Autowired
-        private FlatRepository flatRepository;
+        public JournalService(
+                JournalEntryRepository journalRepo,
+                JournalEntryLineRepository lineRepo,
+                JournalViewRepository journalViewRepository,
+                LedgerBalanceService ledgerBalanceService,
+                AccountingYearRepository accountingYearRepository,
+                MemberRepository memberRepository,
+                FlatRepository flatRepository){
+                        this.journalRepo = journalRepo;
+                        this.lineRepo = lineRepo;
+                        this.journalViewRepository = journalViewRepository;
+                        this.ledgerBalanceService = ledgerBalanceService;
+                        this.accountingYearRepository = accountingYearRepository;
+                        this.memberRepository = memberRepository;
+                        this.flatRepository = flatRepository;
+                }
 
         // =====================================================
         // CORE JOURNAL ENTRY
@@ -376,7 +374,7 @@ public class JournalService {
 
                 line.setMember(member);
 
-                journalEntryLineRepository.save(line);
+                lineRepo.save(line);
         }
 
         // =====================================================

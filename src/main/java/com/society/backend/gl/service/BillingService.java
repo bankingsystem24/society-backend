@@ -25,6 +25,19 @@ import com.society.backend.repository.ReceiptRepository;
 @Service
 public class BillingService {
 
+
+        public BillingService(BillingRepository billingRepository,
+                FlatRepository flatRepository,
+                ReceiptRepository receiptRepository,
+                JournalService journalService,
+                SocietyBillingPolicyRepository societyBillingPolicyRepository){
+                        this.billingRepository = billingRepository;
+                        this.flatRepository = flatRepository;
+                        this.receiptRepository = receiptRepository;
+                        this.journalService = journalService;
+                        this.societyBillingPolicyRepository = societyBillingPolicyRepository;}
+      
+
         @Autowired
         private BillingRepository billingRepository;
 

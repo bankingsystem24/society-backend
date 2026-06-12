@@ -12,11 +12,14 @@ import com.society.backend.repository.SocietyRepository;
 @Service
 public class GlOpeningBalanceService {
 
-    @Autowired
-    private GlOpeningBalanceRepository glOpeningBalanceRepository;
+    private final GlOpeningBalanceRepository glOpeningBalanceRepository;
+    private final SocietyRepository societyRepository;
 
-    @Autowired
-    private SocietyRepository societyRepository;
+    public GlOpeningBalanceService(GlOpeningBalanceRepository glOpeningBalanceRepository,
+                SocietyRepository societyRepository){
+                    this.glOpeningBalanceRepository = glOpeningBalanceRepository;
+                    this.societyRepository = societyRepository;
+                }
 
     // ================= GET ALL =================
     public List<GlOpeningBalance> getAllOpeningBySociety(Long societyId) {

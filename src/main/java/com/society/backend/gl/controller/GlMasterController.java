@@ -1,7 +1,6 @@
 package com.society.backend.gl.controller;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.society.backend.gl.entity.GlMaster;
 import com.society.backend.gl.service.GlMasterService;
@@ -11,8 +10,11 @@ import com.society.backend.gl.service.GlMasterService;
 @CrossOrigin(origins = "*")
 public class GlMasterController {
 
-    @Autowired
-    private GlMasterService glMasterService;
+    private final GlMasterService glMasterService;
+
+    public GlMasterController(GlMasterService glMasterService){
+        this.glMasterService = glMasterService;
+    };
 
     @GetMapping
     public List<GlMaster> getGlMaster(@RequestParam Long societyId) {

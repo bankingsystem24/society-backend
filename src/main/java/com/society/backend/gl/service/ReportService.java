@@ -2,10 +2,7 @@ package com.society.backend.gl.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.society.backend.gl.dto.ProfitLossItemDTO;
 import com.society.backend.gl.dto.ProfitLossResponseDTO;
 import com.society.backend.gl.repository.JournalEntryLineRepository;
@@ -13,8 +10,11 @@ import com.society.backend.gl.repository.JournalEntryLineRepository;
 @Service
 public class ReportService {
 
-    @Autowired
-    private JournalEntryLineRepository journalEntryLineRepository;
+    private final JournalEntryLineRepository journalEntryLineRepository;
+
+    public ReportService(JournalEntryLineRepository journalEntryLineRepository){
+        this.journalEntryLineRepository = journalEntryLineRepository;
+    }
     
     public ProfitLossResponseDTO getProfitAndLoss(Long societyId) {
 
