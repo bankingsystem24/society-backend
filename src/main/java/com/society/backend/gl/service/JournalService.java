@@ -204,6 +204,7 @@ public class JournalService {
                 case "CHEQUE":
                 case "CARD":
                 case "NETBANKING":
+                case "ONLINE":
                 receiptGl = 1001;
                 break;
 
@@ -219,7 +220,7 @@ public class JournalService {
         entry.setVoucherNo("RCPT-" + receiptId);
         entry.setEntryDate(LocalDate.now());
         entry.setVoucherType(VoucherType.RECEIPT);
-        entry.setNarration("Bill Payment Receipt");
+        entry.setNarration("Payment Receipt");
         entry.setReferenceType("RECEIPT");
         entry.setReferenceId(receiptId);
         entry.setTotalAmount(totalAmount);
@@ -253,7 +254,7 @@ public class JournalService {
                         1101,
                         0.0,
                         maintenanceAmount,
-                        "MAINTENANCE RECEIVABLE",
+                        "MEMBER RECEIVABLE",
                         memberId,
                         societyId,
                         flatId
@@ -366,6 +367,7 @@ public class JournalService {
                 line.setSocietyId(societyId);
                 line.setFlatId(flatId);
                 line.setRemarks("AUTO");
+                
 
                 Flat flat = flatRepository.findById(flatId)
                                 .orElseThrow(() -> new RuntimeException("Flat not found"));

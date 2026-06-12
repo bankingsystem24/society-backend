@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.society.backend.dto.SinkingFundOrderRequest;
 import com.society.backend.dto.SinkingFundPaymentRequest;
 import com.society.backend.dto.SinkingFundRequest;
 import com.society.backend.dto.SinkingFundResponse;
+import com.society.backend.dto.VerifySinkingFundPaymentRequest;
 import com.society.backend.entity.SinkingFund;
 import com.society.backend.service.SinkingFundService;
 
@@ -19,34 +21,20 @@ public class SinkingFundController {
 
     private final SinkingFundService sinkingFundService;
 
-    public SinkingFundController(SinkingFundService sinkingFundService){
+    public SinkingFundController(SinkingFundService sinkingFundService) {
         this.sinkingFundService = sinkingFundService;
     };
 
     // CREATE / GENERATE SINGLE RECORD
-@PostMapping("/generate")
-public void generate(@RequestBody SinkingFundRequest request) {
-    sinkingFundService.generate(
-        request.getSocietyId(),
-        request.getMonth(),
-        request.getYear(),
-        request.getAmount(),
-        request.getCreatedBy()
-    );
-}
-
-    // BULK GENERATE (for all flats of society - VERY IMPORTANT for your case)
-    // @PostMapping("/generate-all")
-    // public String generateForAllFlats(
-    //         @RequestParam Long societyId,
-    //         @RequestParam String month,
-    //         @RequestParam int year,
-    //         @RequestParam Double amount,
-    //         @RequestParam Long createdBy
-    // ) {
-    //     service.generateForAllFlats(societyId, month, year, amount, createdBy);
-    //     return "Sinking Fund generated for all flats";
-    // }
+    @PostMapping("/generate")
+    public void generate(@RequestBody SinkingFundRequest request) {
+        sinkingFundService.generate(
+                request.getSocietyId(),
+                request.getMonth(),
+                request.getYear(),
+                request.getAmount(),
+                request.getCreatedBy());
+    }
 
     // GET ALL
     @GetMapping
@@ -58,8 +46,7 @@ public void generate(@RequestBody SinkingFundRequest request) {
     @GetMapping("/flat")
     public List<SinkingFund> getByFlat(
             @RequestParam Long societyId,
-            @RequestParam Long flatId
-    ) {
+            @RequestParam Long flatId) {
         return sinkingFundService.getByFlat(societyId, flatId);
     }
 
@@ -72,5 +59,22 @@ public void generate(@RequestBody SinkingFundRequest request) {
                 request.getPaymentMode());
 
         return ResponseEntity.ok("Payment successful");
+    }
+
+    @PostMapping("/create-order")
+    public ResponseEntity<?> createOrder(
+            @RequestBody SinkingFundOrderRequest request) {
+
+        return ResponseEntity.ok(
+                sinkingFundService.createOrder(request));
+    }
+
+    @PostMapping("/verify-payment")
+    public ResponseEntity<?> verifyPayment(
+            @RequestBody VerifySinkingFundPaymentRequest request) {
+
+        sinkingFundService.verifyPayment(request);
+
+        return ResponseEntity.ok("Payment verified successfully");
     }
 }

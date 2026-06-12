@@ -1,9 +1,17 @@
 package com.society.backend.service;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.society.backend.dto.SinkingFundOrderRequest;
 import com.society.backend.dto.SinkingFundResponse;
+import com.society.backend.dto.VerifySinkingFundPaymentRequest;
+import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.entity.Receipt;
@@ -11,18 +19,30 @@ import com.society.backend.entity.SinkingFund;
 import com.society.backend.entity.Society;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.service.JournalService;
+import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SinkingFundRepository;
+import com.society.backend.util.RazorpaySignatureUtil;
 
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import com.razorpay.Utils;
 
 @Service
 public class SinkingFundService {
+
+    @Value("${razorpay.key_id}")
+    private String razorpayKey;
+
+    @Value("${razorpay.key_secret}")
+    private String razorpaySecret;
 
     @Autowired
     private SinkingFundRepository sinkingFundRepository;
@@ -36,83 +56,87 @@ public class SinkingFundService {
     @Autowired
     private ReceiptRepository receiptRepository;
 
+    @Autowired
+    private BillingRepository billingRepository;
+
+    LocalDate today = LocalDate.now();
+
     // ================= GENERATE =================
-@Transactional
-public void generate(Long societyId,
-                     String month,
-                     int year,
-                     Double amount,
-                     Long createdBy) {
+    @Transactional
+    public void generate(Long societyId,
+            String month,
+            int year,
+            Double amount,
+            Long createdBy) {
 
-    List<Flat> flats = flatRepository.findBySociety_Id(societyId);
+        List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
-    Month billingMonth;
-    try {
-        billingMonth = Month.valueOf(month.toUpperCase());
-    } catch (Exception e) {
-        throw new RuntimeException("Invalid month: " + month);
-    }
-
-    List<SinkingFund> existingList =
-            sinkingFundRepository.findBySocietyIdAndMonthAndYear(
-                    societyId,
-                    month,
-                    year);
-
-    for (Flat flat : flats) {
-
-        boolean exists = existingList.stream()
-                .anyMatch(x -> x.getFlat().getId().equals(flat.getId()));
-
-        if (exists) {
-            continue;
+        Month billingMonth;
+        try {
+            billingMonth = Month.valueOf(month.toUpperCase());
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid month: " + month);
         }
 
-        SinkingFund sf = new SinkingFund();
+        List<SinkingFund> existingList = sinkingFundRepository.findBySocietyIdAndMonthAndYear(
+                societyId,
+                month,
+                year);
 
-        Society society = new Society();
-        society.setId(societyId);
+        for (Flat flat : flats) {
 
-        sf.setSociety(society);
-        sf.setFlat(flat);
-        sf.setMonth(month);
-        sf.setYear(year);
-        sf.setAmount(amount);
-        sf.setCreatedBy(createdBy);
-        sf.setCreatedDate(
-                LocalDate.of(year, billingMonth.getValue(), 1));
+            boolean exists = existingList.stream()
+                    .anyMatch(x -> x.getFlat().getId().equals(flat.getId()));
 
-        SinkingFund savedFund = sinkingFundRepository.save(sf);
-
-        Member member = flat.getOwner();
-
-        try {
-
-            Long journalId =
-                    journalService.createSinkingFundEntry(
-                            savedFund.getId(),
-                            member,
-                            amount,
-                            societyId,
-                            createdBy,
-                            flat.getId());
-
-            if (journalId == null) {
-                throw new RuntimeException(
-                        "Journal not created for sinking fund "
-                                + savedFund.getId());
+            if (exists) {
+                continue;
             }
 
-        } catch (Exception e) {
+            SinkingFund sf = new SinkingFund();
 
-            throw new RuntimeException(
-                    "Journal failed for sinkingFundId="
-                            + savedFund.getId()
-                            + " -> "
-                            + e.getMessage());
+            Society society = new Society();
+            society.setId(societyId);
+
+            sf.setSociety(society);
+            sf.setFlat(flat);
+            sf.setMonth(month);
+            sf.setYear(year);
+            sf.setAmount(amount);
+            sf.setCreatedBy(createdBy);
+            sf.setCreatedDate(
+                    LocalDate.of(year, billingMonth.getValue(), 1));
+
+            SinkingFund savedFund = sinkingFundRepository.save(sf);
+
+            Member member = flat.getOwner();
+
+            try {
+
+                Long journalId = journalService.createSinkingFundEntry(
+                        savedFund.getId(),
+                        member,
+                        amount,
+                        societyId,
+                        createdBy,
+                        flat.getId());
+
+                if (journalId == null) {
+                    throw new RuntimeException(
+                            "Journal not created for sinking fund "
+                                    + savedFund.getId());
+                }
+
+            } catch (Exception e) {
+
+                throw new RuntimeException(
+                        "Journal failed for sinkingFundId="
+                                + savedFund.getId()
+                                + " -> "
+                                + e.getMessage());
+            }
         }
     }
-}
+
     // ================= GET ALL (DTO) =================
     public List<SinkingFundResponse> getAll(Long societyId) {
 
@@ -153,99 +177,247 @@ public void generate(Long societyId,
         return dto;
     }
 
-@Transactional
-public String pay(List<Long> sinkingFundIds, String paymentMode) {
+    @Transactional
+    public String pay(List<Long> sinkingFundIds, String paymentMode) {
 
-    List<SinkingFund> funds =
-            sinkingFundRepository.findAllById(sinkingFundIds);
+        List<SinkingFund> funds = sinkingFundRepository.findAllById(sinkingFundIds);
 
-    if (funds.isEmpty()) {
-        return "No records found";
-    }
-
-    SinkingFund first = funds.get(0);
-
-    Long societyId = first.getSociety().getId();
-    Long flatId = first.getFlat().getId();
-
-    Double totalAmount = 0.0;
-
-    for (SinkingFund fund : funds) {
-
-        if (!PaymentStatus.PENDING.equals(fund.getStatus())) {
-            continue;
+        if (funds.isEmpty()) {
+            return "No records found";
         }
 
-        fund.setStatus(PaymentStatus.PAID);
-        fund.setPaymentMode(paymentMode);
-        fund.setPaidDate(LocalDate.now());
+        SinkingFund first = funds.get(0);
 
-        totalAmount += fund.getAmount();
+        Long societyId = first.getSociety().getId();
+        Long flatId = first.getFlat().getId();
+
+        Double totalAmount = 0.0;
+
+        for (SinkingFund fund : funds) {
+
+            if (!PaymentStatus.PENDING.equals(fund.getStatus())) {
+                continue;
+            }
+
+            fund.setStatus(PaymentStatus.PAID);
+            fund.setPaymentMode(paymentMode);
+            fund.setPaidDate(LocalDate.now());
+
+            totalAmount += fund.getAmount();
+        }
+
+        sinkingFundRepository.saveAll(funds);
+
+        // ================= RECEIPT =================
+
+        Receipt receipt = new Receipt();
+
+        receipt.setReceiptDate(LocalDate.now());
+        receipt.setPaymentMode(paymentMode);
+
+        receipt.setMaintenanceAmount(0.0);
+        receipt.setInterestAmount(0.0);
+        receipt.setDiscountAmount(0.0);
+
+        // Add separate sinking fund field if available
+        receipt.setTotalAmount(totalAmount);
+
+        receipt.setSocietyId(societyId);
+        receipt.setFlatId(flatId);
+
+        Receipt savedReceipt = receiptRepository.save(receipt);
+
+        savedReceipt.setReceiptNo(
+                "SF-" +
+                        LocalDate.now().getYear() +
+                        "-" +
+                        savedReceipt.getId());
+
+        savedReceipt = receiptRepository.save(savedReceipt);
+
+        for (SinkingFund fund : funds) {
+            fund.setReceiptId(savedReceipt.getId());
+        }
+
+        sinkingFundRepository.saveAll(funds);
+
+        // ================= MEMBER =================
+
+        Long memberId = null;
+
+        if (first.getFlat() != null &&
+                first.getFlat().getOwner() != null) {
+
+            memberId = first.getFlat().getOwner().getId();
+        }
+
+        // ================= JOURNAL =================
+
+        if (totalAmount > 0) {
+
+            journalService.createReceiptEntry(
+                    savedReceipt.getId(),
+                    memberId,
+                    totalAmount,
+                    0.0,
+                    0.0,
+                    totalAmount,
+                    paymentMode,
+                    societyId,
+                    0L,
+                    flatId);
+        }
+
+        return "Sinking Fund paid successfully";
     }
 
-    sinkingFundRepository.saveAll(funds);
+    public Map<String, Object> createOrder(
+            SinkingFundOrderRequest request) {
 
-    // ================= RECEIPT =================
+        try {
 
-    Receipt receipt = new Receipt();
+            RazorpayClient razorpay = new RazorpayClient(
+                    razorpayKey,
+                    razorpaySecret);
 
-    receipt.setReceiptDate(LocalDate.now());
-    receipt.setPaymentMode(paymentMode);
+            JSONObject orderRequest = new JSONObject();
 
-    receipt.setMaintenanceAmount(0.0);
-    receipt.setInterestAmount(0.0);
-    receipt.setDiscountAmount(0.0);
+            orderRequest.put(
+                    "amount",
+                    request.getAmount().longValue() * 100);
 
-    // Add separate sinking fund field if available
-    receipt.setTotalAmount(totalAmount);
+            orderRequest.put("currency", "INR");
 
-    receipt.setSocietyId(societyId);
-    receipt.setFlatId(flatId);
+            orderRequest.put(
+                    "receipt",
+                    "SF_" + System.currentTimeMillis());
 
-    Receipt savedReceipt = receiptRepository.save(receipt);
+            Order order = razorpay.orders.create(orderRequest);
 
-    savedReceipt.setReceiptNo(
-            "SF-" +
-            LocalDate.now().getYear() +
-            "-" +
-            savedReceipt.getId());
+            Map<String, Object> response = new HashMap<>();
 
-    savedReceipt = receiptRepository.save(savedReceipt);
+            response.put(
+                    "razorpayOrderId",
+                    order.get("id"));
 
-    for (SinkingFund fund : funds) {
-        fund.setReceiptId(savedReceipt.getId());
+            response.put(
+                    "amount",
+                    order.get("amount"));
+
+            response.put(
+                    "currency",
+                    order.get("currency"));
+
+            response.put(
+                    "key",
+                    razorpayKey);
+
+            return response;
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Failed to create order", e);
+        }
     }
 
-    sinkingFundRepository.saveAll(funds);
+@Transactional
+public void verifyPayment(VerifySinkingFundPaymentRequest request) {
 
-    // ================= MEMBER =================
+    try {
 
-    Long memberId = null;
+        JSONObject attributes = new JSONObject();
+        attributes.put("razorpay_order_id", request.getRazorpayOrderId());
+        attributes.put("razorpay_payment_id", request.getRazorpayPaymentId());
+        attributes.put("razorpay_signature", request.getRazorpaySignature());
 
-    if (first.getFlat() != null &&
-        first.getFlat().getOwner() != null) {
+        boolean valid = Utils.verifyPaymentSignature(attributes, razorpaySecret);
 
-        memberId = first.getFlat().getOwner().getId();
-    }
+        if (!valid) {
+            throw new RuntimeException("Invalid Razorpay signature");
+        }
 
-    // ================= JOURNAL =================
+        List<SinkingFund> funds =
+                sinkingFundRepository.findAllById(request.getSinkingFundIds());
 
-    if (totalAmount > 0) {
+        if (funds.isEmpty()) {
+            throw new RuntimeException("No Sinking Fund records found");
+        }
 
+        // ================= FIRST FUND =================
+        SinkingFund first = funds.get(0);
+
+        Long societyId = first.getSociety().getId();
+        Long flatId = first.getFlat().getId();
+
+        Long memberId = (first.getFlat().getOwner() != null)
+                ? first.getFlat().getOwner().getId()
+                : null;
+
+        // ================= TOTAL CALCULATION =================
+        Double totalAmount = 0.0;
+
+        for (SinkingFund fund : funds) {
+
+            fund.setStatus(PaymentStatus.PAID);
+            fund.setPaymentMode(request.getPaymentMode());
+            fund.setPaidDate(LocalDate.now());
+            fund.setTransactionId(request.getRazorpayPaymentId());
+
+            totalAmount += fund.getAmount();
+        }
+
+        sinkingFundRepository.saveAll(funds);
+
+        // ================= RECEIPT (CORRECT PLACE) =================
+        Receipt receipt = new Receipt();
+
+        receipt.setSocietyId(societyId);
+        receipt.setFlatId(flatId);
+        receipt.setTotalAmount(totalAmount);
+        receipt.setPaymentMode(request.getPaymentMode());
+        receipt.setTransactionId(request.getRazorpayPaymentId());
+        receipt.setReceiptDate(LocalDate.now());
+
+        receipt = receiptRepository.save(receipt);
+
+        // optional receipt number
+        receipt.setReceiptNo(
+                "SF-" + LocalDate.now().getYear() + "-" + receipt.getId()
+        );
+
+        receipt = receiptRepository.save(receipt);
+
+        // attach receipt to sinking funds
+        for (SinkingFund fund : funds) {
+            fund.setReceiptId(receipt.getId());
+        }
+
+        sinkingFundRepository.saveAll(funds);
+
+        // ================= JOURNAL =================
         journalService.createReceiptEntry(
-                savedReceipt.getId(),
+                receipt.getId(),
                 memberId,
                 totalAmount,
                 0.0,
                 0.0,
                 totalAmount,
-                paymentMode,
+                request.getPaymentMode(),
                 societyId,
-                0L,
-                flatId);
-    }
+                request.getUserId(),
+                flatId
+        );
 
-    return "Sinking Fund paid successfully";
+    } catch (Exception e) {
+        throw new RuntimeException("Payment verification failed", e);
+    }
 }
+
+
+    public List<SinkingFund> getSinkingFundsByFlatIds(
+            List<Long> flatIds) {
+
+        return sinkingFundRepository.findByFlat_IdIn(flatIds);
+    }
 
 }

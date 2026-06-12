@@ -12,6 +12,7 @@ public class VerifyPaymentRequest {
     private Long memberId;
     private String paymentMode;
     private Double amount;
+    private Long userId;
 
     public String getRazorpayOrderId() {
         return razorpayOrderId;
@@ -51,6 +52,14 @@ public class VerifyPaymentRequest {
 
     public void setMemberId(Long memberId) {
         this.memberId = memberId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getPaymentMode() {

@@ -4,9 +4,11 @@ import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
+import com.society.backend.entity.SinkingFund;
 import com.society.backend.gl.service.BillingService;
 import com.society.backend.service.FlatService;
 import com.society.backend.service.MemberService;
+import com.society.backend.service.SinkingFundService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,9 @@ public class MemberController {
 
     @Autowired
     private BillingService billingService;
+
+    @Autowired
+    private SinkingFundService sinkingFundService;
 
     // =========================
     // CREATE MEMBER
@@ -107,5 +112,18 @@ public class MemberController {
 
         return billingService.getBillsByFlatIds(flatIds);
     }
+
+@PostMapping("/sinking-funds")
+public List<SinkingFund> getSinkingFunds(
+        @RequestBody Map<String, Object> req) {
+
+    List<?> rawList = (List<?>) req.get("flatIds");
+
+    List<Long> flatIds = rawList.stream()
+            .map(id -> Long.valueOf(id.toString()))
+            .toList();
+
+    return sinkingFundService.getSinkingFundsByFlatIds(flatIds);
+}
 
 }

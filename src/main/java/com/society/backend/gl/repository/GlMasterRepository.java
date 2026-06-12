@@ -12,6 +12,8 @@ public interface GlMasterRepository
             Integer glCode,
             Long societyId);
 
-        List<GlMaster> findBySocietyIdOrderByGlCodeAsc(Long societyId);
+    List<GlMaster> findBySocietyIdOrderByGlCodeAsc(Long societyId);
+
+
 
 }

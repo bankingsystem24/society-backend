@@ -29,8 +29,7 @@ public class VendorController {
     }
 
     @GetMapping("/{societyId}")
-    public List<Vendor> getBySociety(
-            @PathVariable Long societyId) {
+    public List<Vendor> getBySociety(@PathVariable Long societyId) {
         return vendorService.getBySociety(societyId);
     }
 

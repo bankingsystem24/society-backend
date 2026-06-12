@@ -319,7 +319,7 @@ public class BillingController {
                                 totalAmount,
                                 "ONLINE",
                                 firstBill.getSociety().getId(),
-                                0L,
+                                req.getUserId(),
                                 firstBill.getFlat().getId()
                         );
 

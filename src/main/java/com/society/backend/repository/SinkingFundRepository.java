@@ -12,4 +12,6 @@ public interface SinkingFundRepository extends JpaRepository<SinkingFund, Long> 
     List<SinkingFund> findBySocietyIdAndMonthAndYear(Long societyId, String month, int year);
 
     List<SinkingFund> findBySocietyIdAndFlat_Id(Long societyId, Long flatId);
+
+    List<SinkingFund> findByFlat_IdIn(List<Long> flatIds);
 }
