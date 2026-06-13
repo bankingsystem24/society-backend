@@ -4,11 +4,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.society.backend.dto.CompulsoryContributionRequest;
+import com.society.backend.dto.SinkingFundPaymentRequest;
+import com.society.backend.gl.dto.ContributionPaymentRequest;
 import com.society.backend.gl.service.ContributionService;
 
 import lombok.RequiredArgsConstructor;
@@ -38,5 +41,17 @@ public class ContributionController {
     ) {
         contributionService.createCompulsoryContribution(societyId, financialYearId,request);
         return ResponseEntity.ok("Compulsory contribution created successfully");
+    }
+
+    @PutMapping("/pay")
+    public ResponseEntity<String> pay(
+            @RequestBody ContributionPaymentRequest request) {
+
+        contributionService.pay(
+                request.getContributionIds(),
+                request.getPaymentMode(),
+                request.getFinancialYearId() );
+
+        return ResponseEntity.ok("Payment successful");
     }
 }

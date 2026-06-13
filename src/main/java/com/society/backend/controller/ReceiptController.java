@@ -34,7 +34,8 @@ public class ReceiptController {
         return ResponseEntity.ok(
                 receiptService.viewReceipts(
                         req.getSocietyId(),
-                        req.getFlatId()
+                        req.getFlatId(),
+                        req.getFinancialYearId()
                 )
         );
     }
@@ -43,7 +44,7 @@ public class ReceiptController {
     public ResponseEntity<?> getReceiptDetails(
             @PathVariable Long receiptId
     ) {
-
+       
         return ResponseEntity.ok(
                 receiptService.getReceiptDetails(receiptId)
         );

@@ -8,7 +8,9 @@ import com.society.backend.entity.Receipt;
 
 public interface ReceiptRepository extends JpaRepository<Receipt, Long> {
 
-    List<Receipt> findBySocietyId(Long societyId);
+    List<Receipt> findBySocietyIdAndFinancialYearId(Long societyId, Long financialYearId);
+
+   
 
 
 }

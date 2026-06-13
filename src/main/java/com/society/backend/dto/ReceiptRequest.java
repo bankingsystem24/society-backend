@@ -2,6 +2,8 @@ package com.society.backend.dto;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
+
 public class ReceiptRequest {
 
     private String receiptNo;
@@ -14,6 +16,16 @@ public class ReceiptRequest {
     private List<Long> billIds;
     private String paymentMode;
     private String transactionId;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }    
 
     // ================= GETTERS =================
 
