@@ -2,6 +2,8 @@ package com.society.backend.dto;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
+
 public class VerifyPaymentRequest {
 
     private String razorpayOrderId;
@@ -13,6 +15,16 @@ public class VerifyPaymentRequest {
     private String paymentMode;
     private Double amount;
     private Long userId;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
 
     public String getRazorpayOrderId() {
         return razorpayOrderId;

@@ -28,11 +28,12 @@ public class ExpenseVoucherController {
     }
 
     // LIST BY SOCIETY
-    @GetMapping("/{societyId}")
-    public List<ExpenseVoucher> getBySociety(
-            @PathVariable Long societyId) {
+    @GetMapping("/{societyId}/{financialYearId}")
+    public List<ExpenseVoucher> getBySocietyIdAndFinancialYearId(
+            @PathVariable Long societyId,
+            @PathVariable Long financialYearId) {
 
-        return expenseVoucherService.getBySociety(societyId);
+        return expenseVoucherService.getBySocietyIdAndFinancialYearId(societyId,financialYearId);
     }
 
     // GET SINGLE

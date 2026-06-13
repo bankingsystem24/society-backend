@@ -1,15 +1,12 @@
 package com.society.backend.gl.service;
-
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.society.backend.dto.BillingResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
@@ -62,7 +59,8 @@ public class BillingService {
                 Long societyId,
                 String month,
                 int year,
-                Long createdBy) {
+                Long createdBy,
+                Long financialYearId) {
 
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
@@ -118,6 +116,7 @@ public class BillingService {
                 bill.setStatus(PaymentStatus.PENDING);
                 bill.setCreatedDate(LocalDate.of(year, billingMonth, 1));
                 bill.setDueDate(finalDueDate);
+                bill.setFinancialYearId(financialYearId);
 
                 Billing savedBill = billingRepository.save(bill);
 
@@ -132,7 +131,8 @@ public class BillingService {
                         amount,
                         societyId,
                         createdBy,
-                        flat.getId()
+                        flat.getId(),
+                        financialYearId
                 );
 
                 if (journalId == null) {
@@ -183,9 +183,10 @@ public class BillingService {
                         Integer fromYear,
                         String month,
                         PaymentStatus status,
-                        Long memberId) {
+                        Long memberId,
+                        Long financialYearId) {
 
-                List<Billing> bills = billingRepository.findBySocietyId(societyId);
+                List<Billing> bills = billingRepository.findBySocietyIdAndFinancialYearId(societyId,financialYearId);
 
                 // ================= FLAT FILTER =================
 
@@ -341,7 +342,7 @@ public class BillingService {
                                         - (b.getDiscountAmount() != null ? b.getDiscountAmount() : 0.0);
 
                         dto.setTotalAmount(totalAmount);
-
+                        dto.setFinancialYearId(financialYearId);
                         dto.setStatus(
                                         b.getStatus() != null
                                                         ? b.getStatus().name()
@@ -384,7 +385,7 @@ public class BillingService {
         // =====================================================
 
         @Transactional
-        public String payBills(List<Long> billIds, String paymentMode) {
+        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId) {
 
                 List<Billing> bills = billingRepository.findAllById(billIds);
 
@@ -507,7 +508,7 @@ public class BillingService {
 
                 receipt.setSocietyId(societyId);
                 receipt.setFlatId(flatId);
-
+                receipt.setFinancialYearId(financialYearId);
                 Receipt savedReceipt = receiptRepository.save(receipt);
 
                 savedReceipt.setReceiptNo(
@@ -548,7 +549,8 @@ public class BillingService {
                                         paymentMode,
                                         societyId,
                                         0L,
-                                        flatId);
+                                        flatId,
+                                        financialYearId);
                 }
 
                 return "Bills paid successfully";
@@ -558,9 +560,9 @@ public class BillingService {
         // GET BILLS BY FLAT IDS
         // =====================================================
 
-        public List<Billing> getBillsByFlatIds(List<Long> flatIds) {
+        public List<Billing> getBillsByFlatIds(List<Long> flatIds, Long societyId,Long financialYearId) {
 
-                List<Billing> bills = billingRepository.findByFlatIdIn(flatIds);
+                List<Billing> bills = billingRepository.findByFlatIdInAndSocietyIdAndFinancialYearId(flatIds,societyId,financialYearId);
 
                 bills.forEach(bill -> {
 

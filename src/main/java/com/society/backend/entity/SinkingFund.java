@@ -38,6 +38,16 @@ public class SinkingFund {
     @Column(name = "payment_mode")
     private String paymentMode;
     private String transactionId;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
     // ================= LIFECYCLE =================
     @PrePersist
     public void prePersist() {

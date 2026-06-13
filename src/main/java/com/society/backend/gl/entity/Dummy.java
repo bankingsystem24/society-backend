@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "financial_year")
-public class FinancialYear {
+public class Dummy {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

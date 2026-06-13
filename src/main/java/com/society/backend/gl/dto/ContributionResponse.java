@@ -1,5 +1,7 @@
 package com.society.backend.gl.dto;
 import java.time.LocalDate;
+
+import jakarta.persistence.Column;
 public class ContributionResponse {
 
     private Long id;
@@ -13,6 +15,16 @@ public class ContributionResponse {
     private Double areaSqFt;
     private Long societyId;
     private Long memberId;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
 
     // ---------------- GETTERS ----------------
 

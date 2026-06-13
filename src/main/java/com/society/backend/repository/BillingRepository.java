@@ -1,5 +1,4 @@
 package com.society.backend.repository;
-
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,6 +20,8 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
 
     // ================= BASIC FETCH =================
     List<Billing> findBySocietyId(Long societyId);
+
+    List<Billing> findBySocietyIdAndFinancialYearId(Long societyId,Long financialYearId);
 
     List<Billing> findBySocietyIdAndStatus(
             Long societyId,
@@ -50,7 +51,7 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
     List<Billing> findByIdIn(List<Long> ids);
 
     // 🔥 IMPORTANT: for Member Dashboard (via Flat mapping)
-   List<Billing> findByFlatIdIn(List<Long> flatIds);
+   List<Billing> findByFlatIdInAndSocietyIdAndFinancialYearId(List<Long> flatIds,Long societyId,Long financialYearId);
 
     // Fetch by receipt
     List<Billing> findByReceiptId(Long receiptId);

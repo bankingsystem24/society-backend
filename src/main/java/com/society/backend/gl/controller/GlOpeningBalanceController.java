@@ -28,26 +28,26 @@ public class GlOpeningBalanceController {
     private GlOpeningBalanceService service;
 
     @GetMapping
-    public List<GlOpeningBalance> getAll(@RequestParam Long societyId) {
-        return service.getAllOpeningBySociety(societyId);
+    public List<GlOpeningBalance> getAll(@RequestParam Long societyId,Long financialYearId) {
+
+        return service.getAllOpeningBySociety(societyId,financialYearId);
     }
 
-@PostMapping("/save")
-public GlOpeningBalance save(
-        @RequestBody GlOpeningBalanceRequest request,
-        @RequestParam Long societyId) {
+    @PostMapping("/save")
+    public GlOpeningBalance save(
+            @RequestBody GlOpeningBalanceRequest request,
+            @RequestParam Long societyId) {
 
-    return service.save(request, societyId);
-}
+        return service.save(request, societyId);
+    }
 
-@PutMapping("/{id}")
-public GlOpeningBalance update(
-        @PathVariable Long id,
-        @RequestBody GlOpeningBalanceRequest request) {
+    @PutMapping("/{id}")
+    public GlOpeningBalance update(
+            @PathVariable Long id,
+            @RequestBody GlOpeningBalanceRequest request) {
 
-    return service.update(id, request);
-}
-
+        return service.update(id, request);
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {

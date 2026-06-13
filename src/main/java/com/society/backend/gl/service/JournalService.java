@@ -64,6 +64,7 @@ public class JournalService {
 
                         String entityType,
                         Long entityId,
+                        Long financialYearId,
                         Long createdBy,
                         Long flatId,
                         Member member) {
@@ -80,6 +81,7 @@ public class JournalService {
                 entry.setSocietyId(societyId);
                 entry.setCreatedAt(LocalDateTime.now());
                 entry.setCreatedBy(createdBy);
+                entry.setFinancialYearId(financialYearId);
 
                 JournalEntry savedEntry = journalRepo.save(entry);
 
@@ -96,6 +98,7 @@ public class JournalService {
                 debitLine.setRemarks("Debit Entry");
                 debitLine.setFlatId(flatId);
                 debitLine.setMember(member);
+                debitLine.setFinancialYearId(financialYearId);
                 lineRepo.save(debitLine);
 
                 // CREDIT LINE
@@ -111,6 +114,7 @@ public class JournalService {
                 creditLine.setRemarks("Credit Entry");
                 creditLine.setFlatId(flatId);
                 creditLine.setMember(member);
+                creditLine.setFinancialYearId(financialYearId);
                 lineRepo.save(creditLine);
 
                 return savedEntry.getId();
@@ -126,7 +130,8 @@ public class JournalService {
                         Double amount,
                         Long societyId,
                         Long createdBy,
-                        Long flatId) {
+                        Long flatId,
+                        Long financialYearId) {
 
                 final Integer RECEIVABLE_GL = 1101;
                 final Integer INCOME_GL = 3000; // ✅ FIXED (NOT 4001)
@@ -145,9 +150,11 @@ public class JournalService {
                                 amount,
                                 "MEMBER",
                                 member != null ? member.getId() : null,
+                                financialYearId,
                                 createdBy,
                                 flatId,
-                                member);
+                                member
+                                );
 
                 // ================= LEDGER UPDATE =================
 
@@ -185,7 +192,8 @@ public class JournalService {
                 String paymentMode,
                 Long societyId,
                 Long createdBy,
-                Long flatId) {
+                Long flatId,
+                Long financialYearId) {
 
         Integer receiptGl;
 
@@ -226,7 +234,7 @@ public class JournalService {
         entry.setSocietyId(societyId);
         entry.setCreatedAt(LocalDateTime.now());
         entry.setCreatedBy(createdBy);
-
+        entry.setFinancialYearId(financialYearId);
         JournalEntry savedEntry = journalRepo.save(entry);
 
         int lineNo = 1;
@@ -241,7 +249,8 @@ public class JournalService {
                 "RECEIPT",
                 receiptId,
                 societyId,
-                flatId
+                flatId,
+                financialYearId
         );
 
         // ================= CR MAINTENANCE =================
@@ -255,7 +264,8 @@ public class JournalService {
                         "MEMBER RECEIVABLE",
                         memberId,
                         societyId,
-                        flatId
+                        flatId,
+                        financialYearId
                 );
         }
 
@@ -269,7 +279,8 @@ public class JournalService {
                 "INTEREST",
                 memberId,
                 societyId,
-                flatId
+                flatId,
+                financialYearId
         );
         }
 
@@ -284,7 +295,8 @@ public class JournalService {
                         "DISCOUNT",
                         memberId,
                         societyId,
-                        flatId
+                        flatId,
+                        financialYearId
                 );
         }
 
@@ -304,7 +316,8 @@ public class JournalService {
                         Long societyId,
                         Long createdBy,
                         Long flatId,
-                        Long memberId) {
+                        Long memberId,
+                        Long financialYearId) {
 
                 Member member = memberRepository.findById(memberId)
                                 .orElseThrow(() -> new RuntimeException("Member not found"));
@@ -322,6 +335,7 @@ public class JournalService {
                                 creditGlCode,
                                 amount,
                                 "SOCIETY",
+                                financialYearId,
                                 societyId,
                                 createdBy,
                                 null,
@@ -352,7 +366,8 @@ public class JournalService {
                         String entityType,
                         Long entityId,
                         Long societyId,
-                        Long flatId) {
+                        Long flatId,
+                        Long financialYearId) {
                 JournalEntryLine line = new JournalEntryLine();
 
                 line.setJournalEntry(journalEntry);
@@ -365,6 +380,7 @@ public class JournalService {
                 line.setSocietyId(societyId);
                 line.setFlatId(flatId);
                 line.setRemarks("AUTO");
+                line.setFinancialYearId(financialYearId);
                 
 
                 Flat flat = flatRepository.findById(flatId)
@@ -387,7 +403,8 @@ public Long createSinkingFundEntry(
         Double amount,
         Long societyId,
         Long createdBy,
-        Long flatId) {
+        Long flatId,
+        Long financialYearId) {
 
     final Integer RECEIVABLE_GL = 1101;
     final Integer SINKING_FUND_GL = 5010;
@@ -406,6 +423,7 @@ public Long createSinkingFundEntry(
             amount,
             "MEMBER",
             member != null ? member.getId() : null,
+            financialYearId,
             createdBy,
             flatId,
             member);
@@ -437,7 +455,8 @@ public Long createContributionEntry(
         Double amount,
         Long societyId,
         Long createdBy,
-        Long flatId) {
+        Long flatId,
+        Long financialYearId) {
 
     final Integer RECEIVABLE_GL = 1101;
     final Integer CONTRIBUTION_INCOME_GL = 3002; 
@@ -456,6 +475,7 @@ public Long createContributionEntry(
             amount,
             "MEMBER",
             member != null ? member.getId() : null,
+            financialYearId,
             createdBy,
             flatId,
             member

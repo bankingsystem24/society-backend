@@ -1,5 +1,7 @@
 package com.society.backend.dto;
 
+import jakarta.persistence.Column;
+
 public class BillGenerateRequest {
 
     private Long societyId;
@@ -7,6 +9,16 @@ public class BillGenerateRequest {
     private int year;
     private Long createdBy;
 
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
     public Long getSocietyId() {
         return societyId;
     }

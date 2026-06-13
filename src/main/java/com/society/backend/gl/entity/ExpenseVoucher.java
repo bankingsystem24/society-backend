@@ -13,27 +13,27 @@ public class ExpenseVoucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String voucherNo;
-
     private LocalDate voucherDate;
-
     private Integer expenseGlCode;
-
     private Double amount;
-
     private String paymentMode;
-
     private String narration;
-
     private Long vendorId;
-
     private Long journalId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "society_id", nullable = false)
     private Society society;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
     
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
     public Long getId() {
         return id;
     }

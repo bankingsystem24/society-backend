@@ -48,6 +48,16 @@ public class JournalEntryLine {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
     // ================= GETTERS & SETTERS =================
 
     public Long getId() {

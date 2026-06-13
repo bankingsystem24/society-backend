@@ -14,8 +14,8 @@ public class JournalEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-@OneToMany(mappedBy = "journalEntry", fetch = FetchType.LAZY)
-private List<JournalEntryLine> lines;
+    @OneToMany(mappedBy = "journalEntry", fetch = FetchType.LAZY)
+    private List<JournalEntryLine> lines;
 
     @Column(name = "voucher_no", unique = true, nullable = false, length = 50)
     private String voucherNo;
@@ -51,6 +51,17 @@ private List<JournalEntryLine> lines;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
 
     // ================= GETTERS & SETTERS =================
 
@@ -150,13 +161,12 @@ private List<JournalEntryLine> lines;
         this.createdAt = createdAt;
     }
 
+    public List<JournalEntryLine> getLines() {
+        return lines;
+    }
 
-public List<JournalEntryLine> getLines() {
-    return lines;
-}
-
-public void setLines(List<JournalEntryLine> lines) {
-    this.lines = lines;
-}
+    public void setLines(List<JournalEntryLine> lines) {
+        this.lines = lines;
+    }
 
 }

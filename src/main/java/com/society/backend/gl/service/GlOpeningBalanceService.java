@@ -22,9 +22,10 @@ public class GlOpeningBalanceService {
                 }
 
     // ================= GET ALL =================
-    public List<GlOpeningBalance> getAllOpeningBySociety(Long societyId) {
-        return glOpeningBalanceRepository.findBySociety_Id(societyId);
-    }
+public List<GlOpeningBalance> getAllOpeningBySociety(Long societyId, Long financialYearId) {
+    return glOpeningBalanceRepository
+            .findBySociety_IdAndFinancialYearId(societyId, financialYearId);
+}
 
     public GlOpeningBalance save(
             GlOpeningBalanceRequest request,

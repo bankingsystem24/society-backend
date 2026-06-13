@@ -2,11 +2,23 @@ package com.society.backend.dto;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
+
 public class SinkingFundOrderRequest {
 
     private List<Long> sinkingFundIds;
     private Long memberId;
     private Double amount;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
 
     public List<Long> getSinkingFundIds() {
         return sinkingFundIds;

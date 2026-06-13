@@ -61,6 +61,16 @@ public class Billing {
     // Audit fields
     private LocalDate createdDate;
 
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
     // ================= LIFECYCLE =================
     @PrePersist
     public void prePersist() {

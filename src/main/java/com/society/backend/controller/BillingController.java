@@ -1,5 +1,4 @@
 package com.society.backend.controller;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -35,38 +34,32 @@ import com.society.backend.util.RazorpaySignatureUtil;
 @RequestMapping("/api/billing")
 @CrossOrigin("*")
 public class BillingController {
-
-        @Autowired
-        private BillingService billingService;
-
+        private final BillingService billingService;
         private final RazorpayClient razorpayClient;
-
         private final BillingRepository billingRepository;
-
         private final ReceiptRepository receiptRepository;
-
         private final JournalService journalService;
-
-        @Autowired
-        private SocietyBillingPolicyRepository societyBillingPolicyRepository;
-
+        private final SocietyBillingPolicyRepository societyBillingPolicyRepository;
         @Value("${razorpay.key_secret}")
         private String razorpayKeySecret;
-
         @Value("${razorpay.key_id}")
         private String keyId;
 
         public BillingController(
+                        BillingService billingService,
                         RazorpayClient razorpayClient,
                         BillingRepository billingRepository,
                         ReceiptRepository receiptRepository,
                         JournalService journalService,
+                        SocietyBillingPolicyRepository societyBillingPolicyRepository,
                         @Value("${razorpay.key_secret}") String razorpayKeySecret,
                         @Value("${razorpay.key_id}") String keyId) {
+                this.billingService = billingService;
                 this.razorpayClient = razorpayClient;
                 this.billingRepository = billingRepository;
                 this.receiptRepository = receiptRepository;
                 this.journalService = journalService;
+                this.societyBillingPolicyRepository = societyBillingPolicyRepository;
                 this.razorpayKeySecret = razorpayKeySecret;
                 this.keyId = keyId;
         }
@@ -83,7 +76,8 @@ public class BillingController {
                                 request.getSocietyId(),
                                 request.getMonth(),
                                 request.getYear(),
-                                request.getCreatedBy());
+                                request.getCreatedBy(),
+                                request.getFinancialYearId());
         }
 
         // =========================
@@ -125,7 +119,8 @@ public class BillingController {
                                                 request.getFromYear(),
                                                 request.getMonth(),
                                                 request.getStatus(),
-                                                request.getMemberId()));
+                                                request.getMemberId(),
+                                                request.getFinancialYearId()));
         }
 
         @PutMapping("/pay")
@@ -133,7 +128,8 @@ public class BillingController {
 
                 return billingService.payBills(
                                 req.getBillIds(),
-                                req.getPaymentMode());
+                                req.getPaymentMode(),
+                                req.getFinancialYearId());
         }
 
         @PostMapping("/create-order")
@@ -170,6 +166,7 @@ public class BillingController {
                         // VERIFY SIGNATURE
                         // =========================
                         String payload = req.getRazorpayOrderId() + "|" + req.getRazorpayPaymentId();
+                        Long financialYearId = req.getFinancialYearId();
 
                         String generatedSignature = RazorpaySignatureUtil.hmacSHA256(payload, razorpayKeySecret);
 
@@ -256,6 +253,7 @@ public class BillingController {
                         receipt.setInterestAmount(interestAmount);
                         receipt.setDiscountAmount(discountAmount);
                         receipt.setTotalAmount(totalAmount);
+                        receipt.setFinancialYearId(financialYearId);
 
                         Receipt savedReceipt = receiptRepository.save(receipt);
 
@@ -320,7 +318,8 @@ public class BillingController {
                                 "ONLINE",
                                 firstBill.getSociety().getId(),
                                 req.getUserId(),
-                                firstBill.getFlat().getId()
+                                firstBill.getFlat().getId(),
+                                financialYearId
                         );
 
                         return ResponseEntity.ok("Payment verified successfully");

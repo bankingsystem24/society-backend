@@ -20,21 +20,23 @@ public class ContributionController {
 
     private final ContributionService contributionService;
 
-    @GetMapping("/compulsory/{societyId}")
+    @GetMapping("/compulsory/{societyId}/{financialYearId}")
     public ResponseEntity<?> getCompulsoryContributions(
-            @PathVariable Long societyId
+            @PathVariable Long societyId,
+            @PathVariable Long financialYearId
     ) {
         return ResponseEntity.ok(
-                contributionService.getCompulsoryContributions(societyId)
+                contributionService.getCompulsoryContributions(societyId,financialYearId)
         );
     }
 
-    @PostMapping("/compulsory/{societyId}")
+    @PostMapping("/compulsory/{societyId}/{financialYearId}")
     public ResponseEntity<?> createCompulsoryContribution(
             @PathVariable Long societyId,
+            @PathVariable Long financialYearId,
             @RequestBody CompulsoryContributionRequest request
     ) {
-        contributionService.createCompulsoryContribution(societyId, request);
+        contributionService.createCompulsoryContribution(societyId, financialYearId,request);
         return ResponseEntity.ok("Compulsory contribution created successfully");
     }
 }

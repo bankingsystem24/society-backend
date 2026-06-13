@@ -1,5 +1,7 @@
 package com.society.backend.dto;
 
+import jakarta.persistence.Column;
+
 public class SinkingFundRequest {
 
     private Long societyId;
@@ -11,6 +13,16 @@ public class SinkingFundRequest {
     private Double amount;
 
     private Long createdBy;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
 
     // ================= GETTERS & SETTERS =================
 

@@ -50,6 +50,7 @@ public class ExpenseVoucherService {
         voucher.setVendorId(
                 request.getVendorId());
         voucher.setSociety(society);
+        voucher.setFinancialYearId(request.getFinancialYearId());
 
         
         ExpenseVoucher savedVoucher = expenseVoucherRepository.save(voucher);
@@ -74,6 +75,7 @@ public class ExpenseVoucherService {
 
                 "VENDOR",
                 savedVoucher.getVendorId(),
+                savedVoucher.getFinancialYearId(),
 
                 0L, // createdBy
                 null, // flatId
@@ -87,12 +89,12 @@ public class ExpenseVoucherService {
 
     // ================= LIST =================
 
-    public List<ExpenseVoucher> getBySociety(
-            Long societyId) {
+    public List<ExpenseVoucher> getBySocietyIdAndFinancialYearId(
+            Long societyId, Long financialYearId) {
 
         return expenseVoucherRepository
-                .findBySocietyIdOrderByVoucherDateDesc(
-                        societyId);
+                .findBySocietyIdAndFinancialYearIdOrderByVoucherDateDesc(
+                        societyId,financialYearId);
     }
 
     // ================= GET ONE =================

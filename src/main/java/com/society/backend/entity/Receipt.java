@@ -44,6 +44,17 @@ public class Receipt {
     private String transactionId;
 
     private LocalDate receiptDate;
+
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
     // ================= GETTERS =================
 
     public Long getId() {

@@ -21,10 +21,10 @@ public class ContributionService {
     private final FlatRepository flatRepository;
     private final JournalService journalService;
 
-public List<ContributionResponse> getCompulsoryContributions(Long societyId) {
+public List<ContributionResponse> getCompulsoryContributions(Long societyId, Long financialYearId) {
 
     List<Contribution> list =
-            contributionRepository.findBySocietyIdAndType(societyId, "COMPULSORY");
+            contributionRepository.findBySocietyIdAndTypeAndFinancialYearId(societyId, "COMPULSORY",financialYearId);
 
     return list.stream().map(c -> {
 
@@ -39,6 +39,7 @@ public List<ContributionResponse> getCompulsoryContributions(Long societyId) {
         dto.setStatus(c.getStatus().name());
         dto.setSocietyId(c.getSocietyId());
         dto.setMemberId(c.getMemberId());
+        dto.setFinancialYearId(financialYearId);
 
         if (c.getFlat() != null) {
             dto.setFlatNo(c.getFlat().getFlatNo());
@@ -50,34 +51,35 @@ public List<ContributionResponse> getCompulsoryContributions(Long societyId) {
     }).toList();
 }
 
-    public void createCompulsoryContribution(Long societyId, CompulsoryContributionRequest req) {
+    public void createCompulsoryContribution(Long societyId, Long financialYearId,CompulsoryContributionRequest req) {
 
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
         List<Contribution> contributions = new ArrayList<>();
 
-        for (Flat m : flats) {
+        for (Flat f : flats) {
 
             double amount;
 
             if ("FLAT".equalsIgnoreCase(req.getMode())) {
                 amount = req.getFlatAmount();
             } else {
-                amount = m.getAreaSqFt() * req.getRate();
+                amount = f.getAreaSqFt() * req.getRate();
             }
 
             Contribution c = new Contribution();
             c.setSocietyId(societyId);
-            c.setMemberId(m.getId());
+            c.setMemberId(f.getId());
             c.setName(req.getName());
             c.setType("COMPULSORY");
             c.setMode(req.getMode());
-            c.setFlat(m);
+            c.setFlat(f);
             c.setAmount(amount);
             c.setDueDate(req.getDueDate());
             c.setDate(req.getDate());
             c.setDescription(req.getDescription());
             c.setCreatedBy(req.getUserId());
+            c.setFinancialYearId(financialYearId);
 
             contributions.add(c);
         }
@@ -98,7 +100,8 @@ public List<ContributionResponse> getCompulsoryContributions(Long societyId) {
                         c.getAmount(),
                         societyId,
                         c.getCreatedBy(),
-                        c.getFlat().getId());
+                        c.getFlat().getId(),
+                        c.getFinancialYearId());
 
                 if (journalId == null) {
                     throw new RuntimeException(

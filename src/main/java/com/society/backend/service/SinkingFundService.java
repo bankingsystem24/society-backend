@@ -63,7 +63,8 @@ public class SinkingFundService {
             String month,
             int year,
             Double amount,
-            Long createdBy) {
+            Long createdBy,
+            Long financialYearId) {
 
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
@@ -99,6 +100,7 @@ public class SinkingFundService {
             sf.setYear(year);
             sf.setAmount(amount);
             sf.setCreatedBy(createdBy);
+            sf.setFinancialYearId(financialYearId);
             sf.setCreatedDate(
                     LocalDate.of(year, billingMonth.getValue(), 1));
 
@@ -114,7 +116,8 @@ public class SinkingFundService {
                         amount,
                         societyId,
                         createdBy,
-                        flat.getId());
+                        flat.getId(),
+                        financialYearId);
 
                 if (journalId == null) {
                     throw new RuntimeException(
@@ -174,7 +177,7 @@ public class SinkingFundService {
     }
 
     @Transactional
-    public String pay(List<Long> sinkingFundIds, String paymentMode) {
+    public String pay(List<Long> sinkingFundIds, String paymentMode, Long financialYearId) {
 
         List<SinkingFund> funds = sinkingFundRepository.findAllById(sinkingFundIds);
 
@@ -198,7 +201,7 @@ public class SinkingFundService {
             fund.setStatus(PaymentStatus.PAID);
             fund.setPaymentMode(paymentMode);
             fund.setPaidDate(LocalDate.now());
-
+            fund.setFinancialYearId(financialYearId);
             totalAmount += fund.getAmount();
         }
 
@@ -220,7 +223,7 @@ public class SinkingFundService {
 
         receipt.setSocietyId(societyId);
         receipt.setFlatId(flatId);
-
+        receipt.setFinancialYearId(financialYearId);
         Receipt savedReceipt = receiptRepository.save(receipt);
 
         savedReceipt.setReceiptNo(
@@ -261,7 +264,7 @@ public class SinkingFundService {
                     paymentMode,
                     societyId,
                     0L,
-                    flatId);
+                    flatId,financialYearId);
         }
 
         return "Sinking Fund paid successfully";
@@ -344,6 +347,7 @@ public void verifyPayment(VerifySinkingFundPaymentRequest request) {
 
         Long societyId = first.getSociety().getId();
         Long flatId = first.getFlat().getId();
+        Long financialYearId = first.getFinancialYearId();
 
         Long memberId = (first.getFlat().getOwner() != null)
                 ? first.getFlat().getOwner().getId()
@@ -359,6 +363,7 @@ public void verifyPayment(VerifySinkingFundPaymentRequest request) {
             fund.setPaidDate(LocalDate.now());
             fund.setTransactionId(request.getRazorpayPaymentId());
 
+
             totalAmount += fund.getAmount();
         }
 
@@ -373,6 +378,7 @@ public void verifyPayment(VerifySinkingFundPaymentRequest request) {
         receipt.setPaymentMode(request.getPaymentMode());
         receipt.setTransactionId(request.getRazorpayPaymentId());
         receipt.setReceiptDate(LocalDate.now());
+        receipt.setFinancialYearId(financialYearId);
 
         receipt = receiptRepository.save(receipt);
 
@@ -401,7 +407,8 @@ public void verifyPayment(VerifySinkingFundPaymentRequest request) {
                 request.getPaymentMode(),
                 societyId,
                 request.getUserId(),
-                flatId
+                flatId,
+                financialYearId
         );
 
     } catch (Exception e) {
@@ -410,10 +417,10 @@ public void verifyPayment(VerifySinkingFundPaymentRequest request) {
 }
 
 
-    public List<SinkingFund> getSinkingFundsByFlatIds(
-            List<Long> flatIds) {
+    public List<SinkingFund> getSinkingFunds(
+            List<Long> flatIds,Long societyId,Long financialYearId) {
 
-        return sinkingFundRepository.findByFlat_IdIn(flatIds);
+        return sinkingFundRepository.findByFlat_IdInAndSocietyIdAndFinancialYearId(flatIds,societyId,financialYearId);
     }
 
 }

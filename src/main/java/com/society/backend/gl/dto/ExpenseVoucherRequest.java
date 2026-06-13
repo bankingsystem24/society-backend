@@ -1,5 +1,7 @@
 package com.society.backend.gl.dto;
 
+import jakarta.persistence.Column;
+
 public class ExpenseVoucherRequest {
 
     private Long societyId;
@@ -9,7 +11,16 @@ public class ExpenseVoucherRequest {
     private String paymentMode;
     private String narration;
     private Long vendorId;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
 
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
     public Long getSocietyId() {
         return societyId;
     }

@@ -6,6 +6,6 @@ import com.society.backend.gl.entity.Contribution;
 
 public interface ContributionRepository extends JpaRepository<Contribution, Long> {
 
-    List<Contribution> findBySocietyIdAndType(Long societyId, String type);
+    List<Contribution> findBySocietyIdAndTypeAndFinancialYearId(Long societyId, String type,Long financialYearId);
 
 }

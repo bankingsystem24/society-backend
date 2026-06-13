@@ -96,8 +96,7 @@ public class MemberController {
     @GetMapping("/flats")
     public List<Flat> getMemberFlats(
             @RequestParam Long societyId,
-            @RequestParam Long memberId
-    ) {
+            @RequestParam Long memberId) {
         return flatService.getFlatsForMember(societyId, memberId);
     }
 
@@ -110,20 +109,27 @@ public class MemberController {
                 .map(id -> Long.valueOf(id.toString()))
                 .toList();
 
-        return billingService.getBillsByFlatIds(flatIds);
+        Long societyId = Long.valueOf(req.get("societyId").toString());
+        Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
+
+        return billingService.getBillsByFlatIds(flatIds, societyId, financialYearId);
+
     }
 
-@PostMapping("/sinking-funds")
-public List<SinkingFund> getSinkingFunds(
-        @RequestBody Map<String, Object> req) {
+    @PostMapping("/sinking-funds")
+    public List<SinkingFund> getSinkingFunds(
+            @RequestBody Map<String, Object> req) {
 
-    List<?> rawList = (List<?>) req.get("flatIds");
+        List<?> rawList = (List<?>) req.get("flatIds");
 
-    List<Long> flatIds = rawList.stream()
-            .map(id -> Long.valueOf(id.toString()))
-            .toList();
+        List<Long> flatIds = rawList.stream()
+                .map(id -> Long.valueOf(id.toString()))
+                .toList();
 
-    return sinkingFundService.getSinkingFundsByFlatIds(flatIds);
-}
+        Long societyId = Long.valueOf(req.get("societyId").toString());
+        Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
+
+        return sinkingFundService.getSinkingFunds(flatIds,societyId,financialYearId);
+    }
 
 }

@@ -1,9 +1,6 @@
 package com.society.backend.controller;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.society.backend.dto.SinkingFundOrderRequest;
 import com.society.backend.dto.SinkingFundPaymentRequest;
 import com.society.backend.dto.SinkingFundRequest;
@@ -11,7 +8,6 @@ import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.dto.VerifySinkingFundPaymentRequest;
 import com.society.backend.entity.SinkingFund;
 import com.society.backend.service.SinkingFundService;
-
 import java.util.List;
 
 @RestController
@@ -33,7 +29,8 @@ public class SinkingFundController {
                 request.getMonth(),
                 request.getYear(),
                 request.getAmount(),
-                request.getCreatedBy());
+                request.getCreatedBy(),
+                request.getFinancialYearId());
     }
 
     // GET ALL
@@ -56,7 +53,8 @@ public class SinkingFundController {
 
         sinkingFundService.pay(
                 request.getSinkingFundIds(),
-                request.getPaymentMode());
+                request.getPaymentMode(),
+                request.getFinancialYearId() );
 
         return ResponseEntity.ok("Payment successful");
     }

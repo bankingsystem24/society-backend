@@ -2,6 +2,8 @@ package com.society.backend.dto;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
+
 public class BillingResponse {
 
     private Long id;
@@ -24,7 +26,16 @@ public class BillingResponse {
     private Double interestAmount;
     private Double discountAmount;
     private LocalDate dueDate;
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
 
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
 
     // ======================
     // Getters & Setters
