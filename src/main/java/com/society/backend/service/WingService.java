@@ -133,7 +133,7 @@ public class WingService {
     }
 
     // FLATS BY SOCIETY (kept as-is but safe)
-    public List<FlatResponse> getBySocietyIdFlat(Long societyId) {
+    public List<FlatResponse> getBySocietyIdFlat(Long societyId,Long financialYearId) {
 
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 

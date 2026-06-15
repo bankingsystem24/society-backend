@@ -2,18 +2,31 @@ package com.society.backend.gl.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.Utils;
 import com.society.backend.dto.CompulsoryContributionRequest;
+import com.society.backend.dto.ContributionOrderRequest;
+import com.society.backend.dto.VerifyContributionPaymentRequest;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.entity.Receipt;
+import com.society.backend.entity.Society;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.dto.ContributionResponse;
 import com.society.backend.gl.entity.Contribution;
 import com.society.backend.gl.repository.ContributionRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.ReceiptRepository;
+import com.society.backend.repository.SocietyRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +39,18 @@ public class ContributionService {
     private final FlatRepository flatRepository;
     private final JournalService journalService;
     private final ReceiptRepository receiptRepository;
+    private final SocietyRepository societyRepository;
 
-    public List<ContributionResponse> getCompulsoryContributions(Long societyId, Long financialYearId) {
+    @Value("${razorpay.key_id}")
+    private String razorpayKey;
 
-        List<Contribution> list = contributionRepository.findBySocietyIdAndTypeAndFinancialYearId(societyId,
-                "COMPULSORY", financialYearId);
+    @Value("${razorpay.key_secret}")
+    private String razorpaySecret;
+
+    public List<ContributionResponse> getContributions(Long societyId, Long financialYearId) {
+
+        List<Contribution> list = contributionRepository.findBySocietyIdAndFinancialYearId(societyId,
+                financialYearId);
 
         return list.stream().map(c -> {
 
@@ -43,9 +63,13 @@ public class ContributionService {
             dto.setDate(c.getDate());
             dto.setDueDate(c.getDueDate());
             dto.setStatus(c.getStatus().name());
-            dto.setSocietyId(c.getSocietyId());
+            if (c.getSociety() != null) {
+                dto.setSocietyId(c.getSociety().getId());
+            }
             dto.setMemberId(c.getMemberId());
             dto.setFinancialYearId(financialYearId);
+            dto.setType(c.getType());
+            dto.setDescription(c.getDescription());
 
             if (c.getFlat() != null) {
                 dto.setFlatNo(c.getFlat().getFlatNo());
@@ -61,6 +85,9 @@ public class ContributionService {
 
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
+        Society society = societyRepository.findById(societyId)
+            .orElseThrow(() -> new RuntimeException("Society not found"))
+            ;
         List<Contribution> contributions = new ArrayList<>();
 
         for (Flat f : flats) {
@@ -74,7 +101,7 @@ public class ContributionService {
             }
 
             Contribution c = new Contribution();
-            c.setSocietyId(societyId);
+            c.setSociety(society);
             c.setMemberId(f.getId());
             c.setName(req.getName());
             c.setType("COMPULSORY");
@@ -124,6 +151,81 @@ public class ContributionService {
         }
     }
 
+    public void createVoluntaryContribution(Long societyId, Long financialYearId, CompulsoryContributionRequest req) {
+
+        List<Flat> flats = flatRepository.findBySociety_Id(societyId);
+
+        Society society = societyRepository.findById(societyId)
+            .orElseThrow(() -> new RuntimeException("Society not found"));
+
+        List<Contribution> contributions = new ArrayList<>();
+
+        for (Flat f : flats) {
+
+            double amount;
+
+            if ("FLAT".equalsIgnoreCase(req.getMode())) {
+                amount = req.getMinAmount();
+            } else {
+                amount = f.getAreaSqFt() * req.getRate();
+            }
+
+            Contribution c = new Contribution();
+            c.setSociety(society);
+            c.setMemberId(f.getId());
+            c.setName(req.getName());
+            c.setType("VOLUNTARY");
+            c.setMode(req.getMode());
+            c.setFlat(f);
+            c.setAmount(amount);
+            c.setDueDate(req.getDueDate());
+            c.setDate(req.getDate());
+            c.setDescription(req.getDescription());
+            c.setCreatedBy(req.getUserId());
+            c.setFinancialYearId(financialYearId);
+            c.setDescription(req.getDescription());
+
+            contributions.add(c);
+        }
+
+        contributionRepository.saveAll(contributions);
+
+        // ✅ SAVE ONLY ONCE
+        // List<Contribution> savedContributions =
+        // contributionRepository.saveAll(contributions);
+
+        // // ✅ JOURNAL POSTING
+        // for (Contribution c : savedContributions) {
+
+        // Member member = c.getFlat().getOwner();
+
+        // try {
+
+        // Long journalId = journalService.createContributionEntry(
+        // c.getId(),
+        // member,
+        // c.getAmount(),
+        // societyId,
+        // c.getCreatedBy(),
+        // c.getFlat().getId(),
+        // c.getFinancialYearId());
+
+        // if (journalId == null) {
+        // throw new RuntimeException(
+        // "Journal not created for contribution " + c.getId());
+        // }
+
+        // } catch (Exception e) {
+
+        // throw new RuntimeException(
+        // "Journal failed for contributionId="
+        // + c.getId()
+        // + " -> " + e.getMessage());
+        // }
+        // }
+
+    }
+
     @Transactional
     public String pay(List<Long> contributionIds,
             String paymentMode,
@@ -137,7 +239,7 @@ public class ContributionService {
 
         Contribution first = contributions.get(0);
 
-        Long societyId = first.getSocietyId();
+        Long societyId = first.getSociety().getId();
         Long flatId = first.getFlat().getId();
 
         Double totalAmount = 0.0;
@@ -222,4 +324,147 @@ public class ContributionService {
 
         return "Contribution paid successfully";
     }
+
+    public Map<String, Object> createOrder(
+            ContributionOrderRequest request) {
+
+        try {
+
+            RazorpayClient razorpay = new RazorpayClient(
+                    razorpayKey,
+                    razorpaySecret);
+
+            JSONObject orderRequest = new JSONObject();
+
+            orderRequest.put(
+                    "amount",
+                    request.getAmount().longValue() * 100);
+
+            orderRequest.put("currency", "INR");
+
+            orderRequest.put(
+                    "receipt",
+                    "SF_" + System.currentTimeMillis());
+
+            Order order = razorpay.orders.create(orderRequest);
+
+            Map<String, Object> response = new HashMap<>();
+
+            response.put(
+                    "razorpayOrderId",
+                    order.get("id"));
+
+            response.put(
+                    "amount",
+                    order.get("amount"));
+
+            response.put(
+                    "currency",
+                    order.get("currency"));
+
+            response.put(
+                    "key",
+                    razorpayKey);
+
+            return response;
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Failed to create order", e);
+        }
+    }
+
+    @Transactional
+    public void verifyPayment(VerifyContributionPaymentRequest request) {
+
+        System.out.println("Request:"+request);
+
+        try {
+
+            JSONObject attributes = new JSONObject();
+            attributes.put("razorpay_order_id", request.getRazorpayOrderId());
+            attributes.put("razorpay_payment_id", request.getRazorpayPaymentId());
+            attributes.put("razorpay_signature", request.getRazorpaySignature());
+
+            boolean valid = Utils.verifyPaymentSignature(attributes, razorpaySecret);
+
+            if (!valid) {
+                throw new RuntimeException("Invalid Razorpay signature");
+            }
+
+            List<Contribution> contributions = contributionRepository.findAllById(request.getContributionIds());
+
+            if (contributions.isEmpty()) {
+                throw new RuntimeException("No Contribution  records found");
+            }
+
+            // ================= FIRST FUND =================
+            Contribution first = contributions.get(0);
+
+            Long societyId = first.getSociety().getId();
+            Long flatId = first.getFlat().getId();
+            Long financialYearId = first.getFinancialYearId();
+
+            Long memberId = (first.getFlat().getOwner() != null)
+                    ? first.getFlat().getOwner().getId()
+                    : null;
+
+            // ================= TOTAL CALCULATION =================
+            Double totalAmount = 0.0;
+
+            for (Contribution contribution : contributions) {
+
+                contribution.setStatus(PaymentStatus.PAID);
+                contribution.setPaymentMode(request.getPaymentMode());
+                contribution.setTransactionId(request.getRazorpayPaymentId());
+
+                totalAmount += contribution.getAmount();
+            }
+
+            contributionRepository.saveAll(contributions);
+
+            // ================= RECEIPT (CORRECT PLACE) =================
+            Receipt receipt = new Receipt();
+
+            receipt.setSocietyId(societyId);
+            receipt.setFlatId(flatId);
+            receipt.setTotalAmount(totalAmount);
+            receipt.setPaymentMode(request.getPaymentMode());
+            receipt.setTransactionId(request.getRazorpayPaymentId());
+            receipt.setReceiptDate(LocalDate.now());
+            receipt.setFinancialYearId(financialYearId);
+
+            receipt = receiptRepository.save(receipt);
+
+            // optional receipt number
+            receipt.setReceiptNo(
+                    "SF-" + LocalDate.now().getYear() + "-" + receipt.getId());
+
+            receipt = receiptRepository.save(receipt);
+
+            for (Contribution contribution : contributions) {
+                contribution.setReceiptId(receipt.getId());
+            }
+
+            contributionRepository.saveAll(contributions);
+
+            // ================= JOURNAL =================
+            journalService.createReceiptEntry(
+                    receipt.getId(),
+                    memberId,
+                    totalAmount,
+                    0.0,
+                    0.0,
+                    totalAmount,
+                    request.getPaymentMode(),
+                    societyId,
+                    request.getUserId(),
+                    flatId,
+                    financialYearId);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Payment verification failed", e);
+        }
+    }
+
 }

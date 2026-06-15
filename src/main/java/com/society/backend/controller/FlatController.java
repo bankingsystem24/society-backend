@@ -33,9 +33,9 @@ public class FlatController {
     // =========================
     @GetMapping
     public ResponseEntity<List<FlatResponse>> getAll(
-            @RequestParam(required = false) Long societyId) {
+            @RequestParam(required = false) Long societyId, Long financialYearId) {
 
-        return ResponseEntity.ok(service.getAll(societyId));
+        return ResponseEntity.ok(service.getAll(societyId,financialYearId));
     }
 
     // =========================

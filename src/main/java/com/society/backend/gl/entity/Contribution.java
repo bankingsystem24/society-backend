@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 import com.society.backend.entity.Flat;
+import com.society.backend.entity.Society;
 import com.society.backend.enums.PaymentStatus;
 
 @Entity
@@ -13,7 +14,9 @@ public class Contribution {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long societyId;
+    @ManyToOne
+    @JoinColumn(name = "society_id", nullable = false)
+    private Society society;
     private Long memberId;
     private String name;
     private String type;
@@ -49,8 +52,12 @@ public class Contribution {
         return id;
     }
 
-    public Long getSocietyId() {
-        return societyId;
+    public Society getSociety() {
+        return society;
+    }
+
+    public void setSociety(Society society) {
+        this.society = society;
     }
 
     public Long getMemberId() {
@@ -89,10 +96,6 @@ public class Contribution {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setSocietyId(Long societyId) {
-        this.societyId = societyId;
     }
 
     public void setMemberId(Long memberId) {

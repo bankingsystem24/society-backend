@@ -171,6 +171,8 @@ public class ReceiptService {
 
                 // Billing
                 List<Billing> bills = billingRepository.findByReceiptId(receiptId);
+                Receipt receipt = receiptRepository.findById(receiptId)
+                                .orElseThrow(() -> new RuntimeException("Receipt not found"));
 
                 if (!bills.isEmpty()) {
 
@@ -186,7 +188,8 @@ public class ReceiptService {
                                 dto.setDiscountAmount(b.getDiscountAmount());
                                 dto.setPenaltyAmount(b.getPenaltyAmount());
                                 dto.setTotalAmount(b.getTotalAmount());
-
+                                dto.setCreatedAt(receipt.getReceiptDate());
+                                
                                 if (b.getStatus() != null) {
                                         dto.setStatus(b.getStatus().name());
                                 }
@@ -219,6 +222,7 @@ public class ReceiptService {
                                 dto.setYear(0);
                                 dto.setStatus(c.getStatus().name());
                                 dto.setname(c.getName());
+                                dto.setCreatedAt(receipt.getReceiptDate());
 
                                 response.add(dto);
 
@@ -234,6 +238,8 @@ public class ReceiptService {
                         dto.setId(s.getId());
                         dto.setReceiptType("SINKING_FUND");
                         dto.setTotalAmount(s.getAmount());
+                        dto.setCreatedAt(receipt.getReceiptDate());
+                        dto.setStatus(s.getStatus().name());
 
                         response.add(dto);
                 });

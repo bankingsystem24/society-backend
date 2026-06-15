@@ -10,7 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.society.backend.dto.CompulsoryContributionRequest;
+import com.society.backend.dto.ContributionOrderRequest;
+import com.society.backend.dto.SinkingFundOrderRequest;
 import com.society.backend.dto.SinkingFundPaymentRequest;
+import com.society.backend.dto.VerifyContributionPaymentRequest;
+import com.society.backend.dto.VerifySinkingFundPaymentRequest;
 import com.society.backend.gl.dto.ContributionPaymentRequest;
 import com.society.backend.gl.service.ContributionService;
 
@@ -21,37 +25,60 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContributionController {
 
-    private final ContributionService contributionService;
+        private final ContributionService contributionService;
 
-    @GetMapping("/compulsory/{societyId}/{financialYearId}")
-    public ResponseEntity<?> getCompulsoryContributions(
-            @PathVariable Long societyId,
-            @PathVariable Long financialYearId
-    ) {
-        return ResponseEntity.ok(
-                contributionService.getCompulsoryContributions(societyId,financialYearId)
-        );
-    }
+        @GetMapping("/{societyId}/{financialYearId}")
+        public ResponseEntity<?> getContributions(
+                        @PathVariable Long societyId,
+                        @PathVariable Long financialYearId) {
+                return ResponseEntity.ok(
+                                contributionService.getContributions(societyId, financialYearId));
+        }
 
-    @PostMapping("/compulsory/{societyId}/{financialYearId}")
-    public ResponseEntity<?> createCompulsoryContribution(
-            @PathVariable Long societyId,
-            @PathVariable Long financialYearId,
-            @RequestBody CompulsoryContributionRequest request
-    ) {
-        contributionService.createCompulsoryContribution(societyId, financialYearId,request);
-        return ResponseEntity.ok("Compulsory contribution created successfully");
-    }
+        @PostMapping("/compulsory/{societyId}/{financialYearId}")
+        public ResponseEntity<?> createCompulsoryContribution(
+                        @PathVariable Long societyId,
+                        @PathVariable Long financialYearId,
+                        @RequestBody CompulsoryContributionRequest request) {
+                contributionService.createCompulsoryContribution(societyId, financialYearId, request);
+                return ResponseEntity.ok("Compulsory contribution created successfully");
+        }
 
-    @PutMapping("/pay")
-    public ResponseEntity<String> pay(
-            @RequestBody ContributionPaymentRequest request) {
+        @PostMapping("/voluntary/{societyId}/{financialYearId}")
+        public ResponseEntity<?> createVoluntaryContribution(
+                        @PathVariable Long societyId,
+                        @PathVariable Long financialYearId,
+                        @RequestBody CompulsoryContributionRequest request) {
+                contributionService.createVoluntaryContribution(societyId, financialYearId, request);
+                return ResponseEntity.ok("Voluntary contribution created successfully");
+        }
 
-        contributionService.pay(
-                request.getContributionIds(),
-                request.getPaymentMode(),
-                request.getFinancialYearId() );
+        @PutMapping("/pay")
+        public ResponseEntity<String> pay(
+                        @RequestBody ContributionPaymentRequest request) {
 
-        return ResponseEntity.ok("Payment successful");
-    }
+                contributionService.pay(
+                                request.getContributionIds(),
+                                request.getPaymentMode(),
+                                request.getFinancialYearId());
+
+                return ResponseEntity.ok("Payment successful");
+        }
+
+        @PostMapping("/create-order")
+        public ResponseEntity<?> createOrder(
+                        @RequestBody ContributionOrderRequest request) {
+
+                return ResponseEntity.ok(
+                                contributionService.createOrder(request));
+        }
+
+        @PostMapping("/verify-payment")
+        public ResponseEntity<?> verifyPayment(
+                        @RequestBody VerifyContributionPaymentRequest request) {
+
+                contributionService.verifyPayment(request);
+
+                return ResponseEntity.ok("Payment verified successfully");
+        }
 }

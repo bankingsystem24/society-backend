@@ -49,7 +49,7 @@ public class FlatService {
     // =========================
     // GET ALL FLATS
     // =========================
-    public List<FlatResponse> getAll(Long societyId) {
+    public List<FlatResponse> getAll(Long societyId,Long financialYearId) {
 
         List<Flat> flats;
 

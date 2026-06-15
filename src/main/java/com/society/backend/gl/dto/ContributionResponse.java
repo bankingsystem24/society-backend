@@ -12,9 +12,11 @@ public class ContributionResponse {
     private LocalDate dueDate;
     private String status;
     private String flatNo;
+    private String type;
     private Double areaSqFt;
     private Long societyId;
     private Long memberId;
+    private String description;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
 
@@ -116,5 +118,21 @@ public class ContributionResponse {
 
     public void setMemberId(Long memberId) {
         this.memberId = memberId;
+    }
+
+    public String getType(){
+        return type;
+    }
+
+    public void setType(String type){
+        this.type = type;
+    }
+
+    public String getDescription(){
+        return description;
+    }
+
+    public void setDescription(String description){
+        this.description = description;
     }
 }
