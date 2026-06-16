@@ -264,7 +264,7 @@ public class BillingService {
 
                 // Fetch policy once instead of every bill
                 SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                .findBySociety_Id(societyId)
+                                .findBySociety_IdAndFinancialYearId(societyId,financialYearId)
                                 .orElse(null);
 
                 // ================= DTO MAPPING =================
@@ -292,7 +292,7 @@ public class BillingService {
                                                         penaltyStart.withDayOfMonth(1),
                                                         LocalDate.now().withDayOfMonth(1));
 
-                                        monthsLate = Math.max(1, monthsLate);
+                                        monthsLate = Math.max(0, monthsLate);
 
                                         long periods = 0;
 
@@ -425,7 +425,7 @@ public class BillingService {
                 List<Billing> paidBills = new ArrayList<>();
 
                 SocietyBillingPolicy policy = societyBillingPolicyRepository
-                .findBySociety_Id(societyId)
+                .findBySociety_IdAndFinancialYearId(societyId,financialYearId)
                 .orElse(null);
 
                 for (Billing bill : bills) {
@@ -466,7 +466,7 @@ public class BillingService {
                                                         penaltyStart.withDayOfMonth(1),
                                                         LocalDate.now().withDayOfMonth(1));
 
-                                        monthsLate = Math.max(1, monthsLate);
+                                        monthsLate = Math.max(0, monthsLate);
 
                                         interest = maintenance
                                                         * policy.getInterestRate()
@@ -587,11 +587,12 @@ public class BillingService {
                                         && bill.getSociety() != null) {
 
                                 SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                                .findBySociety_Id(
-                                                                bill.getSociety().getId())
+                                                .findBySociety_IdAndFinancialYearId(
+                                                                bill.getSociety().getId(),financialYearId)
                                                 .orElse(null);
 
                                 if (policy != null) {
+
 
                                         LocalDate penaltyStart = bill.getDueDate().plusDays(
                                                         policy.getGraceDays() != null
@@ -604,7 +605,7 @@ public class BillingService {
                                                                 penaltyStart.withDayOfMonth(1),
                                                                 LocalDate.now().withDayOfMonth(1));
 
-                                                monthsLate = Math.max(1, monthsLate);
+                                                monthsLate = Math.max(0, monthsLate);
 
                                                 long periods = 0;
 
@@ -630,12 +631,16 @@ public class BillingService {
                                                         }
                                                 }
 
+
+                                                if (periods > 0) {
                                                 interest = bill.getMaintenanceAmount()
                                                                 * policy.getInterestRate()
                                                                 * periods
                                                                 / 1200.0;
+                                                }
                                         }
                                 }
+
                         }
 
                         bill.setInterestAmount(interest);

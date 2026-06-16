@@ -269,6 +269,21 @@ public class JournalService {
                 );
         }
 
+        // if (totalAmount != null && totalAmount > 0) {
+        //         createLine(
+        //                 savedEntry,
+        //                 lineNo++,
+        //                 1101,
+        //                 0.0,
+        //                 totalAmount,
+        //                 "MEMBER RECEIVABLE",
+        //                 memberId,
+        //                 societyId,
+        //                 flatId,
+        //                 financialYearId
+        //         );
+        // }
+        
         if (interestAmount != null && interestAmount > 0) {
         createLine(
                 savedEntry,

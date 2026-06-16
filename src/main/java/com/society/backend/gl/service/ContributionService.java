@@ -1,5 +1,6 @@
 package com.society.backend.gl.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SocietyRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -229,7 +231,8 @@ public class ContributionService {
     @Transactional
     public String pay(List<Long> contributionIds,
             String paymentMode,
-            Long financialYearId) {
+            Long financialYearId,
+            Double voluntaryAmount) {
 
         List<Contribution> contributions = contributionRepository.findAllById(contributionIds);
 
@@ -242,7 +245,7 @@ public class ContributionService {
         Long societyId = first.getSociety().getId();
         Long flatId = first.getFlat().getId();
 
-        Double totalAmount = 0.0;
+        Double totalAmount = 0.00;
 
         for (Contribution contribution : contributions) {
 
@@ -254,7 +257,6 @@ public class ContributionService {
             contribution.setPaymentMode(paymentMode);
             contribution.setFinancialYearId(financialYearId);
 
-            totalAmount += contribution.getAmount();
         }
 
         contributionRepository.saveAll(contributions);
@@ -270,7 +272,7 @@ public class ContributionService {
         receipt.setInterestAmount(0.0);
         receipt.setDiscountAmount(0.0);
 
-        receipt.setTotalAmount(totalAmount);
+        receipt.setTotalAmount(voluntaryAmount);
 
         receipt.setSocietyId(societyId);
         receipt.setFlatId(flatId);
@@ -306,7 +308,7 @@ public class ContributionService {
 
         // ================= JOURNAL ENTRY =================
 
-        if (totalAmount > 0) {
+        if (voluntaryAmount > 0) {
 
             journalService.createReceiptEntry(
                     savedReceipt.getId(),
@@ -314,7 +316,7 @@ public class ContributionService {
                     totalAmount,
                     0.0,
                     0.0,
-                    totalAmount,
+                    voluntaryAmount,
                     paymentMode,
                     societyId,
                     0L,

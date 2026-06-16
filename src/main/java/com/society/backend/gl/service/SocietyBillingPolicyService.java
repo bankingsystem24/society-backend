@@ -40,6 +40,7 @@ public class SocietyBillingPolicyService {
         policy.setInterestType(dto.getInterestType());
         policy.setPenaltyType(dto.getPenaltyType());
         policy.setPenaltyValue(dto.getPenaltyValue());
+        policy.setFinancialYearId(dto.getFinancialYearId());
 
         return policyRepository.save(policy);
     }

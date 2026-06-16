@@ -189,7 +189,7 @@ public class BillingController {
                         // LOAD POLICY
                         // =========================
                         SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                        .findBySociety_Id(firstBill.getSociety().getId())
+                                        .findBySociety_IdAndFinancialYearId(firstBill.getSociety().getId(),financialYearId)
                                         .orElse(null);
 
                         // =========================

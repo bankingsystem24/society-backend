@@ -42,6 +42,17 @@ public class SocietyBillingPolicy {
     @Column(name = "penalty_value")
     private Double penaltyValue = 0.0;
 
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+    
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
+
     public SocietyBillingPolicy() {
     }
 

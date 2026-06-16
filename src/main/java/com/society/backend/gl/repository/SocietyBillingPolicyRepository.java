@@ -12,5 +12,5 @@ public interface SocietyBillingPolicyRepository
     Optional<SocietyBillingPolicy> findBySocietyId(Long societyId);
 
     // OR if Society is a relation:
-    Optional<SocietyBillingPolicy> findBySociety_Id(Long societyId);
+    Optional<SocietyBillingPolicy> findBySociety_IdAndFinancialYearId(Long societyId,Long financialYearId);
 }

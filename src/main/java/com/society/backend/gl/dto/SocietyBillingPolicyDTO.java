@@ -3,6 +3,8 @@ package com.society.backend.gl.dto;
 import com.society.backend.gl.enums.InterestType;
 import com.society.backend.gl.enums.PenaltyType;
 
+import jakarta.persistence.Column;
+
 public class SocietyBillingPolicyDTO {
 
     private Long societyId;
@@ -18,6 +20,17 @@ public class SocietyBillingPolicyDTO {
     private PenaltyType penaltyType;
 
     private Double penaltyValue;
+
+    @Column(name = "financial_year_id", nullable = false)
+    private Long financialYearId;
+    
+    public Long getFinancialYearId() {
+        return financialYearId;
+    }
+
+    public void setFinancialYearId(Long financialYearId) {
+        this.financialYearId = financialYearId;
+    }
 
     public SocietyBillingPolicyDTO() {
     }

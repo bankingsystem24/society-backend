@@ -60,7 +60,8 @@ public class ContributionController {
                 contributionService.pay(
                                 request.getContributionIds(),
                                 request.getPaymentMode(),
-                                request.getFinancialYearId());
+                                request.getFinancialYearId(),
+                                request.getVoluntaryAmount());
 
                 return ResponseEntity.ok("Payment successful");
         }
