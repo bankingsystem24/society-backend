@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.society.backend.dto.CompulsoryContributionRequest;
 import com.society.backend.dto.ContributionOrderRequest;
-import com.society.backend.dto.SinkingFundOrderRequest;
-import com.society.backend.dto.SinkingFundPaymentRequest;
 import com.society.backend.dto.VerifyContributionPaymentRequest;
-import com.society.backend.dto.VerifySinkingFundPaymentRequest;
 import com.society.backend.gl.dto.ContributionPaymentRequest;
 import com.society.backend.gl.service.ContributionService;
 
@@ -61,7 +58,8 @@ public class ContributionController {
                                 request.getContributionIds(),
                                 request.getPaymentMode(),
                                 request.getFinancialYearId(),
-                                request.getVoluntaryAmount());
+                                request.getContributionAmount(),
+                                request.getUserId());
 
                 return ResponseEntity.ok("Payment successful");
         }

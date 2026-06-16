@@ -1,6 +1,5 @@
 package com.society.backend.gl.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,13 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.society.backend.gl.service.ReportService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/reports")
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class ReportController {
 
-    @Autowired
-    private ReportService reportService;
+    private final ReportService reportService;
 
     @GetMapping("/profit-loss")
     public ResponseEntity<?> getProfitAndLoss(

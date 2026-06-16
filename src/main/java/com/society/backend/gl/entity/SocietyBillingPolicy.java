@@ -2,7 +2,6 @@ package com.society.backend.gl.entity;
 
 import com.society.backend.entity.Society;
 import com.society.backend.gl.enums.InterestType;
-import com.society.backend.gl.enums.PenaltyType;
 
 import jakarta.persistence.*;
 
@@ -18,14 +17,6 @@ public class SocietyBillingPolicy {
     @JoinColumn(name = "society_id", nullable = false, unique = true)
     private Society society;
 
-    // Due date day of month (1-31)
-    @Column(name = "billing_day", nullable = false)
-    private Integer billingDay;
-
-    // Grace period after due date
-    @Column(name = "grace_days")
-    private Integer graceDays = 0;
-
     // Interest rate
     @Column(name = "interest_rate")
     private Double interestRate = 0.0;
@@ -33,14 +24,6 @@ public class SocietyBillingPolicy {
     @Enumerated(EnumType.STRING)
     @Column(name = "interest_type")
     private InterestType interestType = InterestType.MONTHLY;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "penalty_type")
-    private PenaltyType penaltyType = PenaltyType.FIXED;
-
-    // Fixed amount or percentage depending on penalty type
-    @Column(name = "penalty_value")
-    private Double penaltyValue = 0.0;
 
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
@@ -74,22 +57,6 @@ public class SocietyBillingPolicy {
         this.society = society;
     }
 
-    public Integer getBillingDay() {
-        return billingDay;
-    }
-
-    public void setBillingDay(Integer billingDay) {
-        this.billingDay = billingDay;
-    }
-
-    public Integer getGraceDays() {
-        return graceDays;
-    }
-
-    public void setGraceDays(Integer graceDays) {
-        this.graceDays = graceDays;
-    }
-
     public Double getInterestRate() {
         return interestRate;
     }
@@ -106,19 +73,4 @@ public class SocietyBillingPolicy {
         this.interestType = interestType;
     }
 
-    public PenaltyType getPenaltyType() {
-        return penaltyType;
-    }
-
-    public void setPenaltyType(PenaltyType penaltyType) {
-        this.penaltyType = penaltyType;
-    }
-
-    public Double getPenaltyValue() {
-        return penaltyValue;
-    }
-
-    public void setPenaltyValue(Double penaltyValue) {
-        this.penaltyValue = penaltyValue;
-    }
 }

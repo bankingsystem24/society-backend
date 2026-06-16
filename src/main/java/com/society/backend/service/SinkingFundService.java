@@ -1,7 +1,6 @@
 package com.society.backend.service;
 
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +16,12 @@ import com.society.backend.entity.SinkingFund;
 import com.society.backend.entity.Society;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.service.JournalService;
-import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SinkingFundRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -32,6 +31,7 @@ import java.util.Map;
 import com.razorpay.Utils;
 
 @Service
+@RequiredArgsConstructor
 public class SinkingFundService {
 
     @Value("${razorpay.key_id}")
@@ -40,20 +40,10 @@ public class SinkingFundService {
     @Value("${razorpay.key_secret}")
     private String razorpaySecret;
 
-    @Autowired
-    private SinkingFundRepository sinkingFundRepository;
-
-    @Autowired
-    private FlatRepository flatRepository;
-
-    @Autowired
-    private JournalService journalService;
-
-    @Autowired
-    private ReceiptRepository receiptRepository;
-
-    @Autowired
-    private BillingRepository billingRepository;
+    private final SinkingFundRepository sinkingFundRepository;
+    private final FlatRepository flatRepository;
+    private final JournalService journalService;
+    private final ReceiptRepository receiptRepository;
 
     LocalDate today = LocalDate.now();
 

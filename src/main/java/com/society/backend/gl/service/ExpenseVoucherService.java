@@ -3,31 +3,24 @@ package com.society.backend.gl.service;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.society.backend.entity.Society;
 import com.society.backend.gl.dto.ExpenseVoucherRequest;
 import com.society.backend.gl.entity.ExpenseVoucher;
 import com.society.backend.gl.repository.ExpenseVoucherRepository;
 import com.society.backend.repository.SocietyRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ExpenseVoucherService {
 
     private final ExpenseVoucherRepository expenseVoucherRepository;
 
-    @Autowired
-    private SocietyRepository societyRepository;
+    private final SocietyRepository societyRepository;
 
-    @Autowired
-    private JournalService journalService;
-
-    public ExpenseVoucherService(
-            ExpenseVoucherRepository expenseVoucherRepository) {
-
-        this.expenseVoucherRepository = expenseVoucherRepository;
-    }
+    private final JournalService journalService;
 
     // ================= SAVE =================
 

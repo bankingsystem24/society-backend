@@ -8,18 +8,19 @@ import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.dto.VerifySinkingFundPaymentRequest;
 import com.society.backend.entity.SinkingFund;
 import com.society.backend.service.SinkingFundService;
+
+import lombok.RequiredArgsConstructor;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/sinking-fund")
+@RequiredArgsConstructor
 @CrossOrigin
 public class SinkingFundController {
 
     private final SinkingFundService sinkingFundService;
 
-    public SinkingFundController(SinkingFundService sinkingFundService) {
-        this.sinkingFundService = sinkingFundService;
-    };
 
     // CREATE / GENERATE SINGLE RECORD
     @PostMapping("/generate")

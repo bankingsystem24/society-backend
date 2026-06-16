@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.society.backend.dto.BillingResponse;
 import com.society.backend.dto.ReceiptDetailsResponse;
 import com.society.backend.dto.ReceiptRequest;
 import com.society.backend.dto.ReceiptResponse;

@@ -10,7 +10,8 @@ import com.society.backend.service.FlatService;
 import com.society.backend.service.MemberService;
 import com.society.backend.service.SinkingFundService;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,20 +20,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/members")
+@RequiredArgsConstructor
 @CrossOrigin("*")
 public class MemberController {
 
-    @Autowired
-    private MemberService memberService;
-
-    @Autowired
-    private FlatService flatService;
-
-    @Autowired
-    private BillingService billingService;
-
-    @Autowired
-    private SinkingFundService sinkingFundService;
+    private final MemberService memberService;
+    private final FlatService flatService;
+    private final BillingService billingService;
+    private final SinkingFundService sinkingFundService;
 
     // =========================
     // CREATE MEMBER

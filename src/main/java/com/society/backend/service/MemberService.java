@@ -7,20 +7,17 @@ import com.society.backend.entity.Society;
 import com.society.backend.exception.ResourceNotFoundException;
 import com.society.backend.repository.MemberRepository;
 import com.society.backend.repository.SocietyRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
 
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private SocietyRepository societyRepository;
+    private final MemberRepository memberRepository;
+    private final SocietyRepository societyRepository;
 
 
     // =========================

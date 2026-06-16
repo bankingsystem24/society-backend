@@ -2,7 +2,6 @@ package com.society.backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +14,11 @@ import com.society.backend.service.FlatService;
 @CrossOrigin("*")
 public class FlatController {
 
-    @Autowired
-    private FlatService service;
+    private final FlatService service;
+
+    public FlatController(FlatService service){
+        this.service = service;
+    }
 
     // =========================
     // CREATE FLAT

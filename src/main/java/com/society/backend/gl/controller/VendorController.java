@@ -1,7 +1,6 @@
 package com.society.backend.gl.controller;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,13 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.society.backend.gl.entity.Vendor;
 import com.society.backend.gl.service.VendorService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/vendors")
+@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class VendorController {
 
-    @Autowired
-    private VendorService vendorService;
+    private final VendorService vendorService;
 
     @PostMapping
     public Vendor save(@RequestBody Vendor vendor) {

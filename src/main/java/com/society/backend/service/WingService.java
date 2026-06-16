@@ -2,7 +2,6 @@ package com.society.backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.society.backend.dto.FlatResponse;
@@ -16,17 +15,14 @@ import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.WingRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class WingService {
-
-    @Autowired
-    private WingRepository wingRepository;
-
-    @Autowired
-    private SocietyRepository societyRepository;
-
-    @Autowired
-    private FlatRepository flatRepository;
+    private final WingRepository wingRepository;
+    private final SocietyRepository societyRepository;
+    private final FlatRepository flatRepository;
 
     // CREATE
     public WingResponse createWing(WingRequest req) {

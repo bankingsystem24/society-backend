@@ -15,6 +15,7 @@ public class VerifyContributionPaymentRequest {
     private Long memberId;
     private Long userId;
     private Double amount;
+    private String type;
     private String paymentMode;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
@@ -92,4 +93,11 @@ public class VerifyContributionPaymentRequest {
         this.paymentMode = paymentMode;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }

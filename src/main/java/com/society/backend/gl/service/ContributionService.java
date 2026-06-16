@@ -1,6 +1,5 @@
 package com.society.backend.gl.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SocietyRepository;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -88,8 +86,7 @@ public class ContributionService {
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
         Society society = societyRepository.findById(societyId)
-            .orElseThrow(() -> new RuntimeException("Society not found"))
-            ;
+                .orElseThrow(() -> new RuntimeException("Society not found"));
         List<Contribution> contributions = new ArrayList<>();
 
         for (Flat f : flats) {
@@ -158,7 +155,7 @@ public class ContributionService {
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
         Society society = societyRepository.findById(societyId)
-            .orElseThrow(() -> new RuntimeException("Society not found"));
+                .orElseThrow(() -> new RuntimeException("Society not found"));
 
         List<Contribution> contributions = new ArrayList<>();
 
@@ -232,7 +229,8 @@ public class ContributionService {
     public String pay(List<Long> contributionIds,
             String paymentMode,
             Long financialYearId,
-            Double voluntaryAmount) {
+            Double contributionAmount,
+            Long userId) {
 
         List<Contribution> contributions = contributionRepository.findAllById(contributionIds);
 
@@ -272,7 +270,7 @@ public class ContributionService {
         receipt.setInterestAmount(0.0);
         receipt.setDiscountAmount(0.0);
 
-        receipt.setTotalAmount(voluntaryAmount);
+        receipt.setTotalAmount(contributionAmount);
 
         receipt.setSocietyId(societyId);
         receipt.setFlatId(flatId);
@@ -308,7 +306,7 @@ public class ContributionService {
 
         // ================= JOURNAL ENTRY =================
 
-        if (voluntaryAmount > 0) {
+        if (contributionAmount > 0) {
 
             journalService.createReceiptEntry(
                     savedReceipt.getId(),
@@ -316,10 +314,10 @@ public class ContributionService {
                     totalAmount,
                     0.0,
                     0.0,
-                    voluntaryAmount,
+                    contributionAmount,
                     paymentMode,
                     societyId,
-                    0L,
+                    userId,
                     flatId,
                     financialYearId);
         }
@@ -358,7 +356,7 @@ public class ContributionService {
 
             response.put(
                     "amount",
-                    order.get("amount"));
+                    request.getAmount());
 
             response.put(
                     "currency",
@@ -379,7 +377,7 @@ public class ContributionService {
     @Transactional
     public void verifyPayment(VerifyContributionPaymentRequest request) {
 
-        System.out.println("Request:"+request);
+        System.out.println("Request:" + request);
 
         try {
 
@@ -406,6 +404,7 @@ public class ContributionService {
             Long societyId = first.getSociety().getId();
             Long flatId = first.getFlat().getId();
             Long financialYearId = first.getFinancialYearId();
+            String contributionType = request.getType();
 
             Long memberId = (first.getFlat().getOwner() != null)
                     ? first.getFlat().getOwner().getId()
@@ -424,6 +423,11 @@ public class ContributionService {
             }
 
             contributionRepository.saveAll(contributions);
+
+            // For voluntary contribution use amount entered in modal
+            if ("VOLUNTARY".equalsIgnoreCase(contributionType)) {
+                totalAmount = request.getAmount();
+            }
 
             // ================= RECEIPT (CORRECT PLACE) =================
             Receipt receipt = new Receipt();

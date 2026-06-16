@@ -2,7 +2,6 @@ package com.society.backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,13 +9,15 @@ import com.society.backend.dto.WingRequest;
 import com.society.backend.dto.WingResponse;
 import com.society.backend.service.WingService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/wings")
+@RequiredArgsConstructor
 @CrossOrigin("*")
 public class WingController {
 
-    @Autowired
-    private WingService service;
+    private final WingService service;
 
     // CREATE
     @PostMapping

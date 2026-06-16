@@ -1,6 +1,5 @@
 package com.society.backend.controller;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -8,6 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.society.backend.entity.Society;
 import com.society.backend.service.SocietyService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +18,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/societies")
+@RequiredArgsConstructor
 @CrossOrigin("*")
 public class SocietyController {
 
-    @Autowired
-    private SocietyService service;
+    private final SocietyService service;
 
     @PostMapping
     public ResponseEntity<Society> create(@RequestBody Society  society) {

@@ -2,17 +2,18 @@ package com.society.backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.society.backend.entity.Society;
 import com.society.backend.repository.SocietyRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class SocietyService {
 
-    @Autowired
-    private SocietyRepository societyRepository;  
+    private final SocietyRepository societyRepository;  
     
     public Society save(Society society) {
         return societyRepository.save(society);

@@ -2,7 +2,6 @@ package com.society.backend.gl.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,13 +18,15 @@ import com.society.backend.gl.dto.GlOpeningBalanceRequest;
 import com.society.backend.gl.entity.GlOpeningBalance;
 import com.society.backend.gl.service.GlOpeningBalanceService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/gl/opening-balance")
+@RequiredArgsConstructor
 @CrossOrigin("*")
 public class GlOpeningBalanceController {
 
-    @Autowired
-    private GlOpeningBalanceService service;
+    private final GlOpeningBalanceService service;
 
     @GetMapping
     public List<GlOpeningBalance> getAll(@RequestParam Long societyId,Long financialYearId) {

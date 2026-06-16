@@ -1,19 +1,20 @@
 package com.society.backend.gl.controller;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.society.backend.gl.dto.TrialBalanceDTO;
 import com.society.backend.gl.service.TrialBalanceService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/gl/reports")
+@RequiredArgsConstructor
 @CrossOrigin("*")
 public class GlReportController {
 
-    @Autowired
-    private TrialBalanceService trialBalanceService;
+    private final TrialBalanceService trialBalanceService;
 
     // =========================
     // TRIAL BALANCE API

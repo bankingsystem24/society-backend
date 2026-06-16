@@ -1,4 +1,5 @@
 package com.society.backend.controller;
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -6,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -189,7 +189,8 @@ public class BillingController {
                         // LOAD POLICY
                         // =========================
                         SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                        .findBySociety_IdAndFinancialYearId(firstBill.getSociety().getId(),financialYearId)
+                                        .findBySociety_IdAndFinancialYearId(firstBill.getSociety().getId(),
+                                                        financialYearId)
                                         .orElse(null);
 
                         // =========================
@@ -210,12 +211,30 @@ public class BillingController {
                                         if (b.getDueDate() == null)
                                                 continue;
 
-                                        LocalDate penaltyStart = b.getDueDate().plusDays(policy.getGraceDays());
+                                        LocalDate interestStart = b.getDueDate();
 
-                                        if (LocalDate.now().isAfter(penaltyStart)) {
+                                        switch (policy.getInterestType()) {
+
+                                                case MONTHLY:
+                                                        interestStart = interestStart.plusMonths(1);
+                                                        break;
+
+                                                case QUARTERLY:
+                                                        interestStart = interestStart.plusMonths(3);
+                                                        break;
+
+                                                case HALF_YEARLY:
+                                                        interestStart = interestStart.plusMonths(6);
+                                                        break;
+
+                                                case YEARLY:
+                                                        interestStart = interestStart.plusMonths(12);
+                                                        break;
+                                        }
+                                        if (LocalDate.now().isAfter(interestStart)) {
 
                                                 long monthsLate = ChronoUnit.MONTHS.between(
-                                                                penaltyStart.withDayOfMonth(1),
+                                                                interestStart.withDayOfMonth(1),
                                                                 LocalDate.now().withDayOfMonth(1));
 
                                                 monthsLate = Math.max(1, monthsLate);
@@ -275,12 +294,30 @@ public class BillingController {
 
                                 if (policy != null && bill.getDueDate() != null) {
 
-                                        LocalDate penaltyStart = bill.getDueDate().plusDays(policy.getGraceDays());
+                                        LocalDate interestStart = bill.getDueDate();
 
-                                        if (LocalDate.now().isAfter(penaltyStart)) {
+                                        switch (policy.getInterestType()) {
+
+                                                case MONTHLY:
+                                                        interestStart = interestStart.plusMonths(1);
+                                                        break;
+
+                                                case QUARTERLY:
+                                                        interestStart = interestStart.plusMonths(3);
+                                                        break;
+
+                                                case HALF_YEARLY:
+                                                        interestStart = interestStart.plusMonths(6);
+                                                        break;
+
+                                                case YEARLY:
+                                                        interestStart = interestStart.plusMonths(12);
+                                                        break;
+                                        }
+                                        if (LocalDate.now().isAfter(interestStart)) {
 
                                                 long monthsLate = ChronoUnit.MONTHS.between(
-                                                                penaltyStart.withDayOfMonth(1),
+                                                                interestStart.withDayOfMonth(1),
                                                                 LocalDate.now().withDayOfMonth(1));
 
                                                 monthsLate = Math.max(1, monthsLate);
@@ -309,18 +346,17 @@ public class BillingController {
                                         : null;
 
                         journalService.createReceiptEntry(
-                                savedReceipt.getId(),
-                                memberId,
-                                maintenanceAmount,
-                                interestAmount,
-                                discountAmount,
-                                totalAmount,
-                                "ONLINE",
-                                firstBill.getSociety().getId(),
-                                req.getUserId(),
-                                firstBill.getFlat().getId(),
-                                financialYearId
-                        );
+                                        savedReceipt.getId(),
+                                        memberId,
+                                        maintenanceAmount,
+                                        interestAmount,
+                                        discountAmount,
+                                        totalAmount,
+                                        "ONLINE",
+                                        firstBill.getSociety().getId(),
+                                        req.getUserId(),
+                                        firstBill.getFlat().getId(),
+                                        financialYearId);
 
                         return ResponseEntity.ok("Payment verified successfully");
 

@@ -1,6 +1,5 @@
 package com.society.backend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,13 +7,15 @@ import com.society.backend.dto.ReceiptRequest;
 import com.society.backend.entity.Receipt;
 import com.society.backend.service.ReceiptService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/receipts")
+@RequiredArgsConstructor
 @CrossOrigin("*")
 public class ReceiptController {
 
-    @Autowired
-    private ReceiptService receiptService;
+    private final ReceiptService receiptService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createReceipt(@RequestBody ReceiptRequest req) {

@@ -4,9 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
@@ -14,17 +12,16 @@ import com.society.backend.exception.ResourceNotFoundException;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.MemberRepository;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MemberDashboardService {
 
-    @Autowired
-    private BillingRepository billingRepository;
-
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private FlatRepository flatRepository;
+    private final BillingRepository billingRepository;
+    private final MemberRepository memberRepository;
+    private final FlatRepository flatRepository;
 
 public Map<String, Object> getDashboard(Long memberId) {
 

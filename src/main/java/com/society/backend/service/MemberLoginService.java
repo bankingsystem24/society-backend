@@ -1,6 +1,5 @@
 package com.society.backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.society.backend.dto.MemberLoginRequest;
@@ -9,14 +8,14 @@ import com.society.backend.entity.User;
 import com.society.backend.repository.UserRepository;
 import com.society.backend.security.JwtUtil;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MemberLoginService {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
     public MemberLoginResponse login(
             MemberLoginRequest request

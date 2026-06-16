@@ -2,7 +2,6 @@ package com.society.backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.society.backend.dto.FlatRequest;
@@ -17,20 +16,16 @@ import com.society.backend.repository.MemberRepository;
 import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.WingRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class FlatService {
 
-    @Autowired
-    private FlatRepository flatRepository;
-
-    @Autowired
-    private SocietyRepository societyRepository;
-
-    @Autowired
-    private WingRepository wingRepository;
-
-    @Autowired
-    private MemberRepository memberRepository;
+    private final FlatRepository flatRepository;
+    private final SocietyRepository societyRepository;
+    private final WingRepository wingRepository;
+    private final MemberRepository memberRepository;
 
     // =========================
     // CREATE FLAT

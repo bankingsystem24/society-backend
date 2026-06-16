@@ -2,19 +2,20 @@ package com.society.backend.gl.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.society.backend.gl.dto.LedgerDTO;
 import com.society.backend.gl.service.LedgerService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/ledger")
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class LedgerController {
 
-    @Autowired
-    private LedgerService service;
+    private final LedgerService service;
 
     @GetMapping("/{societyId}/{glCode}")
     public List<LedgerDTO> getLedger(

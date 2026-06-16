@@ -3,22 +3,19 @@ package com.society.backend.service;
 import com.society.backend.entity.AccountingYear;
 import com.society.backend.repository.AccountingYearRepository;
 import com.society.backend.repository.SocietyRepository;
+import lombok.RequiredArgsConstructor;
 import com.society.backend.entity.Society;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AccountingYearService {
 
-    @Autowired
-    private AccountingYearRepository accountingYearRepository;
+    private final AccountingYearRepository accountingYearRepository;
 
-    @Autowired
-    private SocietyRepository societyRepository;
+    private final SocietyRepository societyRepository;
 
     // =====================================================
     // CREATE FINANCIAL YEAR

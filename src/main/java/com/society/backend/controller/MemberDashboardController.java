@@ -2,18 +2,19 @@ package com.society.backend.controller;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.society.backend.service.MemberDashboardService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/member")
+@RequiredArgsConstructor
 @CrossOrigin("*")
 public class MemberDashboardController {
 
-    @Autowired
-    private MemberDashboardService memberDashboardService;
+    private final MemberDashboardService memberDashboardService;
 
     @PostMapping("/dashboard")
     public Map<String, Object> getDashboard(@RequestBody Map<String, Object> req) {

@@ -1,4 +1,5 @@
 package com.society.backend.gl.service;
+
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
@@ -22,18 +23,17 @@ import com.society.backend.repository.ReceiptRepository;
 @Service
 public class BillingService {
 
-
         public BillingService(BillingRepository billingRepository,
-                FlatRepository flatRepository,
-                ReceiptRepository receiptRepository,
-                JournalService journalService,
-                SocietyBillingPolicyRepository societyBillingPolicyRepository){
-                        this.billingRepository = billingRepository;
-                        this.flatRepository = flatRepository;
-                        this.receiptRepository = receiptRepository;
-                        this.journalService = journalService;
-                        this.societyBillingPolicyRepository = societyBillingPolicyRepository;}
-      
+                        FlatRepository flatRepository,
+                        ReceiptRepository receiptRepository,
+                        JournalService journalService,
+                        SocietyBillingPolicyRepository societyBillingPolicyRepository) {
+                this.billingRepository = billingRepository;
+                this.flatRepository = flatRepository;
+                this.receiptRepository = receiptRepository;
+                this.journalService = journalService;
+                this.societyBillingPolicyRepository = societyBillingPolicyRepository;
+        }
 
         @Autowired
         private BillingRepository billingRepository;
@@ -56,104 +56,121 @@ public class BillingService {
 
         @Transactional
         public String generateMonthlyBills(
-                Long societyId,
-                String month,
-                int year,
-                Long createdBy,
-                Long financialYearId) {
+                        Long societyId,
+                        String month,
+                        int year,
+                        Long createdBy,
+                        Long financialYearId) {
 
-        List<Flat> flats = flatRepository.findBySociety_Id(societyId);
+                List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
-        if (flats == null || flats.isEmpty()) {
-                return "No flats found for society";
-        }
+                if (flats == null || flats.isEmpty()) {
+                        return "No flats found for society";
+                }
 
-        SocietyBillingPolicy policy = societyBillingPolicyRepository
-                .findBySocietyId(societyId)
-                .orElseThrow(() -> new RuntimeException("Billing policy not found"));
+                SocietyBillingPolicy policy = societyBillingPolicyRepository
+                                .findBySocietyId(societyId)
+                                .orElseThrow(() -> new RuntimeException("Billing policy not found"));
 
-        Month billingMonth;
-        try {
-                billingMonth = Month.valueOf(month.toUpperCase());
-        } catch (Exception e) {
-                throw new RuntimeException("Invalid month: " + month);
-        }
-
-        LocalDate dueDate = LocalDate.of(year, billingMonth, policy.getBillingDay());
-
-        LocalDate finalDueDate = dueDate.plusDays(
-                policy.getGraceDays() != null ? policy.getGraceDays() : 0
-        );
-
-        int createdCount = 0;
-
-        for (Flat flat : flats) {
-
-                if (flat == null) continue;
-                if (flat.getId() == null) continue;
-                if (flat.getOwner() == null || flat.getOwner().getId() == null) continue;
-
-                boolean exists = billingRepository.existsByFlatIdAndMonthAndYear(
-                        flat.getId(),
-                        month,
-                        year
-                );
-
-                if (exists) continue;
-
-                double amount = flat.getMaintenanceAmount() != null
-                        ? flat.getMaintenanceAmount()
-                        : 0.0;
-
-                Billing bill = new Billing();
-                bill.setSociety(flat.getSociety());
-                bill.setFlat(flat);
-                bill.setMonth(month);
-                bill.setYear(year);
-                bill.setMaintenanceAmount(amount);
-                bill.setPenaltyAmount(0.0);
-                bill.setTotalAmount(amount);
-                bill.setStatus(PaymentStatus.PENDING);
-                bill.setCreatedDate(LocalDate.of(year, billingMonth, 1));
-                bill.setDueDate(finalDueDate);
-                bill.setFinancialYearId(financialYearId);
-
-                Billing savedBill = billingRepository.save(bill);
-
-                Member member = flat.getOwner();
-
-                // ================= IMPORTANT FIX =================
-                // DO NOT hide journal errors
+                Month billingMonth;
                 try {
-                Long journalId = journalService.createMaintenanceBillEntry(
-                        savedBill.getId(),
-                        member,
-                        amount,
-                        societyId,
-                        createdBy,
-                        flat.getId(),
-                        financialYearId
-                );
-
-                if (journalId == null) {
-                        throw new RuntimeException("Journal not created for bill " + savedBill.getId());
-                }
-
+                        billingMonth = Month.valueOf(month.toUpperCase());
                 } catch (Exception e) {
-                throw new RuntimeException(
-                        "Journal failed for billId=" + savedBill.getId()
-                                + " -> " + e.getMessage()
-                );
+                        throw new RuntimeException("Invalid month: " + month);
                 }
 
-                createdCount++;
+                LocalDate interestStart = LocalDate.of(year, billingMonth, 1);;
+
+                switch (policy.getInterestType()) {
+
+                        case MONTHLY:
+                                interestStart = interestStart.plusMonths(1);
+                                break;
+
+                        case QUARTERLY:
+                                interestStart = interestStart.plusMonths(3);
+                                break;
+
+                        case HALF_YEARLY:
+                                interestStart = interestStart.plusMonths(6);
+                                break;
+
+                        case YEARLY:
+                                interestStart = interestStart.plusMonths(12);
+                                break;
+                }
+
+                LocalDate finalDueDate = interestStart;
+
+                int createdCount = 0;
+
+                for (Flat flat : flats) {
+
+                        if (flat == null)
+                                continue;
+                        if (flat.getId() == null)
+                                continue;
+                        if (flat.getOwner() == null || flat.getOwner().getId() == null)
+                                continue;
+
+                        boolean exists = billingRepository.existsByFlatIdAndMonthAndYear(
+                                        flat.getId(),
+                                        month,
+                                        year);
+
+                        if (exists)
+                                continue;
+
+                        double amount = flat.getMaintenanceAmount() != null
+                                        ? flat.getMaintenanceAmount()
+                                        : 0.0;
+
+                        Billing bill = new Billing();
+                        bill.setSociety(flat.getSociety());
+                        bill.setFlat(flat);
+                        bill.setMonth(month);
+                        bill.setYear(year);
+                        bill.setMaintenanceAmount(amount);
+                        bill.setPenaltyAmount(0.0);
+                        bill.setTotalAmount(amount);
+                        bill.setStatus(PaymentStatus.PENDING);
+                        bill.setCreatedDate(LocalDate.of(year, billingMonth, 1));
+                        bill.setDueDate(finalDueDate);
+                        bill.setFinancialYearId(financialYearId);
+
+                        Billing savedBill = billingRepository.save(bill);
+
+                        Member member = flat.getOwner();
+
+                        // ================= IMPORTANT FIX =================
+                        // DO NOT hide journal errors
+                        try {
+                                Long journalId = journalService.createMaintenanceBillEntry(
+                                                savedBill.getId(),
+                                                member,
+                                                amount,
+                                                societyId,
+                                                createdBy,
+                                                flat.getId(),
+                                                financialYearId);
+
+                                if (journalId == null) {
+                                        throw new RuntimeException("Journal not created for bill " + savedBill.getId());
+                                }
+
+                        } catch (Exception e) {
+                                throw new RuntimeException(
+                                                "Journal failed for billId=" + savedBill.getId()
+                                                                + " -> " + e.getMessage());
+                        }
+
+                        createdCount++;
+                }
+
+                return createdCount + " bills generated successfully for " + month + " " + year;
         }
 
-        return createdCount + " bills generated successfully for " + month + " " + year;
-        }
-
-
-// =====================================================
+        // =====================================================
         // GET BILLS BY SOCIETY
         // =====================================================
 
@@ -186,7 +203,7 @@ public class BillingService {
                         Long memberId,
                         Long financialYearId) {
 
-                List<Billing> bills = billingRepository.findBySocietyIdAndFinancialYearId(societyId,financialYearId);
+                List<Billing> bills = billingRepository.findBySocietyIdAndFinancialYearId(societyId, financialYearId);
 
                 // ================= FLAT FILTER =================
 
@@ -264,7 +281,7 @@ public class BillingService {
 
                 // Fetch policy once instead of every bill
                 SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                .findBySociety_IdAndFinancialYearId(societyId,financialYearId)
+                                .findBySociety_IdAndFinancialYearId(societyId, financialYearId)
                                 .orElse(null);
 
                 // ================= DTO MAPPING =================
@@ -281,15 +298,31 @@ public class BillingService {
                                         && b.getDueDate() != null
                                         && b.getMaintenanceAmount() != null) {
 
-                                LocalDate penaltyStart = b.getDueDate().plusDays(
-                                                policy.getGraceDays() != null
-                                                                ? policy.getGraceDays()
-                                                                : 0);
+                                LocalDate interestStart=b.getDueDate();
 
-                                if (LocalDate.now().isAfter(penaltyStart)) {
+                                switch (policy.getInterestType()) {
+
+                                        case MONTHLY:
+                                                interestStart = interestStart.plusMonths(1);
+                                                break;
+
+                                        case QUARTERLY:
+                                                interestStart = interestStart.plusMonths(3);
+                                                break;
+
+                                        case HALF_YEARLY:
+                                                interestStart = interestStart.plusMonths(6);
+                                                break;
+
+                                        case YEARLY:
+                                                interestStart = interestStart.plusMonths(12);
+                                                break;
+                                }
+
+                                if (LocalDate.now().isAfter(interestStart)) {
 
                                         long monthsLate = ChronoUnit.MONTHS.between(
-                                                        penaltyStart.withDayOfMonth(1),
+                                                        interestStart.withDayOfMonth(1),
                                                         LocalDate.now().withDayOfMonth(1));
 
                                         monthsLate = Math.max(0, monthsLate);
@@ -425,8 +458,8 @@ public class BillingService {
                 List<Billing> paidBills = new ArrayList<>();
 
                 SocietyBillingPolicy policy = societyBillingPolicyRepository
-                .findBySociety_IdAndFinancialYearId(societyId,financialYearId)
-                .orElse(null);
+                                .findBySociety_IdAndFinancialYearId(societyId, financialYearId)
+                                .orElse(null);
 
                 for (Billing bill : bills) {
 
@@ -451,19 +484,33 @@ public class BillingService {
 
                         double interest = 0.0;
 
-
-
                         if (policy != null && bill.getDueDate() != null) {
 
-                                LocalDate penaltyStart = bill.getDueDate().plusDays(
-                                                policy.getGraceDays() != null
-                                                                ? policy.getGraceDays()
-                                                                : 0);
+                                LocalDate interestStart = bill.getDueDate();
 
-                                if (LocalDate.now().isAfter(penaltyStart)) {
+                                switch (policy.getInterestType()) {
+
+                                        case MONTHLY:
+                                                interestStart = interestStart.plusMonths(1);
+                                                break;
+
+                                        case QUARTERLY:
+                                                interestStart = interestStart.plusMonths(3);
+                                                break;
+
+                                        case HALF_YEARLY:
+                                                interestStart = interestStart.plusMonths(6);
+                                                break;
+
+                                        case YEARLY:
+                                                interestStart = interestStart.plusMonths(12);
+                                                break;
+                                }
+
+                                if (LocalDate.now().isAfter(interestStart)) {
 
                                         long monthsLate = ChronoUnit.MONTHS.between(
-                                                        penaltyStart.withDayOfMonth(1),
+                                                        interestStart.withDayOfMonth(1),
                                                         LocalDate.now().withDayOfMonth(1));
 
                                         monthsLate = Math.max(0, monthsLate);
@@ -532,9 +579,9 @@ public class BillingService {
                 Long memberId = null;
 
                 if (first.getFlat() != null &&
-                first.getFlat().getOwner() != null) {
+                                first.getFlat().getOwner() != null) {
 
-                memberId = first.getFlat().getOwner().getId();
+                        memberId = first.getFlat().getOwner().getId();
                 }
 
                 if (totalAmount > 0) {
@@ -560,9 +607,10 @@ public class BillingService {
         // GET BILLS BY FLAT IDS
         // =====================================================
 
-        public List<Billing> getBillsByFlatIds(List<Long> flatIds, Long societyId,Long financialYearId) {
+        public List<Billing> getBillsByFlatIds(List<Long> flatIds, Long societyId, Long financialYearId) {
 
-                List<Billing> bills = billingRepository.findByFlatIdInAndSocietyIdAndFinancialYearId(flatIds,societyId,financialYearId);
+                List<Billing> bills = billingRepository.findByFlatIdInAndSocietyIdAndFinancialYearId(flatIds, societyId,
+                                financialYearId);
 
                 bills.forEach(bill -> {
 
@@ -588,21 +636,37 @@ public class BillingService {
 
                                 SocietyBillingPolicy policy = societyBillingPolicyRepository
                                                 .findBySociety_IdAndFinancialYearId(
-                                                                bill.getSociety().getId(),financialYearId)
+                                                                bill.getSociety().getId(), financialYearId)
                                                 .orElse(null);
 
                                 if (policy != null) {
 
+                                LocalDate interestStart=bill.getDueDate();
 
-                                        LocalDate penaltyStart = bill.getDueDate().plusDays(
-                                                        policy.getGraceDays() != null
-                                                                        ? policy.getGraceDays()
-                                                                        : 0);
+                                switch (policy.getInterestType()) {
 
-                                        if (LocalDate.now().isAfter(penaltyStart)) {
+                                        case MONTHLY:
+                                                interestStart = interestStart.plusMonths(1);
+                                                break;
+
+                                        case QUARTERLY:
+                                                interestStart = interestStart.plusMonths(3);
+                                                break;
+
+                                        case HALF_YEARLY:
+                                                interestStart = interestStart.plusMonths(6);
+                                                break;
+
+                                        case YEARLY:
+                                                interestStart = interestStart.plusMonths(12);
+                                                break;
+                                }
+
+
+                                        if (LocalDate.now().isAfter(interestStart)) {
 
                                                 long monthsLate = ChronoUnit.MONTHS.between(
-                                                                penaltyStart.withDayOfMonth(1),
+                                                                interestStart.withDayOfMonth(1),
                                                                 LocalDate.now().withDayOfMonth(1));
 
                                                 monthsLate = Math.max(0, monthsLate);
@@ -631,12 +695,11 @@ public class BillingService {
                                                         }
                                                 }
 
-
                                                 if (periods > 0) {
-                                                interest = bill.getMaintenanceAmount()
-                                                                * policy.getInterestRate()
-                                                                * periods
-                                                                / 1200.0;
+                                                        interest = bill.getMaintenanceAmount()
+                                                                        * policy.getInterestRate()
+                                                                        * periods
+                                                                        / 1200.0;
                                                 }
                                         }
                                 }

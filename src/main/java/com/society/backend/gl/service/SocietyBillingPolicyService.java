@@ -34,12 +34,8 @@ public class SocietyBillingPolicyService {
                         .orElse(new SocietyBillingPolicy());
 
         policy.setSociety(society);
-        policy.setBillingDay(dto.getBillingDay());
-        policy.setGraceDays(dto.getGraceDays());
         policy.setInterestRate(dto.getInterestRate());
         policy.setInterestType(dto.getInterestType());
-        policy.setPenaltyType(dto.getPenaltyType());
-        policy.setPenaltyValue(dto.getPenaltyValue());
         policy.setFinancialYearId(dto.getFinancialYearId());
 
         return policyRepository.save(policy);
