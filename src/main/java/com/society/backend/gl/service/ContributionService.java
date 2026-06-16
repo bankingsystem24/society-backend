@@ -344,7 +344,7 @@ public class ContributionService {
 
             orderRequest.put(
                     "receipt",
-                    "SF_" + System.currentTimeMillis());
+                    "CON_" + System.currentTimeMillis());
 
             Order order = razorpay.orders.create(orderRequest);
 
@@ -444,7 +444,7 @@ public class ContributionService {
 
             // optional receipt number
             receipt.setReceiptNo(
-                    "SF-" + LocalDate.now().getYear() + "-" + receipt.getId());
+                    "CON-" + LocalDate.now().getYear() + "-" + receipt.getId());
 
             receipt = receiptRepository.save(receipt);
 
