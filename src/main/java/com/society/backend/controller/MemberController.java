@@ -2,6 +2,7 @@ package com.society.backend.controller;
 
 import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
+import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.SinkingFund;
@@ -112,7 +113,7 @@ public class MemberController {
     }
 
     @PostMapping("/sinking-funds")
-    public List<SinkingFund> getSinkingFunds(
+    public List<SinkingFundResponse> getSinkingFunds(
             @RequestBody Map<String, Object> req) {
 
         List<?> rawList = (List<?>) req.get("flatIds");
@@ -124,7 +125,7 @@ public class MemberController {
         Long societyId = Long.valueOf(req.get("societyId").toString());
         Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
 
-        return sinkingFundService.getSinkingFunds(flatIds,societyId,financialYearId);
+        return sinkingFundService.getSinkingFundsByFlatIds(flatIds,societyId,financialYearId);
     }
 
 }

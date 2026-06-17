@@ -40,6 +40,8 @@ public class SinkingFund {
     private String transactionId;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
+    @Transient
+    private String receiptNo;
 
     public Long getFinancialYearId() {
         return financialYearId;
@@ -157,7 +159,11 @@ public class SinkingFund {
     public Long getReceiptId() {
         return receiptId;
     }
-    public void setReceiptId(Long receiptId) {
+    public void setReceiptId(Long receiptId) { 
         this.receiptId = receiptId;
     }
+
+    public String getReceiptNo() { return receiptNo; }
+
+    public void setReceiptNo(String receiptNo) { this.receiptNo = receiptNo; }
 }

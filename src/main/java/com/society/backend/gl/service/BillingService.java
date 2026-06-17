@@ -79,7 +79,8 @@ public class BillingService {
                         throw new RuntimeException("Invalid month: " + month);
                 }
 
-                LocalDate interestStart = LocalDate.of(year, billingMonth, 1);;
+                LocalDate interestStart = LocalDate.of(year, billingMonth, 1);
+                ;
 
                 switch (policy.getInterestType()) {
 
@@ -298,7 +299,7 @@ public class BillingService {
                                         && b.getDueDate() != null
                                         && b.getMaintenanceAmount() != null) {
 
-                                LocalDate interestStart=b.getDueDate();
+                                LocalDate interestStart = b.getDueDate();
 
                                 switch (policy.getInterestType()) {
 
@@ -619,8 +620,10 @@ public class BillingService {
                         if (bill.getReceiptId() != null) {
 
                                 receiptRepository.findById(bill.getReceiptId())
-                                                .ifPresent(receipt -> bill.setReceiptNo(
-                                                                receipt.getReceiptNo()));
+                                                .ifPresent(receipt -> {
+                                                        bill.setReceiptNo(receipt.getReceiptNo());
+                                                        bill.setTransactionId(receipt.getTransactionId());
+                                                });
                         }
 
                         // Interest Calculation
@@ -641,27 +644,26 @@ public class BillingService {
 
                                 if (policy != null) {
 
-                                LocalDate interestStart=bill.getDueDate();
+                                        LocalDate interestStart = bill.getDueDate();
 
-                                switch (policy.getInterestType()) {
+                                        switch (policy.getInterestType()) {
 
-                                        case MONTHLY:
-                                                interestStart = interestStart.plusMonths(1);
-                                                break;
+                                                case MONTHLY:
+                                                        interestStart = interestStart.plusMonths(1);
+                                                        break;
 
-                                        case QUARTERLY:
-                                                interestStart = interestStart.plusMonths(3);
-                                                break;
+                                                case QUARTERLY:
+                                                        interestStart = interestStart.plusMonths(3);
+                                                        break;
 
-                                        case HALF_YEARLY:
-                                                interestStart = interestStart.plusMonths(6);
-                                                break;
+                                                case HALF_YEARLY:
+                                                        interestStart = interestStart.plusMonths(6);
+                                                        break;
 
-                                        case YEARLY:
-                                                interestStart = interestStart.plusMonths(12);
-                                                break;
-                                }
-
+                                                case YEARLY:
+                                                        interestStart = interestStart.plusMonths(12);
+                                                        break;
+                                        }
 
                                         if (LocalDate.now().isAfter(interestStart)) {
 

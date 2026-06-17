@@ -2,6 +2,8 @@ package com.society.backend.dto;
 
 import java.time.LocalDate;
 
+import com.society.backend.entity.Receipt;
+
 public class SinkingFundResponse {
 
     private Long id;
@@ -24,6 +26,12 @@ public class SinkingFundResponse {
     private Long createdBy;
 
     private LocalDate createdDate;
+    private LocalDate paidDate;
+    private String paymentMode;
+    private String transactionId;
+
+    private String receiptNo;
+
 
     // ================= GETTERS / SETTERS =================
 
@@ -62,4 +70,16 @@ public class SinkingFundResponse {
 
     public LocalDate getCreatedDate() { return createdDate; }
     public void setCreatedDate(LocalDate createdDate) { this.createdDate = createdDate; }
+
+    public LocalDate getPaidDate() { return paidDate; }
+    public void setPaidDate(LocalDate paidDate) { this.paidDate = paidDate; }
+
+    public String getReceiptNo(){return receiptNo; }
+    public void setReceiptNo(String receiptNo){this.receiptNo = receiptNo;}
+
+    public String getPaymentMode() { return paymentMode; }
+    public void setPaymentMode(String paymentMode) { this.paymentMode = paymentMode; }
+
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 }

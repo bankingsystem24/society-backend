@@ -1,6 +1,7 @@
 package com.society.backend.service;
 
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -412,5 +413,58 @@ public void verifyPayment(VerifySinkingFundPaymentRequest request) {
 
         return sinkingFundRepository.findByFlat_IdInAndSocietyIdAndFinancialYearId(flatIds,societyId,financialYearId);
     }
+
+
+public List<SinkingFundResponse> getSinkingFundsByFlatIds(
+        List<Long> flatIds,
+        Long societyId,
+        Long financialYearId) {
+
+    return sinkingFundRepository
+            .findByFlat_IdInAndSocietyIdAndFinancialYearId(
+                    flatIds,
+                    societyId,
+                    financialYearId
+            )
+            .stream()
+            .map(sf -> {
+
+                SinkingFundResponse dto = new SinkingFundResponse();
+
+                dto.setId(sf.getId());
+
+                Receipt receipt = null;
+
+                if (sf.getReceiptId() != null) {
+                    receipt = receiptRepository
+                            .findById(sf.getReceiptId())
+                            .orElse(null);
+                }
+
+                dto.setReceiptNo(
+                        receipt != null
+                                ? receipt.getReceiptNo()
+                                : null
+                );
+
+                dto.setAmount(sf.getAmount());
+                dto.setMonth(sf.getMonth());
+                dto.setYear(sf.getYear());
+
+                dto.setStatus(
+                        sf.getStatus() != null
+                                ? sf.getStatus().toString()
+                                : null
+                );
+
+                dto.setPaidDate(sf.getPaidDate());
+                dto.setPaymentMode(sf.getPaymentMode());
+                dto.setTransactionId(sf.getTransactionId());
+                dto.setFlatNo(sf.getFlat() != null ? sf.getFlat().getFlatNo() : null );
+
+                return dto;
+            })
+            .toList();
+}
 
 }
