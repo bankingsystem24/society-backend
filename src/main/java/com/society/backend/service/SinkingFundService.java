@@ -20,6 +20,8 @@ import com.society.backend.gl.service.JournalService;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SinkingFundRepository;
+import java.util.Objects;
+import java.util.function.Function;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,8 @@ import java.time.Month;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.razorpay.Utils;
 
 @Service
@@ -313,6 +317,7 @@ public class SinkingFundService {
 @Transactional
 public void verifyPayment(VerifySinkingFundPaymentRequest request) {
 
+
     try {
 
         JSONObject attributes = new JSONObject();
@@ -420,51 +425,56 @@ public List<SinkingFundResponse> getSinkingFundsByFlatIds(
         Long societyId,
         Long financialYearId) {
 
-    return sinkingFundRepository
-            .findByFlat_IdInAndSocietyIdAndFinancialYearId(
+    List<SinkingFund> sinkingFunds =
+            sinkingFundRepository.findByFlat_IdInAndSocietyIdAndFinancialYearId(
                     flatIds,
                     societyId,
-                    financialYearId
-            )
+                    financialYearId);
+
+    List<Long> receiptIds = sinkingFunds.stream()
+            .map(SinkingFund::getReceiptId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+
+    Map<Long, Receipt> receiptMap = receiptRepository
+            .findAllById(receiptIds)
             .stream()
+            .collect(Collectors.toMap(Receipt::getId, Function.identity()));
+
+    return sinkingFunds.stream()
             .map(sf -> {
+
+                Receipt receipt = receiptMap.get(sf.getReceiptId());
 
                 SinkingFundResponse dto = new SinkingFundResponse();
 
                 dto.setId(sf.getId());
-
-                Receipt receipt = null;
-
-                if (sf.getReceiptId() != null) {
-                    receipt = receiptRepository
-                            .findById(sf.getReceiptId())
-                            .orElse(null);
-                }
-
-                dto.setReceiptNo(
-                        receipt != null
-                                ? receipt.getReceiptNo()
-                                : null
-                );
-
+                dto.setReceiptNo(receipt != null ? receipt.getReceiptNo() : null);
                 dto.setAmount(sf.getAmount());
                 dto.setMonth(sf.getMonth());
                 dto.setYear(sf.getYear());
-
                 dto.setStatus(
                         sf.getStatus() != null
                                 ? sf.getStatus().toString()
                                 : null
                 );
-
                 dto.setPaidDate(sf.getPaidDate());
                 dto.setPaymentMode(sf.getPaymentMode());
                 dto.setTransactionId(sf.getTransactionId());
-                dto.setFlatNo(sf.getFlat() != null ? sf.getFlat().getFlatNo() : null );
+                dto.setFlatNo(
+                        sf.getFlat() != null
+                                ? sf.getFlat().getFlatNo()
+                                : null
+                );
+                dto.setFlatId(
+                    sf.getFlat() != null
+                        ? sf.getFlat().getId()
+                        : null
+                );
 
                 return dto;
             })
             .toList();
 }
-
 }

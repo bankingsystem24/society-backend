@@ -36,6 +36,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAll(@RequestParam(required = false) Long societyId) {
         List<UserResponse> users = service.getAll(societyId);
+        
         return ResponseEntity.ok(users);
     }
 

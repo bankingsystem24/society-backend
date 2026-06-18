@@ -7,18 +7,34 @@ public class ContributionResponse {
     private Long id;
     private String name;
     private Double amount;
+    private Double contributionAmount;
+    private Double receiptAmount;
     private String mode;
     private LocalDate date;
+    private LocalDate paidDate;
     private LocalDate dueDate;
     private String status;
+    @Column(name = "flat_id", nullable = false)
+    private Long flatId;
     private String flatNo;
     private String type;
     private Double areaSqFt;
     private Long societyId;
     private Long memberId;
     private String description;
+    private String receiptNo;
+    private String paymentMode;
+    private String transactionId;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
+
+    public Long getFlatId(){
+        return flatId;
+    }
+
+    public void setFlatId(Long flatId){
+        this.flatId = flatId;
+    }
 
     public Long getFinancialYearId() {
         return financialYearId;
@@ -37,9 +53,15 @@ public class ContributionResponse {
     public String getName() {
         return name;
     }
-
-    public Double getAmount() {
+    public Double getAmount(){
         return amount;
+    }
+    public Double getContributionAmount() {
+        return contributionAmount;
+    }
+
+    public Double getReceiptAmount() {
+        return receiptAmount;
     }
 
     public String getMode() {
@@ -48,6 +70,10 @@ public class ContributionResponse {
 
     public LocalDate getDate() {
         return date;
+    }
+
+    public LocalDate getPaidDate() {
+        return paidDate;
     }
 
     public LocalDate getDueDate() {
@@ -83,9 +109,15 @@ public class ContributionResponse {
     public void setName(String name) {
         this.name = name;
     }
-
     public void setAmount(Double amount) {
         this.amount = amount;
+    }
+    public void setContributionAmount(Double contributionAmount) {
+        this.contributionAmount = contributionAmount;
+    }
+
+    public void setReceiptAmount(Double receiptAmount) {
+        this.receiptAmount = receiptAmount;
     }
 
     public void setMode(String mode) {
@@ -95,7 +127,9 @@ public class ContributionResponse {
     public void setDate(LocalDate date) {
         this.date = date;
     }
-
+    public void setPaidDate(LocalDate paidDate) {
+        this.paidDate = paidDate;
+    }
     public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
     }
@@ -135,4 +169,13 @@ public class ContributionResponse {
     public void setDescription(String description){
         this.description = description;
     }
+
+    public String getReceiptNo(){return receiptNo;}
+    public void setReceiptNo(String receiptNo){this.receiptNo=receiptNo;}
+
+    public String getPaymentMode(){return paymentMode;}
+    public void setPaymentMode(String paymentMode){this.paymentMode=paymentMode;}
+
+    public String getTransactionId(){return transactionId;}
+    public void setTransactionId(String transactionId){this.transactionId=transactionId;}
 }

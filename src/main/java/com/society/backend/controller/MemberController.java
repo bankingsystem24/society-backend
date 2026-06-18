@@ -6,7 +6,9 @@ import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.SinkingFund;
+import com.society.backend.gl.dto.ContributionResponse;
 import com.society.backend.gl.service.BillingService;
+import com.society.backend.gl.service.ContributionService;
 import com.society.backend.service.FlatService;
 import com.society.backend.service.MemberService;
 import com.society.backend.service.SinkingFundService;
@@ -29,6 +31,7 @@ public class MemberController {
     private final FlatService flatService;
     private final BillingService billingService;
     private final SinkingFundService sinkingFundService;
+    private final ContributionService contributionService;
 
     // =========================
     // CREATE MEMBER
@@ -126,6 +129,22 @@ public class MemberController {
         Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
 
         return sinkingFundService.getSinkingFundsByFlatIds(flatIds,societyId,financialYearId);
+    }
+
+    @PostMapping("/contributions")
+    public List<ContributionResponse> getContributions(
+            @RequestBody Map<String, Object> req) {
+
+        List<?> rawList = (List<?>) req.get("flatIds");
+
+        List<Long> flatIds = rawList.stream()
+                .map(id -> Long.valueOf(id.toString()))
+                .toList();
+
+        Long societyId = Long.valueOf(req.get("societyId").toString());
+        Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
+
+        return contributionService.getContributionsByFlatIds(flatIds,societyId,financialYearId);
     }
 
 }

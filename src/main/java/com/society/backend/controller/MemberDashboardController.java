@@ -18,9 +18,8 @@ public class MemberDashboardController {
 
     @PostMapping("/dashboard")
     public Map<String, Object> getDashboard(@RequestBody Map<String, Object> req) {
-
         Long memberId = Long.parseLong(req.get("memberId").toString());
-
-        return memberDashboardService.getDashboard(memberId);
+        Long financialYearId = Long.parseLong(req.get("financialYearId").toString());
+        return memberDashboardService.getDashboard(memberId,financialYearId);
     }
 }

@@ -15,6 +15,7 @@ import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
 import com.society.backend.dto.CompulsoryContributionRequest;
 import com.society.backend.dto.ContributionOrderRequest;
+import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.dto.VerifyContributionPaymentRequest;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
@@ -72,6 +73,7 @@ public class ContributionService {
             dto.setDescription(c.getDescription());
 
             if (c.getFlat() != null) {
+                dto.setFlatId(c.getFlat().getId());
                 dto.setFlatNo(c.getFlat().getFlatNo());
                 dto.setAreaSqFt(c.getFlat().getAreaSqFt());
             }
@@ -171,7 +173,7 @@ public class ContributionService {
 
             Contribution c = new Contribution();
             c.setSociety(society);
-            c.setMemberId(f.getId());
+            c.setMemberId(f.getOwner().getId());
             c.setName(req.getName());
             c.setType("VOLUNTARY");
             c.setMode(req.getMode());
@@ -472,5 +474,64 @@ public class ContributionService {
             throw new RuntimeException("Payment verification failed", e);
         }
     }
+
+    public List<ContributionResponse> getContributionsByFlatIds(
+        List<Long> flatIds,
+        Long societyId,
+        Long financialYearId) {
+
+    return contributionRepository
+            .findByFlat_IdInAndSocietyIdAndFinancialYearId(
+                    flatIds,
+                    societyId,
+                    financialYearId
+            )
+            .stream()
+            .map(c -> {
+
+                ContributionResponse dto = new ContributionResponse();
+
+                dto.setId(c.getId());
+
+                Receipt receipt = null;
+
+                if (c.getReceiptId() != null) {
+                    receipt = receiptRepository
+                            .findById(c.getReceiptId())
+                            .orElse(null);
+                }
+
+                dto.setReceiptNo(
+                        receipt != null
+                                ? receipt.getReceiptNo()
+                                : null
+                );
+
+                if (receipt != null) {
+                    dto.setContributionAmount(c.getAmount());
+                    dto.setReceiptAmount(receipt.getTotalAmount());
+                } else {
+                    dto.setContributionAmount(0.0); 
+                    dto.setReceiptAmount(0.0);
+                }
+
+                dto.setStatus(
+                        c.getStatus() != null
+                                ? c.getStatus().toString()
+                                : null
+                );
+
+                dto.setPaymentMode(c.getPaymentMode());
+                dto.setTransactionId(c.getTransactionId());
+                dto.setFlatNo(c.getFlat() != null ? c.getFlat().getFlatNo() : null );
+                dto.setPaidDate(
+                    receipt != null
+                        ? receipt.getReceiptDate()
+                        : null
+                );
+                return dto;
+            })
+            .toList();
+}
 
 }

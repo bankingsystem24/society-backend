@@ -12,4 +12,12 @@ public interface ContributionRepository extends JpaRepository<Contribution, Long
 
 
     List<Contribution> findByReceiptId(Long receiptId);
+
+    List<Contribution> findByFlat_IdInAndSocietyIdAndFinancialYearId(List<Long> flatIds,Long societyId,Long financialYearId);
+
+    List<Contribution> findBySociety_IdAndFlat_Id(Long societyId,Long flatId);
+
+    List<Contribution> findByMemberIdAndSocietyIdAndFinancialYearId(Long memberId,Long societyId,Long financialYearId);
+
+
 }
