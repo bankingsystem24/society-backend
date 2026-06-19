@@ -19,12 +19,23 @@ public class AccountingYearController {
         this.accountingYearService = accountingYearService;
     };
 
+    @GetMapping("")
+    public List<AccountingYear> getAll() {
+            return accountingYearService.getAllYears();
+    }
+
     // =====================================================
     // GET ALL YEARS BY SOCIETY
     // =====================================================
     @GetMapping("/{societyId}")
     public List<AccountingYear> getAll(@PathVariable Long societyId) {
-        return accountingYearService.getAllYears(societyId);
+
+        try {
+            return accountingYearService.getAllYears(societyId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     // =====================================================
@@ -69,6 +80,8 @@ public class AccountingYearController {
         Long societyId = Long.valueOf(req.get("societyId").toString());
         Long yearId = Long.valueOf(req.get("yearId").toString());
 
+        System.out.println("YearId"+yearId);
+        
         return accountingYearService.setActiveYear(societyId, yearId);
     }
 }

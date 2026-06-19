@@ -73,6 +73,15 @@ public class ReceiptService {
                                 societyId,
                                 financialYearId);
 
+                if (societyId == null) {
+                        receipts = receiptRepository.findByFinancialYearId(
+                                financialYearId);
+                } else {
+                        receipts = receiptRepository.findBySocietyIdAndFinancialYearId(
+                                societyId,
+                                financialYearId);
+                }
+
                 // Optional flat filter
                 if (flatId != null) {
                         receipts = receipts.stream()

@@ -10,7 +10,7 @@ public interface ReceiptRepository extends JpaRepository<Receipt, Long> {
 
     List<Receipt> findBySocietyIdAndFinancialYearId(Long societyId, Long financialYearId);
 
-   
+   List<Receipt> findByFinancialYearId(Long financialYearId);
 
 
 }

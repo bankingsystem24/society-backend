@@ -73,6 +73,12 @@ public AccountingYear getActiveYear(Long societyId) {
             .findBySocietyIdAndIsActiveTrue(societyId)
             .orElse(null);
 }
+    // =====================================================
+    // GET ALL YEARS
+    // =====================================================
+    public List<AccountingYear> getAllYears() {
+        return accountingYearRepository.findAll();
+    }
 
     // =====================================================
     // GET ALL YEARS
@@ -80,4 +86,6 @@ public AccountingYear getActiveYear(Long societyId) {
     public List<AccountingYear> getAllYears(Long societyId) {
         return accountingYearRepository.findBySocietyId(societyId);
     }
+
+
 }
