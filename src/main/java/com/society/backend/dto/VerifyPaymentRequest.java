@@ -15,6 +15,8 @@ public class VerifyPaymentRequest {
     private String paymentMode;
     private Double amount;
     private Long userId;
+    private String transactionId;
+
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
 
@@ -89,4 +91,8 @@ public class VerifyPaymentRequest {
     public void setAmount(Double amount) {
         this.amount = amount;
     }
+
+    public String getTransactionId(){ return transactionId; }
+    public void setTransactionId(String transactionId){ this.transactionId = transactionId;}
+    
 }

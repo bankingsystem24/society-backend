@@ -5,6 +5,8 @@ import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,38 +70,47 @@ public class BillingService {
                         return "No flats found for society";
                 }
 
-                SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                .findBySocietyId(societyId)
-                                .orElseThrow(() -> new RuntimeException("Billing policy not found"));
+                // SocietyBillingPolicy policy = societyBillingPolicyRepository
+                //                 .findBySocietyId(societyId)
+                //                 .orElseThrow(() -> new RuntimeException("Billing policy not found"));
 
-                Month billingMonth;
-                try {
-                        billingMonth = Month.valueOf(month.toUpperCase());
-                } catch (Exception e) {
-                        throw new RuntimeException("Invalid month: " + month);
-                }
+                Optional<SocietyBillingPolicy> policyOpt =
+                        societyBillingPolicyRepository.findBySocietyId(societyId);
 
-                LocalDate interestStart = LocalDate.of(year, billingMonth, 1);
-                ;
+        societyBillingPolicyRepository.findBySocietyId(societyId);
 
-                switch (policy.getInterestType()) {
+SocietyBillingPolicy policy = policyOpt.orElse(null);
 
-                        case MONTHLY:
-                                interestStart = interestStart.plusMonths(1);
-                                break;
+Month billingMonth;
+try {
+    billingMonth = Month.valueOf(month.toUpperCase());
+} catch (Exception e) {
+    throw new RuntimeException("Invalid month: " + month);
+}
 
-                        case QUARTERLY:
-                                interestStart = interestStart.plusMonths(3);
-                                break;
+LocalDate interestStart = LocalDate.of(year, billingMonth, 1);
+                
+// Apply policy only if it exists
+if (policy != null) {
+    switch (policy.getInterestType()) {
 
-                        case HALF_YEARLY:
-                                interestStart = interestStart.plusMonths(6);
-                                break;
+        case MONTHLY:
+            interestStart = interestStart.plusMonths(1);
+            break;
 
-                        case YEARLY:
-                                interestStart = interestStart.plusMonths(12);
-                                break;
-                }
+        case QUARTERLY:
+            interestStart = interestStart.plusMonths(3);
+            break;
+
+        case HALF_YEARLY:
+            interestStart = interestStart.plusMonths(6);
+            break;
+
+        case YEARLY:
+            interestStart = interestStart.plusMonths(12);
+            break;
+    }
+}
 
                 LocalDate finalDueDate = interestStart;
 
@@ -377,10 +388,7 @@ public class BillingService {
 
                         dto.setTotalAmount(totalAmount);
                         dto.setFinancialYearId(financialYearId);
-                        dto.setStatus(
-                                        b.getStatus() != null
-                                                        ? b.getStatus().name()
-                                                        : null);
+                        dto.setStatus( b.getStatus() != null ? b.getStatus().name(): null);
 
                         // Flat Details
                         if (b.getFlat() != null) {
@@ -409,7 +417,7 @@ public class BillingService {
                                 receiptRepository.findById(b.getReceiptId())
                                                 .ifPresent(receipt -> dto.setReceiptNo(receipt.getReceiptNo()));
                         }
-
+                        dto.setTransactionId(b.getTransactionId());
                         return dto;
 
                 }).toList();
@@ -419,7 +427,7 @@ public class BillingService {
         // =====================================================
 
         @Transactional
-        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId) {
+        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId) {
 
                 List<Billing> bills = billingRepository.findAllById(billIds);
 
@@ -431,6 +439,7 @@ public class BillingService {
 
                 Long flatId = first.getFlat().getId();
                 Long societyId = first.getSociety().getId();
+
 
                 // ================= VALIDATION =================
 
@@ -474,6 +483,7 @@ public class BillingService {
                         bill.setStatus(PaymentStatus.PAID);
                         bill.setPaidDate(LocalDate.now());
                         bill.setPaymentMode(paymentMode);
+                        bill.setTransactionId(transactionId);
 
                         double maintenance = bill.getMaintenanceAmount() != null
                                         ? bill.getMaintenanceAmount()
@@ -557,6 +567,8 @@ public class BillingService {
                 receipt.setSocietyId(societyId);
                 receipt.setFlatId(flatId);
                 receipt.setFinancialYearId(financialYearId);
+                receipt.setTransactionId(transactionId);
+
                 Receipt savedReceipt = receiptRepository.save(receipt);
 
                 savedReceipt.setReceiptNo(

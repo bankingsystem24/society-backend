@@ -13,4 +13,5 @@ public interface ReceiptRepository extends JpaRepository<Receipt, Long> {
    List<Receipt> findByFinancialYearId(Long financialYearId);
 
 
+
 }

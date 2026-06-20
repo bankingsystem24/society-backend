@@ -28,7 +28,7 @@ public class BillingResponse {
     private LocalDate dueDate;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
-
+    private String transactionId;
     public Long getFinancialYearId() {
         return financialYearId;
     }
@@ -168,5 +168,8 @@ public class BillingResponse {
     public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
     }
+
+    public String getTransactionId( ){return transactionId;}
+    public void setTransactionId(String transactionId){ this.transactionId = transactionId;}
 
 }

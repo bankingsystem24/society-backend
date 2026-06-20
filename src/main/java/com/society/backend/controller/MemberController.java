@@ -5,7 +5,6 @@ import com.society.backend.dto.MemberResponse;
 import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
-import com.society.backend.entity.SinkingFund;
 import com.society.backend.gl.dto.ContributionResponse;
 import com.society.backend.gl.service.BillingService;
 import com.society.backend.gl.service.ContributionService;

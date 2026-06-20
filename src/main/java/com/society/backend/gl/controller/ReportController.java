@@ -21,11 +21,11 @@ public class ReportController {
 
     @GetMapping("/profit-loss")
     public ResponseEntity<?> getProfitAndLoss(
-            @RequestParam Long societyId) {
+            @RequestParam Long societyId,Long financialYearId) {
 
         return ResponseEntity.ok(
                 reportService.getProfitAndLoss(
-                        societyId
+                        societyId,financialYearId
                 )
         );
     }

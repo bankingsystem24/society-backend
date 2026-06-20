@@ -16,6 +16,7 @@ public class ReceiptResponse {
     private Double totalAmount;
     private String paymentMode;
     private String transactionId;
+    private String status;
 
     // ================= GETTERS & SETTERS =================
 
@@ -122,4 +123,7 @@ public class ReceiptResponse {
     public void setTransactionId(String transactionId){
         this.transactionId = transactionId;
     }
+
+    public String getStatus(){ return status;}
+    public void setStatus(String status){ this.status = status;}
 }

@@ -2,8 +2,6 @@ package com.society.backend.dto;
 
 import java.time.LocalDate;
 
-import com.society.backend.entity.Receipt;
-
 public class SinkingFundResponse {
 
     private Long id;

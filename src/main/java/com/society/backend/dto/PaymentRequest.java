@@ -10,6 +10,7 @@ public class PaymentRequest {
     private Long memberId;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
+    private String transactionId;
 
     public Long getFinancialYearId() {
         return financialYearId;
@@ -18,6 +19,10 @@ public class PaymentRequest {
     public void setFinancialYearId(Long financialYearId) {
         this.financialYearId = financialYearId;
     }
+
+    public String getTransactionId() {return transactionId; }
+
+    public void setTransactionId(String transactionId) {this.transactionId = transactionId;}
 
     public List<Long> getBillIds() {
         return billIds;

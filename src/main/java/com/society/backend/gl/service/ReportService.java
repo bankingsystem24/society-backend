@@ -16,9 +16,9 @@ public class ReportService {
         this.journalEntryLineRepository = journalEntryLineRepository;
     }
     
-    public ProfitLossResponseDTO getProfitAndLoss(Long societyId) {
+    public ProfitLossResponseDTO getProfitAndLoss(Long societyId, Long financialYearId) {
 
-        List<Object[]> rows = journalEntryLineRepository.getProfitLossData();
+        List<Object[]> rows = journalEntryLineRepository.getProfitLossData(societyId,financialYearId);
 
         List<ProfitLossItemDTO> income = new ArrayList<>();
         List<ProfitLossItemDTO> expense = new ArrayList<>();

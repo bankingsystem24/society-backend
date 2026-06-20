@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.society.backend.enums.PaymentStatus;
+
 @Entity
 @Table(name = "receipts")
 public class Receipt {
@@ -28,7 +30,10 @@ public class Receipt {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    
+    // Payment status
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status = PaymentStatus.PENDING;
+  
     @Column(name = "payment_mode")
     private String paymentMode;
 
@@ -156,6 +161,7 @@ public class Receipt {
         this.discountAmount = discountAmount;
     }
 
-    
+    public PaymentStatus getStatus(){ return status;}
+    public void setStatus(PaymentStatus status) { this.status = status; } 
 
 }
