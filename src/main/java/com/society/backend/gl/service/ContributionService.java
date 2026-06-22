@@ -440,6 +440,7 @@ public class ContributionService {
             receipt.setTransactionId(request.getRazorpayPaymentId());
             receipt.setReceiptDate(LocalDate.now());
             receipt.setFinancialYearId(financialYearId);
+            receipt.setStatus(PaymentStatus.PAID);
 
             receipt = receiptRepository.save(receipt);
 

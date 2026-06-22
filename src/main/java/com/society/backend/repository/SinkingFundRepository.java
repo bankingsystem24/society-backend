@@ -1,14 +1,11 @@
 package com.society.backend.repository;
-
 import com.society.backend.entity.SinkingFund;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 
 public interface SinkingFundRepository extends JpaRepository<SinkingFund, Long> {
 
-    List<SinkingFund> findBySociety_Id(Long societyId);
+    List<SinkingFund> findBySociety_Id(Long societyId); 
 
     List<SinkingFund> findBySocietyIdAndMonthAndYear(Long societyId, String month, int year);
 
@@ -19,5 +16,7 @@ public interface SinkingFundRepository extends JpaRepository<SinkingFund, Long> 
     List<SinkingFund> findByFlat_IdInAndSocietyIdAndFinancialYearId(List<Long> FlatIds,Long societyId,Long financialYearId);
 
     List<SinkingFund> findByReceiptId(Long receiptId);
+
+    List<SinkingFund> findByIdIn(List<Long> ids);
 
 }

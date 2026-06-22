@@ -13,14 +13,12 @@ import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Receipt;
 import com.society.backend.entity.SinkingFund;
-import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.entity.Contribution;
 import com.society.backend.gl.repository.ContributionRepository;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SinkingFundRepository;
-import com.society.backend.enums.PaymentStatus;
 
 
 import java.util.Objects;

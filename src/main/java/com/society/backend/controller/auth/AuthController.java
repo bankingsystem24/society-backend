@@ -9,8 +9,6 @@ import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.UserRepository;
 import com.society.backend.security.JwtUtil;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.HashMap;
 import java.util.Map;
 

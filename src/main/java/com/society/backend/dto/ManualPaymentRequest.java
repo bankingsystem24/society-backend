@@ -5,6 +5,8 @@ import java.util.List;
 public class ManualPaymentRequest {
 
     private List<Long> billIds;
+    private List<Long> sinkingFundIds;
+    private List<Long> contributionIds;
     private Long memberId;
     private Double amount;
     private String paymentMode;
@@ -19,6 +21,12 @@ public class ManualPaymentRequest {
     public void setBillIds(List<Long> billIds) {
         this.billIds = billIds;
     }
+
+    public List<Long> getSinkingFundIds(){ return sinkingFundIds;}
+    public void setSinkingFundIds(List<Long> sinkingFundIds){ this.sinkingFundIds = sinkingFundIds;}
+
+    public List<Long> getContributionIds(){ return contributionIds;}
+    public void setContributionIds(List<Long> contributionIds){ this.contributionIds = contributionIds;}
 
     public Long getMemberId() {
         return memberId;

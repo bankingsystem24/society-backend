@@ -1,13 +1,20 @@
 package com.society.backend.controller;
 
+import com.society.backend.dto.ManualPaymentRequest;
 import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
 import com.society.backend.dto.SinkingFundResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
+import com.society.backend.entity.Receipt;
+import com.society.backend.entity.SinkingFund;
+import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.dto.ContributionResponse;
 import com.society.backend.gl.service.BillingService;
 import com.society.backend.gl.service.ContributionService;
+import com.society.backend.gl.service.JournalService;
+import com.society.backend.repository.ReceiptRepository;
+import com.society.backend.repository.SinkingFundRepository;
 import com.society.backend.service.FlatService;
 import com.society.backend.service.MemberService;
 import com.society.backend.service.SinkingFundService;
@@ -17,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +39,9 @@ public class MemberController {
     private final BillingService billingService;
     private final SinkingFundService sinkingFundService;
     private final ContributionService contributionService;
+    private final SinkingFundRepository sinkingFundRepository;
+    private final JournalService journalService;
+    private final ReceiptRepository receiptRepository;
 
     // =========================
     // CREATE MEMBER
@@ -114,7 +125,7 @@ public class MemberController {
 
     }
 
-    @PostMapping("/sinking-funds")
+    @PostMapping("/sinking-funds") 
     public List<SinkingFundResponse> getSinkingFunds(
             @RequestBody Map<String, Object> req) {
 
@@ -128,6 +139,94 @@ public class MemberController {
         Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
 
         return sinkingFundService.getSinkingFundsByFlatIds(flatIds,societyId,financialYearId);
+    }
+
+    @PostMapping("/sinking-fund/manual-payment")
+    public ResponseEntity<?> manualSinkingFundPayment(
+            @RequestBody ManualPaymentRequest req) {
+
+        try {
+
+            Long financialYearId = req.getFinancialYearId();
+
+            List<SinkingFund> sinkingFunds =
+                    sinkingFundRepository.findByIdIn(req.getSinkingFundIds());
+
+            if (sinkingFunds == null || sinkingFunds.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("No sinking fund bills found");
+            }
+
+            SinkingFund firstBill = sinkingFunds.get(0);
+
+            double sinkingFundAmount = sinkingFunds.stream()
+                    .mapToDouble(b -> b.getAmount() != null
+                            ? b.getAmount()
+                            : 0.0)
+                    .sum();
+
+            double totalAmount = sinkingFundAmount;
+
+            Receipt receipt = new Receipt();
+
+            receipt.setReceiptNo("SFRCPT-" + System.currentTimeMillis());
+            receipt.setReceiptDate(LocalDate.now());
+            receipt.setPaymentMode(req.getPaymentMode());
+            receipt.setTransactionId(req.getTransactionId());
+
+            receipt.setSocietyId(firstBill.getSociety().getId());
+            receipt.setFlatId(firstBill.getFlat().getId());
+
+            receipt.setTotalAmount(sinkingFundAmount);
+            receipt.setTotalAmount(totalAmount);
+
+            receipt.setFinancialYearId(financialYearId);
+            receipt.setStatus(PaymentStatus.SUBMITTED);
+
+            Receipt savedReceipt =
+                    receiptRepository.save(receipt);
+
+            String sfStatus = savedReceipt.getStatus().toString();
+
+            for (SinkingFund sinkingFund : sinkingFunds) {
+
+                sinkingFund.setStatus(PaymentStatus.SUBMITTED);
+                sinkingFund.setPaidDate(savedReceipt.getReceiptDate());
+                sinkingFund.setPaymentMode(req.getPaymentMode());
+                sinkingFund.setReceiptId(savedReceipt.getId());
+                sinkingFund.setTransactionId(req.getTransactionId());
+            }
+            
+            sinkingFundRepository.saveAll(sinkingFunds);
+
+            Long memberId = firstBill.getFlat().getOwner() != null
+                    ? firstBill.getFlat().getOwner().getId()
+                    : null;
+
+            // journalService.createReceiptEntry(
+            //         savedReceipt.getId(),
+            //         memberId,
+            //         0.0,
+            //         0.0,
+            //         0.0,
+            //         totalAmount,
+            //         req.getPaymentMode(),
+            //         firstBill.getSociety().getId(),
+            //         req.getUserId(),
+            //         firstBill.getFlat().getId(),
+            //         financialYearId
+            //         );
+
+            return ResponseEntity.ok(
+                    "Sinking fund payment recorded successfully");
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity.internalServerError()
+                    .body(e.getMessage());
+        }
     }
 
     @PostMapping("/contributions")

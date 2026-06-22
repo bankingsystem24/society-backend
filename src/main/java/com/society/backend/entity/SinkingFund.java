@@ -32,6 +32,7 @@ public class SinkingFund {
     // Payment status
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.PENDING;
+    @Column(name = "paid_date")
     private LocalDate paidDate;
     @Column(name = "receipt_id")
     private Long receiptId;

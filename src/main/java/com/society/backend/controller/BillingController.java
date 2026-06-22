@@ -461,18 +461,18 @@ public class BillingController {
                                                         .getId()
                                         : null;
 
-                        journalService.createReceiptEntry(
-                                        savedReceipt.getId(),
-                                        memberId,
-                                        maintenanceAmount,
-                                        interestAmount,
-                                        discountAmount,
-                                        totalAmount,
-                                        req.getPaymentMode(),
-                                        firstBill.getSociety().getId(),
-                                        req.getUserId(),
-                                        firstBill.getFlat().getId(),
-                                        financialYearId);
+                        // journalService.createReceiptEntry(
+                        //                 savedReceipt.getId(),
+                        //                 memberId,
+                        //                 maintenanceAmount,
+                        //                 interestAmount,
+                        //                 discountAmount,
+                        //                 totalAmount,
+                        //                 req.getPaymentMode(),
+                        //                 firstBill.getSociety().getId(),
+                        //                 req.getUserId(),
+                        //                 firstBill.getFlat().getId(),
+                        //                 financialYearId);
 
                         return ResponseEntity.ok(
                                         "Payment recorded successfully");

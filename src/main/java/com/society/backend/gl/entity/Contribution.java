@@ -38,6 +38,8 @@ public class Contribution {
     private PaymentStatus status = PaymentStatus.PENDING;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
+    @Column(name = "paid_date")
+    private LocalDate paidDate;
 
     public Long getFinancialYearId() {
         return financialYearId;
@@ -177,4 +179,6 @@ public class Contribution {
     public void setStatus(PaymentStatus status) {
         this.status = status;
     }
+    public LocalDate getPaidDate() {return paidDate;}
+    public void setPaidDate(LocalDate paidDate) {this.paidDate = paidDate;}
 }
