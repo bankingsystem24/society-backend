@@ -109,13 +109,13 @@ public class ContributionController {
 
                         Contribution firstContribution = contributions.get(0);
 
-                        double contributionAmount = contributions.stream()
-                                        .mapToDouble(c -> c.getAmount() != null
-                                                        ? c.getAmount()
-                                                        : 0.0)
-                                        .sum();
+                        // double contributionAmount = contributions.stream()
+                        //                 .mapToDouble(c -> c.getAmount() != null
+                        //                                 ? c.getAmount()
+                        //                                 : 0.0)
+                        //                 .sum();
 
-                        double totalAmount = contributionAmount;
+                        double totalAmount = req.getAmount();
 
                         Receipt receipt = new Receipt();
 
