@@ -190,40 +190,6 @@ public class ContributionService {
 
         contributionRepository.saveAll(contributions);
 
-        // ✅ SAVE ONLY ONCE
-        // List<Contribution> savedContributions =
-        // contributionRepository.saveAll(contributions);
-
-        // // ✅ JOURNAL POSTING
-        // for (Contribution c : savedContributions) {
-
-        // Member member = c.getFlat().getOwner();
-
-        // try {
-
-        // Long journalId = journalService.createContributionEntry(
-        // c.getId(),
-        // member,
-        // c.getAmount(),
-        // societyId,
-        // c.getCreatedBy(),
-        // c.getFlat().getId(),
-        // c.getFinancialYearId());
-
-        // if (journalId == null) {
-        // throw new RuntimeException(
-        // "Journal not created for contribution " + c.getId());
-        // }
-
-        // } catch (Exception e) {
-
-        // throw new RuntimeException(
-        // "Journal failed for contributionId="
-        // + c.getId()
-        // + " -> " + e.getMessage());
-        // }
-        // }
-
     }
 
     @Transactional
