@@ -9,11 +9,12 @@ public class LoginResponse {
     private Long auditorId;
     private String name;
     private Long memberId;
+    private String upi;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(String token, Long societyId, String societyName,String role, Long auditorId,String name,Long memberId) {
+    public LoginResponse(String token, Long societyId, String societyName,String role, Long auditorId,String name,Long memberId,String upi) {
         this.token = token;
         this.societyId = societyId;
         this.societyName = societyName;
@@ -21,6 +22,7 @@ public class LoginResponse {
         this.auditorId = auditorId;
         this.name = name;
         this.memberId = memberId;
+        this.upi = upi;
     }
 
     public String getToken() {
@@ -77,4 +79,7 @@ public class LoginResponse {
     public void setMemberId(Long memberId) {
         this.memberId = memberId;
     }
+
+    public String getUpi(){return upi;}
+    public void setUpi(String upi){this.upi=upi;}
 }

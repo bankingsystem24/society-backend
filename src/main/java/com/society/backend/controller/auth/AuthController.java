@@ -3,9 +3,13 @@ import com.society.backend.dto.LoginRequest;
 import com.society.backend.dto.LoginResponse;
 import com.society.backend.dto.MemberLoginRequest;
 import com.society.backend.dto.MemberLoginResponse;
+import com.society.backend.entity.Society;
 import com.society.backend.entity.User;
+import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.UserRepository;
 import com.society.backend.security.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,12 +24,14 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final SocietyRepository societyRepository;
     private final JwtUtil jwtUtil;
 
-    public AuthController(UserRepository userRepository,JwtUtil jwtUtil){
+    public AuthController(UserRepository userRepository,SocietyRepository societyRepository,JwtUtil jwtUtil){
         this.userRepository = userRepository;
+        this.societyRepository = societyRepository;
         this.jwtUtil = jwtUtil;
-    };
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -34,6 +40,7 @@ public class AuthController {
         String societyName = null;
         String role = null;
         Long memberId = null;
+        String upi = null;
 
         User user = userRepository.findAll()
                 .stream()
@@ -61,6 +68,15 @@ public class AuthController {
         if (user.getMember() != null) {
             memberId = user.getMember().getId();
         }
+        if (societyId != null){
+        Society society = societyRepository.findById(societyId)
+            .orElseThrow(() -> new RuntimeException("Society not found"));
+            if (Boolean.TRUE.equals(society.getUpi1Active())) {
+                upi = society.getUpi1() != null ? society.getUpi1() : null;
+            }else {
+                        upi = society.getUpi2() != null ? society.getUpi2() : null;
+                    }
+        }
 
         LoginResponse response = new LoginResponse(
                 token,
@@ -69,7 +85,8 @@ public class AuthController {
                 role,
                 user.getId(),
                 user.getName(),
-                memberId
+                memberId,
+                upi
         );
 
         return ResponseEntity.ok(response);

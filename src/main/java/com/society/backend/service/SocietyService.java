@@ -1,6 +1,7 @@
 package com.society.backend.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -13,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SocietyService {
 
-    private final SocietyRepository societyRepository;  
-    
+    private final SocietyRepository societyRepository;
+
     public Society save(Society society) {
         return societyRepository.save(society);
     }
@@ -48,6 +49,21 @@ public class SocietyService {
 
         // 🔥 AUDITOR UPDATE (important)
         existing.setAuditor(society.getAuditor());
+        existing.setUpi1(
+                Optional.ofNullable(society.getUpi1())
+                        .orElse(existing.getUpi1()));
+
+        existing.setUpi2(
+                Optional.ofNullable(society.getUpi2())
+                        .orElse(existing.getUpi2()));
+
+        existing.setUpi1Active(
+                Optional.ofNullable(society.getUpi1Active())
+                        .orElse(existing.getUpi1Active()));
+
+        existing.setUpi2Active(
+                Optional.ofNullable(society.getUpi2Active())
+                        .orElse(existing.getUpi2Active()));
 
         return societyRepository.save(existing);
     }
