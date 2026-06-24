@@ -70,7 +70,9 @@ public class ContributionController {
                                 request.getPaymentMode(),
                                 request.getFinancialYearId(),
                                 request.getContributionAmount(),
-                                request.getUserId());
+                                request.getUserId(),
+                                request.getGlCreditAccount(),
+                                request.getGlCreditAccount());
 
                 return ResponseEntity.ok("Payment successful");
         }

@@ -2,13 +2,15 @@ package com.society.backend.dto;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
+
 public class CompulsoryContributionRequest {
 
     private String type;        // COMPULSORY
     private String name;
 
     private LocalDate date;
-    private LocalDate dueDate;
+    private LocalDate dueDate; 
 
     private String mode;        // FLAT / AREA
 
@@ -19,6 +21,10 @@ public class CompulsoryContributionRequest {
 
     private Double minAmount;
     private Long userId;
+    @Column(name = "gl_receivable")
+    private Integer glReceivable;
+    @Column(name = "gl_credit_account")
+    private Integer glCreditAccount;
 
     // ---------------- GETTERS ----------------
 
@@ -102,4 +108,10 @@ public class CompulsoryContributionRequest {
     public void setMinAmount(Double minAmount) {
         this.minAmount = minAmount;
     }
+    public Integer getGlReceivable(){return glReceivable;}
+    public void setGlReceivable(Integer glReceivable){ this.glReceivable = glReceivable;}
+    
+    public Integer getGlCreditAccount(){return glCreditAccount;}
+    public void setGlCreditAccount(Integer glCreditAccount){ this.glCreditAccount = glCreditAccount;}
+
 }

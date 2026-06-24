@@ -40,6 +40,10 @@ public class Contribution {
     private Long financialYearId;
     @Column(name = "paid_date")
     private LocalDate paidDate;
+    @Column(name = "gl_receivable")
+    private Integer glReceivable;
+    @Column(name = "gl_credit_account")
+    private Integer glCreditAccount;
 
     public Long getFinancialYearId() {
         return financialYearId;
@@ -181,4 +185,8 @@ public class Contribution {
     }
     public LocalDate getPaidDate() {return paidDate;}
     public void setPaidDate(LocalDate paidDate) {this.paidDate = paidDate;}
+    public Integer getGlReceivable(){return glReceivable;}
+    public void setGlReceivable(Integer glReceivable){ this.glReceivable = glReceivable;}
+    public Integer getGlCreditAccount(){return glCreditAccount;}
+    public void setGlCreditAccount(Integer glCreditAccount){ this.glCreditAccount = glCreditAccount;}
 }

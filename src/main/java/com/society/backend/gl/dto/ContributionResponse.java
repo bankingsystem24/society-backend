@@ -27,6 +27,10 @@ public class ContributionResponse {
     private String transactionId;
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
+    @Column(name = "gl_receivable")
+    private Integer glReceivable;
+    @Column(name = "gl_credit_account")
+    private Integer glCreditAccount;
 
     public Long getFlatId(){
         return flatId;
@@ -178,4 +182,10 @@ public class ContributionResponse {
 
     public String getTransactionId(){return transactionId;}
     public void setTransactionId(String transactionId){this.transactionId=transactionId;}
+
+    public Integer getGlReceivable(){return glReceivable;}
+    public void setGlReceivable(Integer glReceivable){ this.glReceivable = glReceivable;}
+    
+    public Integer getGlCreditAccount(){return glCreditAccount;}
+    public void setGlCreditAccount(Integer glCreditAccount){ this.glCreditAccount = glCreditAccount;}
 }

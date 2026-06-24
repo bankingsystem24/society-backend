@@ -11,7 +11,7 @@ public class SinkingFundPaymentRequest {
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
 
-        @Column(name = "gl_receivable")
+    @Column(name = "gl_receivable")
     private Integer glReceivable;
     @Column(name = "gl_credit_account")
     private Integer glCreditAccount;

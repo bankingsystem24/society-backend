@@ -76,6 +76,8 @@ public class ContributionService {
                 dto.setFlatNo(c.getFlat().getFlatNo());
                 dto.setAreaSqFt(c.getFlat().getAreaSqFt());
             }
+            dto.setGlReceivable(c.getGlReceivable());
+            dto.setGlCreditAccount(c.getGlCreditAccount());
 
             return dto;
 
@@ -113,6 +115,8 @@ public class ContributionService {
             c.setDescription(req.getDescription());
             c.setCreatedBy(req.getUserId());
             c.setFinancialYearId(financialYearId);
+            c.setGlReceivable(req.getGlReceivable());
+            c.setGlCreditAccount(req.getGlCreditAccount());
 
             contributions.add(c);
         }
@@ -128,13 +132,16 @@ public class ContributionService {
             try {
 
                 Long journalId = journalService.createContributionEntry(
-                        c.getId(),
+                        c.getId(), 
                         member,
                         c.getAmount(),
                         societyId,
                         c.getCreatedBy(),
                         c.getFlat().getId(),
-                        c.getFinancialYearId());
+                        c.getFinancialYearId(),
+                        req.getGlReceivable(),
+                        req.getGlCreditAccount()
+                        );
 
                 if (journalId == null) {
                     throw new RuntimeException(
@@ -197,7 +204,9 @@ public class ContributionService {
             String paymentMode,
             Long financialYearId,
             Double contributionAmount,
-            Long userId) {
+            Long userId,
+            Integer glReceivable,
+            Integer glCreditAccount) {
 
         List<Contribution> contributions = contributionRepository.findAllById(contributionIds);
 
@@ -286,7 +295,10 @@ public class ContributionService {
                     societyId,
                     userId,
                     flatId,
-                    financialYearId);
+                    financialYearId,
+                    glReceivable,
+                    glCreditAccount,
+                    0,0,0,0);
         }
 
         return "Contribution paid successfully";
