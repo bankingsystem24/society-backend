@@ -62,7 +62,9 @@ public class BillingService {
                         String month,
                         int year,
                         Long createdBy,
-                        Long financialYearId) {
+                        Long financialYearId,
+                        Integer glReceivable,
+                        Integer glCreditAccount) {
 
                 List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
@@ -70,47 +72,42 @@ public class BillingService {
                         return "No flats found for society";
                 }
 
-                // SocietyBillingPolicy policy = societyBillingPolicyRepository
-                //                 .findBySocietyId(societyId)
-                //                 .orElseThrow(() -> new RuntimeException("Billing policy not found"));
+                Optional<SocietyBillingPolicy> policyOpt = societyBillingPolicyRepository.findBySocietyId(societyId);
 
-                Optional<SocietyBillingPolicy> policyOpt =
-                        societyBillingPolicyRepository.findBySocietyId(societyId);
+                societyBillingPolicyRepository.findBySocietyId(societyId);
 
-        societyBillingPolicyRepository.findBySocietyId(societyId);
+                SocietyBillingPolicy policy = policyOpt.orElse(null);
 
-SocietyBillingPolicy policy = policyOpt.orElse(null);
+                Month billingMonth;
+                try {
+                        billingMonth = Month.valueOf(month.toUpperCase());
+                } catch (Exception e) {
+                        throw new RuntimeException("Invalid month: " + month);
+                }
 
-Month billingMonth;
-try {
-    billingMonth = Month.valueOf(month.toUpperCase());
-} catch (Exception e) {
-    throw new RuntimeException("Invalid month: " + month);
-}
+                LocalDate interestStart = LocalDate.of(year, billingMonth, 1);
 
-LocalDate interestStart = LocalDate.of(year, billingMonth, 1);
-                
-// Apply policy only if it exists
-if (policy != null) {
-    switch (policy.getInterestType()) {
+                // Apply policy only if it exists
+                if (policy != null) {
+                        switch (policy.getInterestType()) {
 
-        case MONTHLY:
-            interestStart = interestStart.plusMonths(1);
-            break;
+                                case MONTHLY:
+                                        interestStart = interestStart.plusMonths(1);
+                                        break;
 
-        case QUARTERLY:
-            interestStart = interestStart.plusMonths(3);
-            break;
+                                case QUARTERLY:
+                                        interestStart = interestStart.plusMonths(3);
+                                        break;
 
-        case HALF_YEARLY:
-            interestStart = interestStart.plusMonths(6);
-            break;
+                                case HALF_YEARLY:
+                                        interestStart = interestStart.plusMonths(6);
+                                        break;
 
-        case YEARLY:
-            interestStart = interestStart.plusMonths(12);
-            break;
-    }
-}
+                                case YEARLY:
+                                        interestStart = interestStart.plusMonths(12);
+                                        break;
+                        }
+                }
 
                 LocalDate finalDueDate = interestStart;
 
@@ -164,7 +161,9 @@ if (policy != null) {
                                                 societyId,
                                                 createdBy,
                                                 flat.getId(),
-                                                financialYearId);
+                                                financialYearId,
+                                                glReceivable,
+                                                glCreditAccount);
 
                                 if (journalId == null) {
                                         throw new RuntimeException("Journal not created for bill " + savedBill.getId());
@@ -388,7 +387,7 @@ if (policy != null) {
 
                         dto.setTotalAmount(totalAmount);
                         dto.setFinancialYearId(financialYearId);
-                        dto.setStatus( b.getStatus() != null ? b.getStatus().name(): null);
+                        dto.setStatus(b.getStatus() != null ? b.getStatus().name() : null);
 
                         // Flat Details
                         if (b.getFlat() != null) {
@@ -439,7 +438,6 @@ if (policy != null) {
 
                 Long flatId = first.getFlat().getId();
                 Long societyId = first.getSociety().getId();
-
 
                 // ================= VALIDATION =================
 

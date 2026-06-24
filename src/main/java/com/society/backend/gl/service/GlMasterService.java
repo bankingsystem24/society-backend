@@ -2,16 +2,21 @@ package com.society.backend.gl.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+
+import com.society.backend.gl.entity.GlMapping;
 import com.society.backend.gl.entity.GlMaster;
+import com.society.backend.gl.repository.GlMappingRepository;
 import com.society.backend.gl.repository.GlMasterRepository;
 
 @Service
 public class GlMasterService {
 
     private final GlMasterRepository glMasterRepository;
+    private final GlMappingRepository glMappingRepository;
 
-    public GlMasterService(GlMasterRepository glMasterRepository){
+    public GlMasterService(GlMasterRepository glMasterRepository,GlMappingRepository glMappingRepository){
         this.glMasterRepository = glMasterRepository;
+        this.glMappingRepository = glMappingRepository;
     };
 
     public List<GlMaster> getAllBySociety(Long societyId) {
@@ -37,7 +42,6 @@ public class GlMasterService {
 
         existing.setAccountName(glMaster.getAccountName());
         existing.setGroupName(glMaster.getGroupName());
-        existing.setAccountType(glMaster.getAccountType());
         existing.setParentGlCode(glMaster.getParentGlCode());
         existing.setIsActive(glMaster.getIsActive());
 
@@ -59,4 +63,11 @@ public class GlMasterService {
         glMasterRepository.delete(existing);
     }
 
+    public GlMapping save(GlMapping glMapping) {
+        return glMappingRepository.save(glMapping);
+    }
+
+    public List<GlMapping> getMappingBySociety(Long societyId) {
+        return glMappingRepository.findBySocietyId(societyId);
+    }
 }

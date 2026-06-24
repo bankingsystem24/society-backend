@@ -8,6 +8,10 @@ public class BillGenerateRequest {
     private String month;
     private int year;
     private Long createdBy;
+    @Column(name = "gl_receivable")
+    private Integer glReceivable;
+    @Column(name = "gl_credit_account")
+    private Integer glCreditAccount;
 
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
@@ -50,4 +54,11 @@ public class BillGenerateRequest {
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
+
+    public Integer getGlReceivable(){return glReceivable;}
+    public void setGlReceivable(Integer glReceivable){ this.glReceivable = glReceivable;}
+    
+    public Integer getGlCreditAccount(){return glCreditAccount;}
+    public void setGlCreditAccount(Integer glCreditAccount){ this.glCreditAccount = glCreditAccount;}
+
 }

@@ -12,7 +12,6 @@ import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.dto.ContributionResponse;
 import com.society.backend.gl.service.BillingService;
 import com.society.backend.gl.service.ContributionService;
-import com.society.backend.gl.service.JournalService;
 import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SinkingFundRepository;
 import com.society.backend.service.FlatService;
@@ -40,7 +39,6 @@ public class MemberController {
     private final SinkingFundService sinkingFundService;
     private final ContributionService contributionService;
     private final SinkingFundRepository sinkingFundRepository;
-    private final JournalService journalService;
     private final ReceiptRepository receiptRepository;
 
     // =========================
@@ -186,8 +184,6 @@ public class MemberController {
             Receipt savedReceipt =
                     receiptRepository.save(receipt);
 
-            String sfStatus = savedReceipt.getStatus().toString();
-
             for (SinkingFund sinkingFund : sinkingFunds) {
 
                 sinkingFund.setStatus(PaymentStatus.SUBMITTED);
@@ -199,23 +195,6 @@ public class MemberController {
             
             sinkingFundRepository.saveAll(sinkingFunds);
 
-            Long memberId = firstBill.getFlat().getOwner() != null
-                    ? firstBill.getFlat().getOwner().getId()
-                    : null;
-
-            // journalService.createReceiptEntry(
-            //         savedReceipt.getId(),
-            //         memberId,
-            //         0.0,
-            //         0.0,
-            //         0.0,
-            //         totalAmount,
-            //         req.getPaymentMode(),
-            //         firstBill.getSociety().getId(),
-            //         req.getUserId(),
-            //         firstBill.getFlat().getId(),
-            //         financialYearId
-            //         );
 
             return ResponseEntity.ok(
                     "Sinking fund payment recorded successfully");

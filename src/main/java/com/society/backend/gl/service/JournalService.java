@@ -131,10 +131,12 @@ public class JournalService {
                         Long societyId,
                         Long createdBy,
                         Long flatId,
-                        Long financialYearId) {
+                        Long financialYearId,
+                        Integer glReceivable,
+                        Integer glCreditAccount) {
 
-                final Integer RECEIVABLE_GL = 1101;
-                final Integer INCOME_GL = 3000; // ✅ FIXED (NOT 4001)
+                final Integer RECEIVABLE_GL = glReceivable;  // 1101;
+                final Integer INCOME_GL = glCreditAccount; // 3000; // ✅ FIXED (NOT 4001)
 
                 Long journalId = createJournalEntry(
                                 "BILL-" + billId,

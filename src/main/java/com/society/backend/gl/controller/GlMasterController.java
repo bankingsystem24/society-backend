@@ -1,7 +1,11 @@
 package com.society.backend.gl.controller;
 
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.society.backend.gl.entity.GlMapping;
 import com.society.backend.gl.entity.GlMaster;
 import com.society.backend.gl.service.GlMasterService;
 
@@ -49,5 +53,20 @@ public class GlMasterController {
                 glCode,
                 societyId);
     }
+
+    @PostMapping("/mapping")
+    public ResponseEntity<GlMapping> saveMapping(
+            @RequestBody GlMapping glMapping) {
+
+        GlMapping saved = glMasterService.save(glMapping);
+
+        return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping("/mapping")
+     public List<GlMapping> getGlMapping(@RequestParam Long societyId) {
+        return glMasterService.getMappingBySociety(societyId);
+    }
+
 
 }

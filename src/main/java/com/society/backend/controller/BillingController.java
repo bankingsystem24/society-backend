@@ -78,7 +78,9 @@ public class BillingController {
                                 request.getMonth(),
                                 request.getYear(),
                                 request.getCreatedBy(),
-                                request.getFinancialYearId());
+                                request.getFinancialYearId(),
+                                request.getGlReceivable(),
+                                request.getGlCreditAccount());
         }
 
         // =========================
@@ -454,12 +456,6 @@ public class BillingController {
                         }
 
                         billingRepository.saveAll(bills);
-
-                        Long memberId = firstBill.getFlat().getOwner() != null
-                                        ? firstBill.getFlat()
-                                                        .getOwner()
-                                                        .getId()
-                                        : null;
 
                         return ResponseEntity.ok(
                                         "Payment recorded successfully");

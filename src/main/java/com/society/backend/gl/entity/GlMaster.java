@@ -16,8 +16,8 @@ public class GlMaster {
     @Column(name = "group_name", nullable = false, length = 100)
     private String groupName;
 
-    @Column(name = "account_type", nullable = false, length = 50)
-    private String accountType;
+    @Column(name = "posting",nullable = true)
+    private Boolean posting;
 
     
     // ASSET, LIABILITY, INCOME, EXPENSE, EQUITY
@@ -59,14 +59,6 @@ public class GlMaster {
         this.groupName = groupName;
     }
 
-    public String getAccountType() {
-        return accountType;
-    }
-
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
-    }
-
     public Integer getParentGlCode() {
         return parentGlCode;
     }
@@ -89,5 +81,13 @@ public class GlMaster {
 
     public void setSocietyId(Long societyId) {
         this.societyId = societyId;
+    }
+
+    public Boolean getPosting() {
+        return posting;
+    }
+
+    public void setPosting(Boolean posting) {
+        this.posting = posting;
     }
 }
