@@ -181,8 +181,7 @@ public class MemberController {
             receipt.setFinancialYearId(financialYearId);
             receipt.setStatus(PaymentStatus.SUBMITTED);
 
-            Receipt savedReceipt =
-                    receiptRepository.save(receipt);
+            Receipt savedReceipt = receiptRepository.save(receipt);
 
             for (SinkingFund sinkingFund : sinkingFunds) {
 

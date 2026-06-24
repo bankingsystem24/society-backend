@@ -126,7 +126,6 @@ for (Long receiptId : groupedContributions.keySet()) {
     }
 }
 
-System.out.println("Paid Contributions: " + paidContributions);
     map.put("paidMaintenance", paidMaintenance);
     map.put("pendingMaintenance", pendingMaintenance);
     map.put("paidFunds", paidFunds);

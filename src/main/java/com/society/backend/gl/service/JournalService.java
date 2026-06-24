@@ -194,14 +194,20 @@ public class JournalService {
                         Long societyId,
                         Long createdBy,
                         Long flatId,
-                        Long financialYearId) {
+                        Long financialYearId,
+                        Integer glReceivable,
+                        Integer glCreditAccount,
+                        Integer glCashInHand,
+                        Integer glBankAccount,
+                        Integer glInterestIncome,
+                        Integer glDiscount) {
 
                 Integer receiptGl;
 
                 // ================= PAYMENT MODE TO GL =================
                 switch (paymentMode.toUpperCase()) {
                         case "CASH":
-                                receiptGl = 1000;
+                                receiptGl = glCashInHand;
                                 break;
 
                         case "UPI":
@@ -212,15 +218,15 @@ public class JournalService {
                         case "CARD":
                         case "NETBANKING":
                         case "ONLINE":
-                                receiptGl = 1001;
+                                receiptGl = glBankAccount;
                                 break;
 
                         default:
                                 throw new RuntimeException("Unsupported Payment Mode: " + paymentMode);
                 }
 
-                Integer DISCOUNT_GL = 5100;
-                Integer INTEREST_GL = 3020;
+                Integer DISCOUNT_GL = glDiscount;
+                Integer INTEREST_GL = glInterestIncome;
 
                 // ================= HEADER ENTRY =================
                 JournalEntry entry = new JournalEntry();
@@ -258,10 +264,10 @@ public class JournalService {
                         createLine(
                                         savedEntry,
                                         lineNo++,
-                                        1101,
+                                        glReceivable,
                                         0.0,
                                         maintenanceAmount,
-                                        "MEMBER RECEIVABLE",
+                                        "RECEIVABLE",
                                         memberId,
                                         societyId,
                                         flatId,
@@ -272,10 +278,10 @@ public class JournalService {
                         createLine(
                                         savedEntry,
                                         lineNo++,
-                                        1101,
+                                        glReceivable,
                                         0.0,
                                         totalAmount,
-                                        "MEMBER RECEIVABLE",
+                                        "RECEIVABLE",
                                         memberId,
                                         societyId,
                                         flatId,
@@ -414,10 +420,12 @@ public class JournalService {
                         Long societyId,
                         Long createdBy,
                         Long flatId,
-                        Long financialYearId) {
+                        Long financialYearId,
+                        Integer glReceivable,
+                        Integer glCreditAccount) {
 
-                final Integer RECEIVABLE_GL = 1101;
-                final Integer SINKING_FUND_GL = 5010;
+                final Integer RECEIVABLE_GL = glReceivable;
+                final Integer SINKING_FUND_GL = glCreditAccount;
 
                 Long journalId = createJournalEntry(
                                 "SF-" + sinkingFundId,

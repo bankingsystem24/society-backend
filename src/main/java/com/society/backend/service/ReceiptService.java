@@ -123,6 +123,7 @@ public class ReceiptService {
                         dto.setTotalAmount(r.getTotalAmount());
                         dto.setTransactionId(r.getTransactionId());
                         dto.setStatus(r.getStatus() != null ? r.getStatus().name() : null);
+                        dto.setPaymentMode(r.getPaymentMode());
                         // ================= FLAT DETAILS =================
 
                         Flat flat = flatMap.get(r.getFlatId());

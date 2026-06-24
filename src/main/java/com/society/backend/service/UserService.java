@@ -87,7 +87,6 @@ public class UserService {
             users = userRepository.findBySociety_Id(societyId);
         } else {
             users = userRepository.findAll();
-            System.out.println("Users:"+users);
         }
 
         return users.stream()

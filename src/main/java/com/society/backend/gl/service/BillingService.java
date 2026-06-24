@@ -426,7 +426,9 @@ public class BillingService {
         // =====================================================
 
         @Transactional
-        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId) {
+        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId, 
+                                Integer glReceivable, Integer glCreditAccount,
+                                Integer glCashInHand, Integer glBankAccount, Integer glInterestIncome,Integer glDiscount) {
 
                 List<Billing> bills = billingRepository.findAllById(billIds);
 
@@ -608,7 +610,13 @@ public class BillingService {
                                         societyId,
                                         0L,
                                         flatId,
-                                        financialYearId);
+                                        financialYearId,
+                                        glReceivable,
+                                        glCreditAccount,
+                                        glCashInHand,
+                                        glBankAccount,
+                                        glInterestIncome,
+                                        glDiscount);
                 }
 
                 return "Bills paid successfully";

@@ -344,8 +344,6 @@ public class ContributionService {
     @Transactional
     public void verifyPayment(VerifyContributionPaymentRequest request) {
 
-        System.out.println("Request:" + request);
-
         try {
 
             JSONObject attributes = new JSONObject();

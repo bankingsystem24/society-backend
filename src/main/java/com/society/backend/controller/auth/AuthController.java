@@ -52,8 +52,6 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         } 
 
-            System.out.println("User = " + user);
-
         String token = jwtUtil.generateToken(user.getUsername());
 
         role = user.getRole().name();

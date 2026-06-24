@@ -133,217 +133,224 @@ public class BillingController {
                                 req.getBillIds(),
                                 req.getPaymentMode(),
                                 req.getFinancialYearId(),
-                                req.getTransactionId());
+                                req.getTransactionId(),
+                                req.getGlReceivable(),
+                                req.getGlCreditAccount(),
+                                req.getGlCashInHand(),
+                                req.getGlBankAccount(),
+                                req.getGlInterestIncome(),
+                                req.getGlDiscount()
+                                );
         }
 
-        @PostMapping("/create-order")
-        public Map<String, Object> createOrder(@RequestBody CreateOrderRequest req) throws Exception {
+        // @PostMapping("/create-order")
+        // public Map<String, Object> createOrder(@RequestBody CreateOrderRequest req) throws Exception {
 
-                // 1️⃣ Convert amount to paise
-                int amountInPaise = (int) (req.getAmount() * 100);
+        //         // 1️⃣ Convert amount to paise
+        //         int amountInPaise = (int) (req.getAmount() * 100);
 
-                // 2️⃣ Create Razorpay order JSON
-                JSONObject orderRequest = new JSONObject();
-                orderRequest.put("amount", amountInPaise);
-                orderRequest.put("currency", "INR");
-                orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
-                orderRequest.put("payment_capture", 1);
+        //         // 2️⃣ Create Razorpay order JSON
+        //         JSONObject orderRequest = new JSONObject();
+        //         orderRequest.put("amount", amountInPaise);
+        //         orderRequest.put("currency", "INR");
+        //         orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
+        //         orderRequest.put("payment_capture", 1);
 
-                // 3️⃣ Create order
-                Order order = razorpayClient.orders.create(orderRequest);
+        //         // 3️⃣ Create order
+        //         Order order = razorpayClient.orders.create(orderRequest);
 
-                // 4️⃣ Response to frontend
-                Map<String, Object> response = new HashMap<>();
-                response.put("razorpayOrderId", order.get("id"));
-                response.put("amount", amountInPaise);
-                response.put("key", keyId);
+        //         // 4️⃣ Response to frontend
+        //         Map<String, Object> response = new HashMap<>();
+        //         response.put("razorpayOrderId", order.get("id"));
+        //         response.put("amount", amountInPaise);
+        //         response.put("key", keyId);
 
-                return response;
-        }
+        //         return response;
+        // }
 
-        @PostMapping("/verify-payment")
-        public ResponseEntity<?> verifyPayment(@RequestBody VerifyPaymentRequest req) {
+        // @PostMapping("/verify-payment")
+        // public ResponseEntity<?> verifyPayment(@RequestBody VerifyPaymentRequest req) {
 
-                try {
+        //         try {
 
-                        // =========================
-                        // VERIFY SIGNATURE
-                        // =========================
-                        String payload = req.getRazorpayOrderId() + "|" + req.getRazorpayPaymentId();
-                        Long financialYearId = req.getFinancialYearId();
+        //                 // =========================
+        //                 // VERIFY SIGNATURE
+        //                 // =========================
+        //                 String payload = req.getRazorpayOrderId() + "|" + req.getRazorpayPaymentId();
+        //                 Long financialYearId = req.getFinancialYearId();
 
-                        String generatedSignature = RazorpaySignatureUtil.hmacSHA256(payload, razorpayKeySecret);
+        //                 String generatedSignature = RazorpaySignatureUtil.hmacSHA256(payload, razorpayKeySecret);
 
-                        if (!generatedSignature.equals(req.getRazorpaySignature())) {
-                                return ResponseEntity.badRequest().body("Invalid payment signature");
-                        }
+        //                 if (!generatedSignature.equals(req.getRazorpaySignature())) {
+        //                         return ResponseEntity.badRequest().body("Invalid payment signature");
+        //                 }
 
-                        // =========================
-                        // FETCH BILLS
-                        // =========================
-                        List<Billing> bills = billingRepository.findByIdIn(req.getBillIds());
+        //                 // =========================
+        //                 // FETCH BILLS
+        //                 // =========================
+        //                 List<Billing> bills = billingRepository.findByIdIn(req.getBillIds());
 
-                        if (bills == null || bills.isEmpty()) {
-                                return ResponseEntity.badRequest().body("No bills found");
-                        }
+        //                 if (bills == null || bills.isEmpty()) {
+        //                         return ResponseEntity.badRequest().body("No bills found");
+        //                 }
 
-                        Billing firstBill = bills.get(0);
+        //                 Billing firstBill = bills.get(0);
 
-                        // =========================
-                        // LOAD POLICY
-                        // =========================
-                        SocietyBillingPolicy policy = societyBillingPolicyRepository
-                                        .findBySociety_IdAndFinancialYearId(firstBill.getSociety().getId(),
-                                                        financialYearId)
-                                        .orElse(null);
+        //                 // =========================
+        //                 // LOAD POLICY
+        //                 // =========================
+        //                 SocietyBillingPolicy policy = societyBillingPolicyRepository
+        //                                 .findBySociety_IdAndFinancialYearId(firstBill.getSociety().getId(),
+        //                                                 financialYearId)
+        //                                 .orElse(null);
 
-                        // =========================
-                        // CALCULATE AMOUNTS
-                        // =========================
-                        double maintenanceAmount = bills.stream()
-                                        .mapToDouble(b -> b.getMaintenanceAmount() != null ? b.getMaintenanceAmount() : 0.0)
-                                        .sum();
-                        double interestAmount = 0.0;
-                        if (policy != null) {
-                                for (Billing b : bills) {
-                                        if (b.getDueDate() == null)
-                                                continue;
-                                        LocalDate interestStart = b.getDueDate();
-                                        switch (policy.getInterestType()) {
-                                                case MONTHLY:
-                                                        interestStart = interestStart.plusMonths(1);
-                                                        break;
-                                                case QUARTERLY:
-                                                        interestStart = interestStart.plusMonths(3);
-                                                        break;
-                                                case HALF_YEARLY:
-                                                        interestStart = interestStart.plusMonths(6);
-                                                        break;
-                                                case YEARLY:
-                                                        interestStart = interestStart.plusMonths(12);
-                                                        break;
-                                        }
-                                        if (LocalDate.now().isAfter(interestStart)) {
-                                                long monthsLate = ChronoUnit.MONTHS.between(
-                                                                interestStart.withDayOfMonth(1),
-                                                                LocalDate.now().withDayOfMonth(1));
-                                                monthsLate = Math.max(1, monthsLate);
-                                                interestAmount += (b.getMaintenanceAmount() != null
-                                                                ? b.getMaintenanceAmount()
-                                                                : 0.0)
-                                                                * policy.getInterestRate()
-                                                                * monthsLate
-                                                                / 1200.0;
-                                        }
-                                }
-                        }
+        //                 // =========================
+        //                 // CALCULATE AMOUNTS
+        //                 // =========================
+        //                 double maintenanceAmount = bills.stream()
+        //                                 .mapToDouble(b -> b.getMaintenanceAmount() != null ? b.getMaintenanceAmount() : 0.0)
+        //                                 .sum();
+        //                 double interestAmount = 0.0;
+        //                 if (policy != null) {
+        //                         for (Billing b : bills) {
+        //                                 if (b.getDueDate() == null)
+        //                                         continue;
+        //                                 LocalDate interestStart = b.getDueDate();
+        //                                 switch (policy.getInterestType()) {
+        //                                         case MONTHLY:
+        //                                                 interestStart = interestStart.plusMonths(1);
+        //                                                 break;
+        //                                         case QUARTERLY:
+        //                                                 interestStart = interestStart.plusMonths(3);
+        //                                                 break;
+        //                                         case HALF_YEARLY:
+        //                                                 interestStart = interestStart.plusMonths(6);
+        //                                                 break;
+        //                                         case YEARLY:
+        //                                                 interestStart = interestStart.plusMonths(12);
+        //                                                 break;
+        //                                 }
+        //                                 if (LocalDate.now().isAfter(interestStart)) {
+        //                                         long monthsLate = ChronoUnit.MONTHS.between(
+        //                                                         interestStart.withDayOfMonth(1),
+        //                                                         LocalDate.now().withDayOfMonth(1));
+        //                                         monthsLate = Math.max(1, monthsLate);
+        //                                         interestAmount += (b.getMaintenanceAmount() != null
+        //                                                         ? b.getMaintenanceAmount()
+        //                                                         : 0.0)
+        //                                                         * policy.getInterestRate()
+        //                                                         * monthsLate
+        //                                                         / 1200.0;
+        //                                 }
+        //                         }
+        //                 }
 
-                        double discountAmount = bills.stream()
-                                        .mapToDouble(b -> b.getDiscountAmount() != null ? b.getDiscountAmount() : 0.0)
-                                        .sum();
-                        double totalAmount = maintenanceAmount + interestAmount - discountAmount;
+        //                 double discountAmount = bills.stream()
+        //                                 .mapToDouble(b -> b.getDiscountAmount() != null ? b.getDiscountAmount() : 0.0)
+        //                                 .sum();
+        //                 double totalAmount = maintenanceAmount + interestAmount - discountAmount;
 
-                        // =========================
-                        // CREATE RECEIPT
-                        // =========================
-                        Receipt receipt = new Receipt();
+        //                 // =========================
+        //                 // CREATE RECEIPT
+        //                 // =========================
+        //                 Receipt receipt = new Receipt();
 
-                        receipt.setReceiptNo("RCPT-" + System.currentTimeMillis());
-                        receipt.setReceiptDate(LocalDate.now());
-                        receipt.setPaymentMode("ONLINE");
-                        receipt.setTransactionId(req.getRazorpayPaymentId());
+        //                 receipt.setReceiptNo("RCPT-" + System.currentTimeMillis());
+        //                 receipt.setReceiptDate(LocalDate.now());
+        //                 receipt.setPaymentMode("ONLINE");
+        //                 receipt.setTransactionId(req.getRazorpayPaymentId());
 
-                        receipt.setSocietyId(firstBill.getSociety().getId());
-                        receipt.setFlatId(firstBill.getFlat().getId());
+        //                 receipt.setSocietyId(firstBill.getSociety().getId());
+        //                 receipt.setFlatId(firstBill.getFlat().getId());
 
-                        receipt.setMaintenanceAmount(maintenanceAmount);
-                        receipt.setInterestAmount(interestAmount);
-                        receipt.setDiscountAmount(discountAmount);
-                        receipt.setTotalAmount(totalAmount);
-                        receipt.setFinancialYearId(financialYearId);
-                        receipt.setStatus(PaymentStatus.PAID);
+        //                 receipt.setMaintenanceAmount(maintenanceAmount);
+        //                 receipt.setInterestAmount(interestAmount);
+        //                 receipt.setDiscountAmount(discountAmount);
+        //                 receipt.setTotalAmount(totalAmount);
+        //                 receipt.setFinancialYearId(financialYearId);
+        //                 receipt.setStatus(PaymentStatus.PAID);
 
-                        Receipt savedReceipt = receiptRepository.save(receipt);
-                        // =========================
-                        // UPDATE BILLS
-                        // =========================
-                        for (Billing bill : bills) {
-                                bill.setStatus(PaymentStatus.PAID);
-                                bill.setPaidDate(LocalDate.now());
-                                bill.setPaymentMode("ONLINE");
-                                bill.setReceiptId(savedReceipt.getId());
-                                double maintenance = bill.getMaintenanceAmount() != null ? bill.getMaintenanceAmount()
-                                                : 0.0;
-                                double discount = bill.getDiscountAmount() != null ? bill.getDiscountAmount() : 0.0;
-                                double interest = 0.0;
-                                if (policy != null && bill.getDueDate() != null) {
-                                        LocalDate interestStart = bill.getDueDate();
-                                        switch (policy.getInterestType()) {
-                                                case MONTHLY:
-                                                        interestStart = interestStart.plusMonths(1);
-                                                        break;
-                                                case QUARTERLY:
-                                                        interestStart = interestStart.plusMonths(3);
-                                                        break;
-                                                case HALF_YEARLY:
-                                                        interestStart = interestStart.plusMonths(6);
-                                                        break;
-                                                case YEARLY:
-                                                        interestStart = interestStart.plusMonths(12);
-                                                        break;
-                                        }
-                                        if (LocalDate.now().isAfter(interestStart)) {
+        //                 Receipt savedReceipt = receiptRepository.save(receipt);
+        //                 // =========================
+        //                 // UPDATE BILLS
+        //                 // =========================
+        //                 for (Billing bill : bills) {
+        //                         bill.setStatus(PaymentStatus.PAID);
+        //                         bill.setPaidDate(LocalDate.now());
+        //                         bill.setPaymentMode("ONLINE");
+        //                         bill.setReceiptId(savedReceipt.getId());
+        //                         double maintenance = bill.getMaintenanceAmount() != null ? bill.getMaintenanceAmount()
+        //                                         : 0.0;
+        //                         double discount = bill.getDiscountAmount() != null ? bill.getDiscountAmount() : 0.0;
+        //                         double interest = 0.0;
+        //                         if (policy != null && bill.getDueDate() != null) {
+        //                                 LocalDate interestStart = bill.getDueDate();
+        //                                 switch (policy.getInterestType()) {
+        //                                         case MONTHLY:
+        //                                                 interestStart = interestStart.plusMonths(1);
+        //                                                 break;
+        //                                         case QUARTERLY:
+        //                                                 interestStart = interestStart.plusMonths(3);
+        //                                                 break;
+        //                                         case HALF_YEARLY:
+        //                                                 interestStart = interestStart.plusMonths(6);
+        //                                                 break;
+        //                                         case YEARLY:
+        //                                                 interestStart = interestStart.plusMonths(12);
+        //                                                 break;
+        //                                 }
+        //                                 if (LocalDate.now().isAfter(interestStart)) {
 
-                                                long monthsLate = ChronoUnit.MONTHS.between(
-                                                                interestStart.withDayOfMonth(1),
-                                                                LocalDate.now().withDayOfMonth(1));
+        //                                         long monthsLate = ChronoUnit.MONTHS.between(
+        //                                                         interestStart.withDayOfMonth(1),
+        //                                                         LocalDate.now().withDayOfMonth(1));
 
-                                                monthsLate = Math.max(1, monthsLate);
+        //                                         monthsLate = Math.max(1, monthsLate);
 
-                                                interest = maintenance
-                                                                * policy.getInterestRate()
-                                                                * monthsLate
-                                                                / 1200.0;
-                                        }
-                                }
-                                bill.setInterestAmount(interest);
-                                double total = maintenance + interest - discount;
-                                bill.setTotalAmount(total);
-                                bill.setTransactionId(req.getRazorpayPaymentId());
-                        }
+        //                                         interest = maintenance
+        //                                                         * policy.getInterestRate()
+        //                                                         * monthsLate
+        //                                                         / 1200.0;
+        //                                 }
+        //                         }
+        //                         bill.setInterestAmount(interest);
+        //                         double total = maintenance + interest - discount;
+        //                         bill.setTotalAmount(total);
+        //                         bill.setTransactionId(req.getRazorpayPaymentId());
+        //                 }
 
-                        billingRepository.saveAll(bills);
+        //                 billingRepository.saveAll(bills);
 
-                        // =========================
-                        // JOURNAL ENTRY
-                        // =========================
-                        Long memberId = firstBill.getFlat().getOwner() != null
-                                        ? firstBill.getFlat().getOwner().getId()
-                                        : null;
+        //                 // =========================
+        //                 // JOURNAL ENTRY
+        //                 // =========================
+        //                 Long memberId = firstBill.getFlat().getOwner() != null
+        //                                 ? firstBill.getFlat().getOwner().getId()
+        //                                 : null;
 
-                        journalService.createReceiptEntry(
-                                        savedReceipt.getId(),
-                                        memberId,
-                                        maintenanceAmount,
-                                        interestAmount,
-                                        discountAmount,
-                                        totalAmount,
-                                        "ONLINE",
-                                        firstBill.getSociety().getId(),
-                                        req.getUserId(),
-                                        firstBill.getFlat().getId(),
-                                        financialYearId);
+        //                 journalService.createReceiptEntry(
+        //                                 savedReceipt.getId(),
+        //                                 memberId,
+        //                                 maintenanceAmount,
+        //                                 interestAmount,
+        //                                 discountAmount,
+        //                                 totalAmount,
+        //                                 "ONLINE",
+        //                                 firstBill.getSociety().getId(),
+        //                                 req.getUserId(),
+        //                                 firstBill.getFlat().getId(),
+        //                                 financialYearId);
 
-                        return ResponseEntity.ok("Payment verified successfully");
+        //                 return ResponseEntity.ok("Payment verified successfully");
 
-                } catch (Exception e) {
+        //         } catch (Exception e) {
 
-                        e.printStackTrace();
+        //                 e.printStackTrace();
 
-                        return ResponseEntity.internalServerError()
-                                        .body(e.getMessage());
-                }
-        }
+        //                 return ResponseEntity.internalServerError()
+        //                                 .body(e.getMessage());
+        //         }
+        // }
 
         @PostMapping("/manual-payment")
         public ResponseEntity<?> manualPayment(

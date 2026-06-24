@@ -23,7 +23,7 @@ public class SinkingFundController {
 
 
     // CREATE / GENERATE SINGLE RECORD
-    @PostMapping("/generate")
+    @PostMapping("/generate") 
     public void generate(@RequestBody SinkingFundRequest request) {
         sinkingFundService.generate(
                 request.getSocietyId(),
@@ -31,7 +31,10 @@ public class SinkingFundController {
                 request.getYear(),
                 request.getAmount(),
                 request.getCreatedBy(),
-                request.getFinancialYearId());
+                request.getFinancialYearId(),
+                request.getGlReceivable(),
+                request.getGlCreditAccount()
+                );
     }
 
     // GET ALL
@@ -55,25 +58,33 @@ public class SinkingFundController {
         sinkingFundService.pay(
                 request.getSinkingFundIds(),
                 request.getPaymentMode(),
-                request.getFinancialYearId() );
+                request.getFinancialYearId(),
+                request.getGlReceivable(),
+                request.getGlCreditAccount(),
+                request.getGlCashInHand(),
+                request.getGlBankAccount(),
+                request.getGlInterestIncome(),
+                request.getGlDiscount()
+
+                 );
 
         return ResponseEntity.ok("Payment successful");
     }
 
-    @PostMapping("/create-order")
-    public ResponseEntity<?> createOrder(
-            @RequestBody SinkingFundOrderRequest request) {
+    // @PostMapping("/create-order")
+    // public ResponseEntity<?> createOrder(
+    //         @RequestBody SinkingFundOrderRequest request) {
 
-        return ResponseEntity.ok(
-                sinkingFundService.createOrder(request));
-    }
+    //     return ResponseEntity.ok(
+    //             sinkingFundService.createOrder(request));
+    // }
 
-    @PostMapping("/verify-payment")
-    public ResponseEntity<?> verifyPayment(
-            @RequestBody VerifySinkingFundPaymentRequest request) {
+    // @PostMapping("/verify-payment")
+    // public ResponseEntity<?> verifyPayment(
+    //         @RequestBody VerifySinkingFundPaymentRequest request) {
 
-        sinkingFundService.verifyPayment(request);
+    //     sinkingFundService.verifyPayment(request);
 
-        return ResponseEntity.ok("Payment verified successfully");
-    }
+    //     return ResponseEntity.ok("Payment verified successfully");
+    // }
 }

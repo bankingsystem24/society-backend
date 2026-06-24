@@ -58,7 +58,9 @@ public class SinkingFundService {
             int year,
             Double amount,
             Long createdBy,
-            Long financialYearId) {
+            Long financialYearId,
+            Integer glReceivable,
+            Integer glCreditAccount) {
 
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
 
@@ -111,7 +113,9 @@ public class SinkingFundService {
                         societyId,
                         createdBy,
                         flat.getId(),
-                        financialYearId);
+                        financialYearId,
+                        glReceivable,
+                        glCreditAccount);
 
                 if (journalId == null) {
                     throw new RuntimeException(
@@ -171,7 +175,10 @@ public class SinkingFundService {
     }
 
     @Transactional
-    public String pay(List<Long> sinkingFundIds, String paymentMode, Long financialYearId) {
+    public String pay(List<Long> sinkingFundIds, String paymentMode, Long financialYearId,
+            Integer glReceivable, Integer glCreditAccount, Integer glCashInHand, Integer glBankAccount,
+            Integer glInterestIncome,Integer glDiscount
+            ) {
 
         List<SinkingFund> funds = sinkingFundRepository.findAllById(sinkingFundIds);
 
@@ -196,6 +203,7 @@ public class SinkingFundService {
             fund.setPaymentMode(paymentMode);
             fund.setPaidDate(LocalDate.now());
             fund.setFinancialYearId(financialYearId);
+
             totalAmount += fund.getAmount();
         }
 
@@ -218,6 +226,7 @@ public class SinkingFundService {
         receipt.setSocietyId(societyId);
         receipt.setFlatId(flatId);
         receipt.setFinancialYearId(financialYearId);
+        receipt.setStatus(PaymentStatus.PAID);
         Receipt savedReceipt = receiptRepository.save(receipt);
 
         savedReceipt.setReceiptNo(
@@ -258,7 +267,13 @@ public class SinkingFundService {
                     paymentMode,
                     societyId,
                     0L,
-                    flatId,financialYearId);
+                    flatId,financialYearId,
+                    glReceivable,
+                    glCreditAccount,
+                    glCashInHand,
+                    glBankAccount,
+                    glInterestIncome,
+                    glDiscount);
         }
 
         return "Sinking Fund paid successfully";
@@ -403,7 +418,13 @@ public void verifyPayment(VerifySinkingFundPaymentRequest request) {
                 societyId,
                 request.getUserId(),
                 flatId,
-                financialYearId
+                financialYearId,
+                request.getGlReceivable(),
+                request.getGlCreditAccount(),
+                request.getGlCashInHand(),
+                request.getGlBankAccount(),
+                request.getGlInterestIncome(),
+                request.getGlDiscount()
         );
 
     } catch (Exception e) {

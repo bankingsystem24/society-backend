@@ -77,12 +77,8 @@ public class ReceiptController {
                 receipt.setStatus(PaymentStatus.PAID);
                 receiptRepository.save(receipt);
 
-                System.out.println("PaymentTable:" + paymentTable);
-
                 if ("billing".equalsIgnoreCase(paymentTable)) {
                         List<Billing> bills = billingRepository.findByReceiptId(receiptId);
-                        System.out.println("Receipt Id = " + receiptId);
-                        System.out.println("Bills Found = " + bills.size());
                         bills.forEach(b -> b.setStatus(PaymentStatus.PAID));
                         billingRepository.saveAll(bills);
                 } else if ("sinkingfund".equalsIgnoreCase(paymentTable)) {
@@ -94,8 +90,6 @@ public class ReceiptController {
                         contribution.forEach(f -> f.setStatus(PaymentStatus.PAID));
                         contributionRepository.saveAll(contribution);
                 }
-
-                System.out.println("Payment Table: " + paymentTable);
 
                 Flat flat = flatRepository.findById(receipt.getFlatId())
                                 .orElseThrow(() -> new RuntimeException("Flat not found"));
@@ -115,7 +109,14 @@ public class ReceiptController {
                                 receipt.getSocietyId(),
                                 null, // userId if available
                                 receipt.getFlatId(),
-                                receipt.getFinancialYearId());
+                                receipt.getFinancialYearId(),
+                                Integer.valueOf(request.get("glReceivable").toString()),
+                                Integer.valueOf(request.get("glCreditAccount").toString()),
+                                Integer.valueOf(request.get("glCashInHand").toString()),
+                                Integer.valueOf(request.get("glBankAccount").toString()),
+                                Integer.valueOf(request.get("glInterestIncome").toString()),
+                                Integer.valueOf(request.get("glDiscount").toString())
+                                );
 
                 return ResponseEntity.ok("Payment confirmed successfully");
         }

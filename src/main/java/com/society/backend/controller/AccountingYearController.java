@@ -80,8 +80,7 @@ public class AccountingYearController {
         Long societyId = Long.valueOf(req.get("societyId").toString());
         Long yearId = Long.valueOf(req.get("yearId").toString());
 
-        System.out.println("YearId"+yearId);
-        
+       
         return accountingYearService.setActiveYear(societyId, yearId);
     }
 }
