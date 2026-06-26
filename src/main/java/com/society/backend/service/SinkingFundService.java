@@ -177,7 +177,7 @@ public class SinkingFundService {
     @Transactional
     public String pay(List<Long> sinkingFundIds, String paymentMode, Long financialYearId,
             Integer glReceivable, Integer glCreditAccount, Integer glCashInHand, Integer glBankAccount,
-            Integer glInterestIncome,Integer glDiscount
+            Integer glInterestIncome,Integer glDiscount,String transactionId
             ) {
 
         List<SinkingFund> funds = sinkingFundRepository.findAllById(sinkingFundIds);
@@ -199,7 +199,7 @@ public class SinkingFundService {
                 continue;
             }
 
-            fund.setStatus(PaymentStatus.PAID);
+            fund.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED );
             fund.setPaymentMode(paymentMode);
             fund.setPaidDate(LocalDate.now());
             fund.setFinancialYearId(financialYearId);
@@ -226,7 +226,7 @@ public class SinkingFundService {
         receipt.setSocietyId(societyId);
         receipt.setFlatId(flatId);
         receipt.setFinancialYearId(financialYearId);
-        receipt.setStatus(PaymentStatus.PAID);
+        receipt.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
         Receipt savedReceipt = receiptRepository.save(receipt);
 
         savedReceipt.setReceiptNo(
@@ -255,7 +255,7 @@ public class SinkingFundService {
 
         // ================= JOURNAL =================
 
-        if (totalAmount > 0) {
+        if (totalAmount > 0 && "CASH".equals(paymentMode)) {
 
             journalService.createReceiptEntry(
                     savedReceipt.getId(),

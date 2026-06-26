@@ -480,7 +480,10 @@ public class BillingService {
 
                         hasUnpaidBills = true;
 
-                        bill.setStatus(PaymentStatus.PAID);
+                        System.out.println("paymentMode:"+paymentMode);
+
+                        bill.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED );
+
                         bill.setPaidDate(LocalDate.now());
                         bill.setPaymentMode(paymentMode);
                         bill.setTransactionId(transactionId);
@@ -558,6 +561,7 @@ public class BillingService {
 
                 receipt.setReceiptDate(LocalDate.now());
                 receipt.setPaymentMode(paymentMode);
+                receipt.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED );
 
                 receipt.setMaintenanceAmount(maintenanceAmount);
                 receipt.setInterestAmount(interestAmount);
@@ -571,11 +575,7 @@ public class BillingService {
 
                 Receipt savedReceipt = receiptRepository.save(receipt);
 
-                savedReceipt.setReceiptNo(
-                                "RCPT-" +
-                                                LocalDate.now().getYear() +
-                                                "-" +
-                                                savedReceipt.getId());
+                savedReceipt.setReceiptNo("RCPT-" + LocalDate.now().getYear() + "-" + savedReceipt.getId());
 
                 savedReceipt = receiptRepository.save(savedReceipt);
 
@@ -597,7 +597,7 @@ public class BillingService {
                         memberId = first.getFlat().getOwner().getId();
                 }
 
-                if (totalAmount > 0) {
+                if (totalAmount > 0 && "CASH".equals(paymentMode)) {
 
                         journalService.createReceiptEntry(
                                         savedReceipt.getId(),

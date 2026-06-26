@@ -84,6 +84,23 @@ public class ContributionService {
         }).toList();
     }
 
+     public List<ContributionResponse> getContributionsReceiptId(Long societyId, Long financialYearId,Long receiptId) {
+
+        List<Contribution> list = contributionRepository.findBySocietyIdAndFinancialYearIdAndReceiptId(societyId,
+                financialYearId,receiptId);
+
+        return list.stream().map(c -> {
+
+            ContributionResponse dto = new ContributionResponse();
+            dto.setGlReceivable(c.getGlReceivable());
+            dto.setGlCreditAccount(c.getGlCreditAccount());
+
+            return dto;
+
+        }).toList();
+    }
+
+
     public void createCompulsoryContribution(Long societyId, Long financialYearId, CompulsoryContributionRequest req) {
 
         List<Flat> flats = flatRepository.findBySociety_Id(societyId);
@@ -206,7 +223,10 @@ public class ContributionService {
             Double contributionAmount,
             Long userId,
             Integer glReceivable,
-            Integer glCreditAccount) {
+            Integer glCreditAccount,
+            String transactionId,
+            Integer glCashInHand,
+            Integer glBankAccount) {
 
         List<Contribution> contributions = contributionRepository.findAllById(contributionIds);
 
@@ -227,7 +247,7 @@ public class ContributionService {
                 continue;
             }
 
-            contribution.setStatus(PaymentStatus.PAID);
+            contribution.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
             contribution.setPaymentMode(paymentMode);
             contribution.setFinancialYearId(financialYearId);
 
@@ -251,14 +271,11 @@ public class ContributionService {
         receipt.setSocietyId(societyId);
         receipt.setFlatId(flatId);
         receipt.setFinancialYearId(financialYearId);
+        receipt.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
 
         Receipt savedReceipt = receiptRepository.save(receipt);
 
-        savedReceipt.setReceiptNo(
-                "CON-" +
-                        LocalDate.now().getYear() +
-                        "-" +
-                        savedReceipt.getId());
+        savedReceipt.setReceiptNo("CON-" + LocalDate.now().getYear() + "-" + savedReceipt.getId());
 
         savedReceipt = receiptRepository.save(savedReceipt);
 
@@ -282,7 +299,7 @@ public class ContributionService {
 
         // ================= JOURNAL ENTRY =================
 
-        if (contributionAmount > 0) {
+        if (contributionAmount > 0 && "CASH".equals(paymentMode)) {
 
             journalService.createReceiptEntry(
                     savedReceipt.getId(),
@@ -298,7 +315,7 @@ public class ContributionService {
                     financialYearId,
                     glReceivable,
                     glCreditAccount,
-                    0,0,0,0);
+                    glCashInHand,glBankAccount,0,0);
         }
 
         return "Contribution paid successfully";
@@ -433,18 +450,18 @@ public class ContributionService {
             contributionRepository.saveAll(contributions);
 
             // ================= JOURNAL =================
-            journalService.createReceiptEntry(
-                    receipt.getId(),
-                    memberId,
-                    totalAmount,
-                    0.0,
-                    0.0,
-                    totalAmount,
-                    request.getPaymentMode(),
-                    societyId,
-                    request.getUserId(),
-                    flatId,
-                    financialYearId);
+            // journalService.createReceiptEntry(
+            //         receipt.getId(),
+            //         memberId,
+            //         totalAmount,
+            //         0.0,
+            //         0.0,
+            //         totalAmount,
+            //         request.getPaymentMode(),
+            //         societyId,
+            //         request.getUserId(),
+            //         flatId,
+            //         financialYearId);
 
         } catch (Exception e) {
             throw new RuntimeException("Payment verification failed", e);

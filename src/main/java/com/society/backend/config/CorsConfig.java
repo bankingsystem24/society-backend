@@ -11,43 +11,35 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+                CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:5173",
-                        "https://yourdomain.com"
-                )
-        );
+                configuration.setAllowedOrigins(
+                                List.of(
+                                                "http://localhost:5173",
+                                                "https://housing.coopmember.in"));
 
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"
-                )
-        );
+                configuration.setAllowedMethods(
+                                List.of(
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "DELETE",
+                                                "OPTIONS"));
 
-        configuration.setAllowedHeaders(
-                List.of("*")
-        );
+                configuration.setAllowedHeaders(
+                                List.of("*"));
 
-        configuration.setAllowCredentials(true);
+                configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+                source.registerCorsConfiguration(
+                                "/**",
+                                configuration);
 
-        return source;
-    }
+                return source;
+        }
 }

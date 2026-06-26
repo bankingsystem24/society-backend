@@ -43,6 +43,15 @@ public class ContributionController {
                                 contributionService.getContributions(societyId, financialYearId));
         }
 
+        @GetMapping("/{societyId}/{financialYearId}/{receiptId}")
+        public ResponseEntity<?> getContributionsReceiptId(
+                        @PathVariable Long societyId,
+                        @PathVariable Long financialYearId,
+                        @PathVariable Long receiptId) {
+                return ResponseEntity.ok(
+                                contributionService.getContributionsReceiptId(societyId, financialYearId,receiptId));
+        }
+
         @PostMapping("/compulsory/{societyId}/{financialYearId}")
         public ResponseEntity<?> createCompulsoryContribution(
                         @PathVariable Long societyId,
@@ -71,8 +80,11 @@ public class ContributionController {
                                 request.getFinancialYearId(),
                                 request.getContributionAmount(),
                                 request.getUserId(),
+                                request.getGlReceivable(),
                                 request.getGlCreditAccount(),
-                                request.getGlCreditAccount());
+                                request.getTransactionId(),
+                                request.getCashInHand(),
+                                request.getGlBankAccount());
 
                 return ResponseEntity.ok("Payment successful");
         }

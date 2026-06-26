@@ -25,15 +25,21 @@ public class SinkingFundPaymentRequest {
     @Column(name = "gl_discount")
     private Integer glDiscount;
 
+    @Column(name = "transaction_Id")
+    private String transactionId;
+
     public Integer getGlCashInHand(){ return glCashInHand;}
     public Integer getGlBankAccount(){ return glBankAccount;}
     public Integer getGlInterestIncome(){ return glInterestIncome;}
     public Integer getGlDiscount(){ return glDiscount;}
+    public String getTransactionId(){ return transactionId;}
+
 
     public void setGlCashInHand(Integer glCashInHand){ this.glCashInHand = glCashInHand;}
     public void setGlBankAccount(Integer glBankAccount){ this.glBankAccount = glBankAccount;}
     public void setGlInterestIncome(Integer glInterestIncome){ this.glInterestIncome = glInterestIncome;}
     public void setGlDiscount(Integer glDiscount){ this.glDiscount = glDiscount;}
+    public void setTransactionId(String transactionId){ this.transactionId = transactionId;}
     
     public Integer getGlReceivable(){return glReceivable;}
     public void setGlReceivable(Integer glReceivable){ this.glReceivable = glReceivable;}

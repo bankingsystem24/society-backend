@@ -15,11 +15,28 @@ public class ContributionPaymentRequest {
     @Column(name = "gl_credit_account")
     private Integer glCreditAccount;
 
+    @Column(name = "gl_cash_in_hand")
+    private Integer glCashInHand;
+    @Column(name = "gl_bank_account")
+    private Integer glBankAccount;
+
+    @Column(name = "transaction_Id")
+    private String transactionId;
+
+    public String getTransactionId(){ return transactionId;}
+    public void setTransactionId(String transactionId){ this.transactionId = transactionId;}
+
     public Integer getGlReceivable(){return glReceivable;}
     public void setGlReceivable(Integer glReceivable){ this.glReceivable = glReceivable;}
     
     public Integer getGlCreditAccount(){return glCreditAccount;}
     public void setGlCreditAccount(Integer glCreditAccount){ this.glCreditAccount = glCreditAccount;}
+
+    public Integer getCashInHand(){return glCashInHand;}
+    public void setGlCashInHand(Integer glCashInHand){ this.glCashInHand = glCashInHand;}
+    
+    public Integer getGlBankAccount(){return glBankAccount;}
+    public void setGlBankAccount(Integer glBankAccount){ this.glBankAccount = glBankAccount;}
 
     public List<Long> getContributionIds() {
         return contributionIds;

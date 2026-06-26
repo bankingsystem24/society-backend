@@ -64,7 +64,8 @@ public class SinkingFundController {
                 request.getGlCashInHand(),
                 request.getGlBankAccount(),
                 request.getGlInterestIncome(),
-                request.getGlDiscount()
+                request.getGlDiscount(),
+                request.getTransactionId()
 
                  );
 
