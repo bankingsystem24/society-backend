@@ -480,8 +480,6 @@ public class BillingService {
 
                         hasUnpaidBills = true;
 
-                        System.out.println("paymentMode:"+paymentMode);
-
                         bill.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED );
 
                         bill.setPaidDate(LocalDate.now());

@@ -68,5 +68,10 @@ public class GlMasterController {
         return glMasterService.getMappingBySociety(societyId);
     }
 
+    @PostMapping("/defaultgl")
+    public ResponseEntity<String> createDefaultGL(@RequestBody Long societyId) {
+        glMasterService.createDefaultGL(societyId);
+        return ResponseEntity.ok("Default GLs created successfully");
+    }
 
 }

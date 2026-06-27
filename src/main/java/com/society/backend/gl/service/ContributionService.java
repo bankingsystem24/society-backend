@@ -250,6 +250,7 @@ public class ContributionService {
             contribution.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
             contribution.setPaymentMode(paymentMode);
             contribution.setFinancialYearId(financialYearId);
+            contribution.setTransactionId(transactionId);
 
         }
 
@@ -271,6 +272,7 @@ public class ContributionService {
         receipt.setSocietyId(societyId);
         receipt.setFlatId(flatId);
         receipt.setFinancialYearId(financialYearId);
+        receipt.setTransactionId(transactionId);
         receipt.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
 
         Receipt savedReceipt = receiptRepository.save(receipt);

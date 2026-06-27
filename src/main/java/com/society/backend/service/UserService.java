@@ -11,6 +11,7 @@ import com.society.backend.repository.SocietyRepository;
 import com.society.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,12 +21,12 @@ public class UserService {
     private final MemberRepository memberRepository;
     private final SocietyRepository societyRepository;
 
-    public UserService(UserRepository userRepository, 
-                        MemberRepository memberRepository,
-                        SocietyRepository societyRepository){
-            this.userRepository = userRepository;
-            this.memberRepository = memberRepository;
-            this.societyRepository = societyRepository;
+    public UserService(UserRepository userRepository,
+            MemberRepository memberRepository,
+            SocietyRepository societyRepository) {
+        this.userRepository = userRepository;
+        this.memberRepository = memberRepository;
+        this.societyRepository = societyRepository;
 
     };
 
@@ -37,7 +38,7 @@ public class UserService {
         User user = new User();
 
         user.setUsername(req.getUsername());
-        user.setPassword(req.getPassword()); 
+        user.setPassword(req.getPassword());
         user.setEmail(req.getEmail());
         user.setMobile(req.getMobile());
         user.setRole(req.getRole());
@@ -84,7 +85,15 @@ public class UserService {
         List<User> users;
 
         if (societyId != null) {
-            users = userRepository.findBySociety_Id(societyId);
+            users = new ArrayList<>(userRepository.findBySociety_Id(societyId));
+
+            Society society = societyRepository.findById(societyId)
+                    .orElseThrow(() -> new RuntimeException("Society not found"));
+
+            User auditor = society.getAuditor();
+            if (auditor != null && users.stream().noneMatch(u -> u.getId().equals(auditor.getId()))) {
+                users.add(auditor);
+            }
         } else {
             users = userRepository.findAll();
         }
@@ -94,17 +103,13 @@ public class UserService {
                 .toList();
     }
 
-
-    
-
     // =========================
     // GET BY ID
     // =========================
     public UserResponse getById(Long id) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         return toResponse(user);
     }
@@ -190,63 +195,60 @@ public class UserService {
         return res;
     }
 
-public UserResponse updateFromRequest(Long id, UserRequest req) {
+    public UserResponse updateFromRequest(Long id, UserRequest req) {
 
-    try {
-    } catch (Exception e) {
-        e.printStackTrace();
+        try {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // =========================
+        // BASIC FIELDS
+        // =========================
+        user.setUsername(req.getUsername());
+        user.setPassword(req.getPassword()); // Later use BCrypt
+        user.setEmail(req.getEmail());
+        user.setMobile(req.getMobile());
+        user.setRole(req.getRole());
+        user.setActive(req.getActive());
+        user.setName(req.getName());
+        // =========================
+        // MEMBER
+        // =========================
+        if (req.getMember() != null &&
+                req.getMember().getId() != null) {
+
+            Member member = memberRepository.findById(req.getMember().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+
+            user.setMember(member);
+
+        } else {
+            user.setMember(null);
+        }
+
+        // =========================
+        // SOCIETY
+        // =========================
+        Long societyId = (req.getSociety() != null)
+                ? req.getSociety().getId()
+                : null;
+
+        if (societyId == null || societyId == 0) {
+            user.setSociety(null);
+        } else {
+            Society society = societyRepository.findById(societyId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Society not found"));
+
+            user.setSociety(society);
+        }
+
+        User updated = userRepository.save(user);
+
+        return toResponse(updated);
     }
-
-    User user = userRepository.findById(id)
-            .orElseThrow(() ->
-                    new ResourceNotFoundException("User not found"));
-
-    // =========================
-    // BASIC FIELDS
-    // =========================
-    user.setUsername(req.getUsername());
-    user.setPassword(req.getPassword()); // Later use BCrypt
-    user.setEmail(req.getEmail());
-    user.setMobile(req.getMobile());
-    user.setRole(req.getRole());
-    user.setActive(req.getActive());
-    user.setName(req.getName());
-    // =========================
-    // MEMBER
-    // =========================
-    if (req.getMember() != null &&
-            req.getMember().getId() != null) {
-
-        Member member = memberRepository.findById(req.getMember().getId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Member not found"));
-
-        user.setMember(member);
-
-    } else {
-        user.setMember(null);
-    }
-
-    // =========================
-    // SOCIETY
-    // =========================
-    Long societyId = (req.getSociety() != null)
-            ? req.getSociety().getId()
-            : null;
-
-    if (societyId == null || societyId == 0) {
-        user.setSociety(null);
-    } else {
-        Society society = societyRepository.findById(societyId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Society not found"));
-
-        user.setSociety(society);
-    }
-
-    User updated = userRepository.save(user);
-
-    return toResponse(updated);
-}
 
 }
