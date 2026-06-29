@@ -47,10 +47,10 @@ public class ContributionService {
     @Value("${razorpay.key_secret}")
     private String razorpaySecret;
 
-    public List<ContributionResponse> getContributions(Long societyId, Long financialYearId) {
+    public List<ContributionResponse> getContributions(Long societyId, Long financialYearId,String type) {
 
-        List<Contribution> list = contributionRepository.findBySocietyIdAndFinancialYearId(societyId,
-                financialYearId);
+        List<Contribution> list = contributionRepository.findBySocietyIdAndFinancialYearIdAndType(societyId,
+                financialYearId,type);
 
         return list.stream().map(c -> {
 

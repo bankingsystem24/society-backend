@@ -35,12 +35,12 @@ public class ContributionController {
         private final ContributionRepository contributionRepository;
         private final ReceiptRepository receiptRepository;
 
-        @GetMapping("/{societyId}/{financialYearId}")
+        @GetMapping("/{societyId}/{financialYearId}/type/{type}")
         public ResponseEntity<?> getContributions(
                         @PathVariable Long societyId,
-                        @PathVariable Long financialYearId) {
+                        @PathVariable Long financialYearId, @PathVariable String type) {
                 return ResponseEntity.ok(
-                                contributionService.getContributions(societyId, financialYearId));
+                                contributionService.getContributions(societyId, financialYearId,type));
         }
 
         @GetMapping("/{societyId}/{financialYearId}/{receiptId}")
