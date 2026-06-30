@@ -8,5 +8,6 @@ public enum VoucherType {
     JOURNAL,
     CONTRA,
     EXPENSE,
-    OPENING
+    OPENING,
+    INCOME
 }

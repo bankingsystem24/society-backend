@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 @Table(name = "expense_voucher")
 public class ExpenseVoucher {
 
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String voucherNo;

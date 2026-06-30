@@ -88,6 +88,10 @@ public class TrialBalanceService {
 
             dto.setClosingBalance(Math.abs(closingNet));
             dto.setClosingType(closingNet >= 0 ? "DR" : "CR");
+
+            dto.setClosingDebit(closingNet > 0 ? closingNet : 0);
+            dto.setClosingCredit(closingNet < 0 ? Math.abs(closingNet) : 0);
+
         }
 
         return list;

@@ -17,6 +17,10 @@ public class TrialBalanceDTO {
     private Double openingCredit;
 
     // Closing
+
+    private Double closingDebit;
+    private Double closingCredit;
+
     private Double closingBalance;
     private String closingType;
 
@@ -127,19 +131,13 @@ public TrialBalanceDTO(
         this.groupName = groupName;
     }
 
-        public Double getOpeningDebit() {
-        return openingDebit;
-    }
+    public Double getOpeningDebit() {return openingDebit;}
+    public void setOpeningDebit(Double openingDebit) {this.openingDebit = openingDebit;}
+    public Double getOpeningCredit() {return openingCredit;}
+    public void setopeningCredit(Double openingCredit) {this.openingCredit = openingCredit;}
 
-    public void setOpeningDebit(Double openingDebit) {
-        this.openingDebit = openingDebit;
-    }
-
-    public Double getOpeningCredit() {
-        return openingCredit;
-    }
-
-    public void setopeningCredit(Double openingCredit) {
-        this.openingCredit = openingCredit;
-    }
+    public Double getClosingDebit() {return closingDebit;}
+    public void setClosingDebit(Double closingDebit) {this.closingDebit = closingDebit;}
+    public Double getClosingCredit() {return closingCredit;}
+    public void setClosingCredit(Double closingCredit) {this.closingCredit = closingCredit;}
 }

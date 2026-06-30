@@ -48,7 +48,6 @@ public class ExpenseVoucherController {
     @DeleteMapping("/{id}")
     public void delete(
             @PathVariable Long id) {
-
         expenseVoucherService.delete(id);
     }
 }
