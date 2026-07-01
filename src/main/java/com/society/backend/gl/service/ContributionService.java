@@ -402,10 +402,6 @@ public class ContributionService {
             Long financialYearId = first.getFinancialYearId();
             String contributionType = request.getType();
 
-            Long memberId = (first.getFlat().getOwner() != null)
-                    ? first.getFlat().getOwner().getId()
-                    : null;
-
             // ================= TOTAL CALCULATION =================
             Double totalAmount = 0.0;
 

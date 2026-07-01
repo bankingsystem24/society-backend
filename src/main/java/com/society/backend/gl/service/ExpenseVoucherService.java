@@ -1,6 +1,5 @@
 package com.society.backend.gl.service;
 
-import com.society.backend.gl.repository.JournalViewRepository;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -14,7 +13,6 @@ import com.society.backend.gl.repository.JournalEntryRepository;
 import com.society.backend.repository.SocietyRepository;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class ExpenseVoucherService {
@@ -120,9 +118,6 @@ public class ExpenseVoucherService {
                 Long journalId = voucher.getJournalId();
 
                 if (journalId != null) {
-                        int deleted = journalEntryLineRepository.deleteByJournalId(journalId);
-                        System.out.println("Deleted journal lines: " + deleted);
-
                         journalEntryRepository.deleteById(journalId);
                 }
                 expenseVoucherRepository.delete(voucher);

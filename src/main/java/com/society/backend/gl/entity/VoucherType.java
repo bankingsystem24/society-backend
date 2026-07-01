@@ -9,5 +9,6 @@ public enum VoucherType {
     CONTRA,
     EXPENSE,
     OPENING,
-    INCOME
+    INCOME,
+    TRANSFER
 }

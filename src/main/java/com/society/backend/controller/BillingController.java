@@ -2,24 +2,18 @@ package com.society.backend.controller;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.society.backend.dto.BillGenerateRequest;
 import com.society.backend.dto.BillingFilterRequest;
 import com.society.backend.dto.BillingResponse;
-import com.society.backend.dto.CreateOrderRequest;
 import com.society.backend.dto.ManualPaymentRequest;
 import com.society.backend.dto.PaymentRequest;
-import com.society.backend.dto.VerifyPaymentRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.entity.SocietyBillingPolicy;
@@ -29,17 +23,14 @@ import com.society.backend.gl.service.JournalService;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.entity.Receipt;
 import com.society.backend.repository.ReceiptRepository;
-import com.society.backend.util.RazorpaySignatureUtil;
 
 @RestController
 @RequestMapping("/api/billing")
 @CrossOrigin("*")
 public class BillingController {
         private final BillingService billingService;
-        private final RazorpayClient razorpayClient;
         private final BillingRepository billingRepository;
         private final ReceiptRepository receiptRepository;
-        private final JournalService journalService;
         private final SocietyBillingPolicyRepository societyBillingPolicyRepository;
         @Value("${razorpay.key_secret}")
         private String razorpayKeySecret;
@@ -56,10 +47,8 @@ public class BillingController {
                         @Value("${razorpay.key_secret}") String razorpayKeySecret,
                         @Value("${razorpay.key_id}") String keyId) {
                 this.billingService = billingService;
-                this.razorpayClient = razorpayClient;
                 this.billingRepository = billingRepository;
                 this.receiptRepository = receiptRepository;
-                this.journalService = journalService;
                 this.societyBillingPolicyRepository = societyBillingPolicyRepository;
                 this.razorpayKeySecret = razorpayKeySecret;
                 this.keyId = keyId;

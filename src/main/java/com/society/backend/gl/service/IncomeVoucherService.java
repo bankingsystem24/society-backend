@@ -56,10 +56,7 @@ public class IncomeVoucherService {
 
         // Generate Voucher No
         voucher.setVoucherNo("INC-" + System.currentTimeMillis());
-
-        System.out.println("GlCashInHand"+request.getGlCashInHand());
-        
-        // Create Journal Entry
+    
         Long journalId = journalService.createJournalEntry(
                                 voucher.getVoucherNo(), // voucherNo
                                 "INCOME", // voucherType
