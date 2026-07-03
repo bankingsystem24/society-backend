@@ -40,11 +40,12 @@ public class SocietyBillingPolicyController {
         return ResponseEntity.ok(service.getById(id));
     }
 
-    @GetMapping("/society/{societyId}")
-    public ResponseEntity<SocietyBillingPolicy> getBySociety(
-            @PathVariable Long societyId) {
+    @GetMapping("/society/{societyId}/financial-year/{financialYearId}")
+    public ResponseEntity<SocietyBillingPolicy> getBySocietyAndFinancialYear(
+            @PathVariable Long societyId,
+            @PathVariable Long financialYearId) {
 
-        return ResponseEntity.ok(service.getBySociety(societyId));
+        return ResponseEntity.ok(service.getBySocietyAndFinancialYear(societyId, financialYearId));
     }
 
     @DeleteMapping("/{id}")

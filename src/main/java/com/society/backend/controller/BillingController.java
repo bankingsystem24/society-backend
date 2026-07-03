@@ -346,32 +346,24 @@ public class BillingController {
                         @RequestBody ManualPaymentRequest req) {
 
                 try {
-
                         Long financialYearId = req.getFinancialYearId();
-
                         List<Billing> bills = billingRepository.findByIdIn(req.getBillIds());
-
                         if (bills == null || bills.isEmpty()) {
                                 return ResponseEntity.badRequest()
                                                 .body("No bills found");
                         }
-
                         Billing firstBill = bills.get(0);
-
                         SocietyBillingPolicy policy = societyBillingPolicyRepository
                                         .findBySociety_IdAndFinancialYearId(
                                                         firstBill.getSociety().getId(),
                                                         financialYearId)
                                         .orElse(null);
-
                         double maintenanceAmount = bills.stream()
                                         .mapToDouble(b -> b.getMaintenanceAmount() != null
                                                         ? b.getMaintenanceAmount()
                                                         : 0.0)
                                         .sum();
-
                         double interestAmount = 0.0;
-
                         if (policy != null) {
 
                                 for (Billing b : bills) {

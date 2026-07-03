@@ -30,7 +30,7 @@ public class SocietyBillingPolicyService {
                 .orElseThrow(() -> new RuntimeException("Society not found"));
 
         SocietyBillingPolicy policy =
-                policyRepository.findBySocietyId(dto.getSocietyId())
+                policyRepository.findBySocietyIdAndFinancialYearId(dto.getSocietyId(), dto.getFinancialYearId())
                         .orElse(new SocietyBillingPolicy());
 
         policy.setSociety(society);
@@ -50,8 +50,8 @@ public class SocietyBillingPolicyService {
                 .orElseThrow(() -> new RuntimeException("Policy not found"));
     }
 
-    public SocietyBillingPolicy getBySociety(Long societyId) {
-        return policyRepository.findBySocietyId(societyId)
+    public SocietyBillingPolicy getBySocietyAndFinancialYear(Long societyId, Long financialYearId) {
+        return policyRepository.findBySocietyIdAndFinancialYearId(societyId, financialYearId)
                 .orElseThrow(() -> new RuntimeException("Policy not found"));
     }
 

@@ -72,9 +72,8 @@ public class BillingService {
                         return "No flats found for society";
                 }
 
-                Optional<SocietyBillingPolicy> policyOpt = societyBillingPolicyRepository.findBySocietyId(societyId);
-
-                societyBillingPolicyRepository.findBySocietyId(societyId);
+                Optional<SocietyBillingPolicy> policyOpt = societyBillingPolicyRepository
+                                .findBySociety_IdAndFinancialYearId(societyId, financialYearId);
 
                 SocietyBillingPolicy policy = policyOpt.orElse(null);
 
@@ -309,7 +308,7 @@ public class BillingService {
                                         && b.getDueDate() != null
                                         && b.getMaintenanceAmount() != null) {
 
-                                LocalDate interestStart = b.getDueDate();
+                                LocalDate interestStart = b.getCreatedDate();
 
                                 switch (policy.getInterestType()) {
 
@@ -332,40 +331,14 @@ public class BillingService {
 
                                 if (LocalDate.now().isAfter(interestStart)) {
 
-                                        long monthsLate = ChronoUnit.MONTHS.between(
-                                                        interestStart.withDayOfMonth(1),
-                                                        LocalDate.now().withDayOfMonth(1));
+                                        long daysLate = ChronoUnit.DAYS.between(interestStart, LocalDate.now());
 
-                                        monthsLate = Math.max(0, monthsLate);
-
-                                        long periods = 0;
-
-                                        if (policy.getInterestType() != null) {
-
-                                                switch (policy.getInterestType()) {
-
-                                                        case MONTHLY:
-                                                                periods = monthsLate;
-                                                                break;
-
-                                                        case QUARTERLY:
-                                                                periods = monthsLate / 3;
-                                                                break;
-
-                                                        case HALF_YEARLY:
-                                                                periods = monthsLate / 6;
-                                                                break;
-
-                                                        case YEARLY:
-                                                                periods = monthsLate / 12;
-                                                                break;
-                                                }
-                                        }
-
-                                        interest = b.getMaintenanceAmount()
-                                                        * policy.getInterestRate()
-                                                        * periods
-                                                        / 1200.0;
+                                        interest = Math.round(
+                                                b.getMaintenanceAmount()
+                                                * policy.getInterestRate()
+                                                * daysLate
+                                                / (365.0 * 100)
+                                        );
                                 }
                         }
 
@@ -426,9 +399,9 @@ public class BillingService {
         // =====================================================
 
         @Transactional
-        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId, 
-                                Integer glReceivable, Integer glCreditAccount,
-                                Integer glCashInHand, Integer glBankAccount, Integer glInterestIncome,Integer glDiscount) {
+        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId,
+                        Integer glReceivable, Integer glCreditAccount,
+                        Integer glCashInHand, Integer glBankAccount, Integer glInterestIncome, Integer glDiscount) {
 
                 List<Billing> bills = billingRepository.findAllById(billIds);
 
@@ -480,7 +453,7 @@ public class BillingService {
 
                         hasUnpaidBills = true;
 
-                        bill.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED );
+                        bill.setStatus("CASH".equals(paymentMode) ? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
 
                         bill.setPaidDate(LocalDate.now());
                         bill.setPaymentMode(paymentMode);
@@ -559,7 +532,7 @@ public class BillingService {
 
                 receipt.setReceiptDate(LocalDate.now());
                 receipt.setPaymentMode(paymentMode);
-                receipt.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED );
+                receipt.setStatus("CASH".equals(paymentMode) ? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
 
                 receipt.setMaintenanceAmount(maintenanceAmount);
                 receipt.setInterestAmount(interestAmount);
@@ -660,7 +633,7 @@ public class BillingService {
 
                                 if (policy != null) {
 
-                                        LocalDate interestStart = bill.getDueDate();
+                                        LocalDate interestStart = bill.getCreatedDate();
 
                                         switch (policy.getInterestType()) {
 
@@ -683,42 +656,14 @@ public class BillingService {
 
                                         if (LocalDate.now().isAfter(interestStart)) {
 
-                                                long monthsLate = ChronoUnit.MONTHS.between(
-                                                                interestStart.withDayOfMonth(1),
-                                                                LocalDate.now().withDayOfMonth(1));
+                                                long daysLate = ChronoUnit.DAYS.between(interestStart, LocalDate.now());
 
-                                                monthsLate = Math.max(0, monthsLate);
-
-                                                long periods = 0;
-
-                                                if (policy.getInterestType() != null) {
-
-                                                        switch (policy.getInterestType()) {
-
-                                                                case MONTHLY:
-                                                                        periods = monthsLate;
-                                                                        break;
-
-                                                                case QUARTERLY:
-                                                                        periods = monthsLate / 3;
-                                                                        break;
-
-                                                                case HALF_YEARLY:
-                                                                        periods = monthsLate / 6;
-                                                                        break;
-
-                                                                case YEARLY:
-                                                                        periods = monthsLate / 12;
-                                                                        break;
-                                                        }
-                                                }
-
-                                                if (periods > 0) {
-                                                        interest = bill.getMaintenanceAmount()
-                                                                        * policy.getInterestRate()
-                                                                        * periods
-                                                                        / 1200.0;
-                                                }
+                                                interest = Math.round(
+                                                                bill.getMaintenanceAmount()
+                                                                * policy.getInterestRate()
+                                                                * daysLate
+                                                                / (365.0 * 100)
+                                                );
                                         }
                                 }
 

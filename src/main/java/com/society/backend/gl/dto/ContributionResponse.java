@@ -21,6 +21,7 @@ public class ContributionResponse {
     private Double areaSqFt;
     private Long societyId;
     private Long memberId;
+    private String memberName;
     private String description;
     private String receiptNo;
     private String paymentMode;
@@ -104,6 +105,7 @@ public class ContributionResponse {
         return memberId;
     }
 
+    public String getMemberName(){return memberName;}
     // ---------------- SETTERS ----------------
 
     public void setId(Long id) {
@@ -188,4 +190,6 @@ public class ContributionResponse {
     
     public Integer getGlCreditAccount(){return glCreditAccount;}
     public void setGlCreditAccount(Integer glCreditAccount){ this.glCreditAccount = glCreditAccount;}
+
+    public void setMemberName(String memberName){this.memberName = memberName;}
 }

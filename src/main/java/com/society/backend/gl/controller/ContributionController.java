@@ -43,6 +43,14 @@ public class ContributionController {
                                 contributionService.getContributions(societyId, financialYearId,type));
         }
 
+        @GetMapping("/{societyId}/{financialYearId}")
+        public ResponseEntity<?> getAllContributions(
+                        @PathVariable Long societyId,
+                        @PathVariable Long financialYearId) {
+                return ResponseEntity.ok(
+                                contributionService.getAllContributions(societyId, financialYearId));
+        }
+
         @GetMapping("/{societyId}/{financialYearId}/{receiptId}")
         public ResponseEntity<?> getContributionsReceiptId(
                         @PathVariable Long societyId,

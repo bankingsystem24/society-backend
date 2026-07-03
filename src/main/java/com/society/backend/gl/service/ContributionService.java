@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import com.society.backend.gl.dto.ContributionResponse;
 import com.society.backend.gl.entity.Contribution;
 import com.society.backend.gl.repository.ContributionRepository;
 import com.society.backend.repository.FlatRepository;
+import com.society.backend.repository.MemberRepository;
 import com.society.backend.repository.ReceiptRepository;
 import com.society.backend.repository.SocietyRepository;
 
@@ -40,6 +42,7 @@ public class ContributionService {
     private final JournalService journalService;
     private final ReceiptRepository receiptRepository;
     private final SocietyRepository societyRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${razorpay.key_id}")
     private String razorpayKey;
@@ -67,6 +70,47 @@ public class ContributionService {
                 dto.setSocietyId(c.getSociety().getId());
             }
             dto.setMemberId(c.getMemberId());
+            dto.setFinancialYearId(financialYearId);
+            dto.setType(c.getType());
+            dto.setDescription(c.getDescription());
+
+            if (c.getFlat() != null) {
+                dto.setFlatId(c.getFlat().getId());
+                dto.setFlatNo(c.getFlat().getFlatNo());
+                dto.setAreaSqFt(c.getFlat().getAreaSqFt());
+            }
+            dto.setGlReceivable(c.getGlReceivable());
+            dto.setGlCreditAccount(c.getGlCreditAccount());
+
+            return dto;
+
+        }).toList();
+    }
+
+    public List<ContributionResponse> getAllContributions(Long societyId, Long financialYearId) {
+
+        List<Contribution> list = contributionRepository.findBySocietyIdAndFinancialYearId(societyId,
+                financialYearId);
+
+        List<Member> memberlist = memberRepository.findBySociety_Id(societyId);
+
+        Map<Long, String> memberMap = memberlist.stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName));
+
+        return list.stream().map(c -> {
+
+            ContributionResponse dto = new ContributionResponse();
+
+            dto.setId(c.getId());
+            dto.setName(c.getName());
+            dto.setAmount(c.getAmount());
+            dto.setMode(c.getMode());
+            dto.setDate(c.getDate());
+            dto.setDueDate(c.getDueDate());
+            dto.setStatus(c.getStatus().name());
+            if (c.getSociety() != null) { dto.setSocietyId(c.getSociety().getId()); }
+            dto.setMemberId(c.getMemberId());
+            dto.setMemberName(memberMap.get(c.getMemberId()));
             dto.setFinancialYearId(financialYearId);
             dto.setType(c.getType());
             dto.setDescription(c.getDescription());
