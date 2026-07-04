@@ -24,6 +24,13 @@ public class PaymentRequest {
     private Integer glInterestIncome;
     @Column(name = "gl_discount")
     private Integer glDiscount;
+    private Double interestAmount;
+    private Double discountAmount;
+
+    public Double getInterestAmount(){return interestAmount;}
+    public Double getDiscountAmount(){return discountAmount;}
+    public void setInterestAmount(Double interestAmount){this.interestAmount = interestAmount;}
+    public void setDiscountAmount(Double discountAmount){this.discountAmount = discountAmount;}
 
     public Integer getGlCashInHand(){ return glCashInHand;}
     public Integer getGlBankAccount(){ return glBankAccount;}

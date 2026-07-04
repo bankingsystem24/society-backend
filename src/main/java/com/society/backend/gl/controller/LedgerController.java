@@ -22,10 +22,11 @@ public class LedgerController {
 
             @PathVariable Long societyId,
 
-            @PathVariable Integer glCode
+            @PathVariable Integer glCode,
+            @PathVariable Long financialYearId
 
     ) {
 
-        return service.getLedger(societyId, glCode);
+        return service.getLedger(societyId, glCode,financialYearId);
     }
 }

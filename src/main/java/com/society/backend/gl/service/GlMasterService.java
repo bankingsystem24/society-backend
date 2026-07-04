@@ -1,6 +1,7 @@
 package com.society.backend.gl.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,13 @@ public class GlMasterService {
     public List<GlMaster> getAllBySociety(Long societyId) {
         return glMasterRepository.findBySocietyIdOrderByGlCodeAsc(societyId);
     }
+
+    public List<GlMaster> getById(Long id) {
+        return glMasterRepository.findById(id)
+                .map(List::of)
+                .orElse(Collections.emptyList());
+    }
+
 
     public GlMaster save(GlMaster glMaster) {
         return glMasterRepository.save(glMaster);

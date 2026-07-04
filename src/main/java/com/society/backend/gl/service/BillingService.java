@@ -400,8 +400,8 @@ public class BillingService {
 
         @Transactional
         public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId,
-                        Integer glReceivable, Integer glCreditAccount,
-                        Integer glCashInHand, Integer glBankAccount, Integer glInterestIncome, Integer glDiscount) {
+                        Integer glReceivable, Integer glCreditAccount, Integer glCashInHand, Integer glBankAccount, 
+                        Integer glInterestIncome, Integer glDiscount, Double interestAmount,Double discountAmount) {
 
                 List<Billing> bills = billingRepository.findAllById(billIds);
 
@@ -431,8 +431,8 @@ public class BillingService {
 
                 double totalAmount = 0.0;
                 double maintenanceAmount = 0.0;
-                double interestAmount = 0.0;
-                double discountAmount = 0.0;
+                // double interestAmount = 0.0;
+                // double discountAmount = 0.0;
 
                 boolean hasUnpaidBills = false;
 
@@ -517,6 +517,8 @@ public class BillingService {
                         interestAmount += interest;
                         discountAmount += discount;
                         totalAmount += total;
+                        // bill.setInterestAmount(interestAmount);
+                        // bill.setDiscountAmount(discountAmount);
 
                         // Track only bills paid in this transaction
                         paidBills.add(bill);
@@ -526,6 +528,7 @@ public class BillingService {
                         return "All selected bills are already paid";
                 }
 
+                totalAmount += interestAmount - discountAmount;
                 // ================= RECEIPT =================
 
                 Receipt receipt = new Receipt();

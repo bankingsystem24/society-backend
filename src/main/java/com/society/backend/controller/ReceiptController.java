@@ -65,7 +65,7 @@ public class ReceiptController {
                                 receiptService.getReceiptDetails(receiptId));
         }
 
-        @PutMapping("/confirm")
+        @PutMapping("/confirm") 
         public ResponseEntity<?> confirmPayment(
                         @RequestBody Map<String, Object> request) {
                 Long receiptId = Long.valueOf(request.get("receiptId").toString());
@@ -75,6 +75,7 @@ public class ReceiptController {
                 Receipt receipt = receiptRepository.findById(receiptId)
                                 .orElseThrow(() -> new RuntimeException("Receipt not found"));
                 receipt.setStatus(PaymentStatus.PAID);
+                
                 receiptRepository.save(receipt);
 
                 if ("billing".equalsIgnoreCase(paymentTable)) {

@@ -63,7 +63,7 @@ public class BillingFilterRequest {
         this.month = month;
     }
 
-        public PaymentStatus getStatus() {
+    public PaymentStatus getStatus() {
         return status;
     }
 

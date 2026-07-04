@@ -9,6 +9,8 @@ public interface AccountingYearRepository extends JpaRepository<AccountingYear, 
 
     Optional<AccountingYear> findBySocietyIdAndIsActiveTrue(Long societyId);
 
+    Optional<AccountingYear> findByIdAndSociety_Id(Long id, Long societyId);
+
     List<AccountingYear> findBySocietyId(Long societyId);
 
     List<AccountingYear> findAll();

@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
-
+ 
 public interface BillingRepository extends JpaRepository<Billing, Long> {
 
         // ================= DUPLICATE CHECK =================

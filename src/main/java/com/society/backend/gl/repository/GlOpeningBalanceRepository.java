@@ -13,7 +13,7 @@ public interface GlOpeningBalanceRepository
                         Long societyId,
                         Integer glCode,
                         Long financialYearId);
-
+ 
         List<GlOpeningBalance> findBySociety_IdAndFinancialYearId(
                         Long societyId,
                         Long financialYearId);

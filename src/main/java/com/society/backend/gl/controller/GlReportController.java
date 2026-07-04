@@ -20,12 +20,16 @@ public class GlReportController {
     // TRIAL BALANCE API
     // =========================
 
-    @GetMapping("/trial-balance/{societyId}")
-    public ResponseEntity<List<TrialBalanceDTO>> getTrialBalance(
-            @PathVariable Long societyId) {
+@GetMapping("/trial-balance/{societyId}")
+public ResponseEntity<List<TrialBalanceDTO>> getTrialBalance(
+        @PathVariable Long societyId,
+        @RequestParam Long financialYearId) {
 
-        return ResponseEntity.ok(
-                trialBalanceService.getTrialBalance(societyId)
-        );
-    }
+    return ResponseEntity.ok(
+            trialBalanceService.getTrialBalance(societyId, financialYearId)
+    );
+}
+
+
+
 }

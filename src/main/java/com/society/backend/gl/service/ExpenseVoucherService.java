@@ -8,7 +8,6 @@ import com.society.backend.entity.Society;
 import com.society.backend.gl.dto.ExpenseVoucherRequest;
 import com.society.backend.gl.entity.ExpenseVoucher;
 import com.society.backend.gl.repository.ExpenseVoucherRepository;
-import com.society.backend.gl.repository.JournalEntryLineRepository;
 import com.society.backend.gl.repository.JournalEntryRepository;
 import com.society.backend.repository.SocietyRepository;
 
@@ -17,18 +16,15 @@ import jakarta.transaction.Transactional;
 @Service
 public class ExpenseVoucherService {
 
-        private final JournalEntryLineRepository journalEntryLineRepository;
         private final ExpenseVoucherRepository expenseVoucherRepository;
         private final SocietyRepository societyRepository;
         private final JournalService journalService;
         private final JournalEntryRepository journalEntryRepository;
 
-        public ExpenseVoucherService(JournalEntryLineRepository journalEntryLineRepository,
-                        JournalEntryRepository journalEntryRepository,
+        public ExpenseVoucherService(JournalEntryRepository journalEntryRepository,
                         ExpenseVoucherRepository expenseVoucherRepository,
                         SocietyRepository societyRepository,
                         JournalService journalService) {
-                this.journalEntryLineRepository = journalEntryLineRepository;
                 this.journalEntryRepository = journalEntryRepository;
                 this.expenseVoucherRepository = expenseVoucherRepository;
                 this.societyRepository = societyRepository;

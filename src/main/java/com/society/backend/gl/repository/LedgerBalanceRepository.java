@@ -28,27 +28,37 @@ public interface LedgerBalanceRepository
 SELECT new com.society.backend.gl.dto.TrialBalanceDTO(
     gm.glCode,
     gm.accountName,
-    CAST((COALESCE(ob.openingDebit, 0)) AS double),
-    CAST((COALESCE(ob.openingCredit, 0)) AS double),
-    CAST( SUM(COALESCE(jl.debitAmount, 0)) AS double),
-    CAST(SUM(COALESCE(jl.creditAmount, 0)) AS double),
-
+    CAST(COALESCE(ob.openingDebit, 0) AS double),
+    CAST(COALESCE(ob.openingCredit, 0) AS double),
+    CAST(COALESCE(SUM(jl.debitAmount), 0) AS double),
+    CAST(COALESCE(SUM(jl.creditAmount), 0) AS double),
     gm.groupName
 )
 FROM GlMaster gm
-LEFT JOIN GlOpeningBalance ob 
-    ON ob.glCode = gm.glCode 
+LEFT JOIN GlOpeningBalance ob
+    ON ob.glCode = gm.glCode
    AND ob.society.id = :societyId
-LEFT JOIN JournalEntryLine jl 
-    ON jl.glCode = gm.glCode 
+   AND ob.financialYearId = :financialYearId
+
+LEFT JOIN JournalEntryLine jl
+    ON jl.glCode = gm.glCode
    AND jl.societyId = :societyId
-GROUP BY gm.glCode, gm.accountName, gm.groupName, ob.openingDebit, ob.openingCredit
+   AND jl.financialYearId = :financialYearId
+
+GROUP BY
+    gm.glCode,
+    gm.accountName,
+    gm.groupName,
+    ob.openingDebit,
+    ob.openingCredit
+
 ORDER BY gm.glCode
 """)
 
     List<TrialBalanceDTO> getTrialBalance(
             @Param("societyId") Long societyId,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+            @Param("endDate") LocalDate endDate,
+            @Param("financialYearId") Long financialYearId);
 
 }

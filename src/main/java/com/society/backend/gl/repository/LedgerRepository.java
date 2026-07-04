@@ -39,7 +39,8 @@ List<LedgerDTO> getLedger(
             @Param("societyId") Long societyId,
             @Param("glCode") Integer glCode,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+            @Param("endDate") LocalDate endDate,
+            @Param("financialYearId") Long financialYearId);
 
 @Query("""
     SELECT 

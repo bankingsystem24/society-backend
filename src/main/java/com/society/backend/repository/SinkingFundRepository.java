@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface SinkingFundRepository extends JpaRepository<SinkingFund, Long> {
-
+ 
     List<SinkingFund> findBySociety_Id(Long societyId); 
 
     List<SinkingFund> findBySocietyIdAndMonthAndYear(Long societyId, String month, int year);
@@ -18,5 +18,7 @@ public interface SinkingFundRepository extends JpaRepository<SinkingFund, Long> 
     List<SinkingFund> findByReceiptId(Long receiptId);
 
     List<SinkingFund> findByIdIn(List<Long> ids);
+
+    List<SinkingFund> findBySocietyIdAndFinancialYearId(Long societyId,Long financialYearId);
 
 }

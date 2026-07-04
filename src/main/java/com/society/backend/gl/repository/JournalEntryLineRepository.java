@@ -13,7 +13,7 @@ import jakarta.transaction.Transactional;
 
 public interface JournalEntryLineRepository
         extends JpaRepository<JournalEntryLine, Long> {
-
+ 
     List<JournalEntryLine> findByJournalEntry_Id(Long journalId);
 
 @Modifying
@@ -24,15 +24,27 @@ int deleteByJournalId(@Param("journalId") Long journalId);
 
 
     @Query(value = """
-    SELECT gm.gl_code, gm.account_name, gm.account_type,
+    SELECT gm.gl_code, gm.account_name, gm.group_name,
         COALESCE(SUM(jel.debit_amount),0) AS debit_total,
         COALESCE(SUM(jel.credit_amount),0) AS credit_total
     FROM journal_entry_line jel
     JOIN gl_master gm ON gm.gl_code = jel.gl_code
     WHERE jel.society_id = :societyId AND jel.financial_year_id = :financialYearId
-    GROUP BY gm.gl_code, gm.account_name, gm.account_type
+    GROUP BY gm.gl_code, gm.account_name, gm.group_name
 """, nativeQuery = true)
 List<Object[]> getProfitLossData(Long societyId,Long financialYearId);
+
+@Query("""
+SELECT
+l.glCode,
+COALESCE(SUM(l.debitAmount),0),
+COALESCE(SUM(l.creditAmount),0)
+FROM JournalEntryLine l
+WHERE l.societyId=:societyId
+AND l.financialYearId=:fyId
+GROUP BY l.glCode
+""")
+List<Object[]> getTransactionTotals(Long societyId, Long fyId);
 
 
 }

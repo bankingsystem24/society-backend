@@ -33,25 +33,27 @@ public class TrialBalanceService {
         return value == null ? 0.0 : value;
     }
 
-    public List<TrialBalanceDTO> getTrialBalance(Long societyId) {
+    public List<TrialBalanceDTO> getTrialBalance(Long societyId,Long financialYearId) {
 
         // 1. Get Active Financial Year
         AccountingYear fy = accountingYearRepository
-                .findBySocietyIdAndIsActiveTrue(societyId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Active Financial Year not found for societyId: " + societyId));
+            .findByIdAndSociety_Id(financialYearId, societyId)
+            .orElseThrow(() -> new RuntimeException(
+                    "Financial Year not found."));
 
         // 2. Get ledger period data
         List<TrialBalanceDTO> list = ledgerRepo.getTrialBalance(
                 societyId,
                 fy.getStartDate(),
-                fy.getEndDate()
+                fy.getEndDate(),
+                financialYearId
         );
 
-        // 3. BULK FETCH opening balances (FIXED APPROACH)
         List<GlOpeningBalance> openingList =
-                glOpeningBalanceRepository
-                        .findBySociety_IdAndFinancialYearId(societyId, fy.getId());
+                glOpeningBalanceRepository.findBySociety_IdAndFinancialYearId(
+                        societyId,
+                        financialYearId
+                );
 
         // 4. Convert to Map (glCode -> OpeningBalance)
         Map<Integer, GlOpeningBalance> openingMap = openingList.stream()

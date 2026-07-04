@@ -11,24 +11,24 @@ import com.society.backend.repository.AccountingYearRepository;
 @Service
 public class LedgerService {
 
-    private final LedgerRepository repository;
+    private final LedgerRepository ledgerRepository;
     private final AccountingYearRepository accountingYearRepository;
 
     public LedgerService(LedgerRepository repository,
     AccountingYearRepository accountingYearRepository
     ){
-        this.repository = repository;
+        this.ledgerRepository = repository;
         this.accountingYearRepository = accountingYearRepository;
 
     }
 
-public List<LedgerDTO> getLedger(Long societyId, Integer glCode) {
+public List<LedgerDTO> getLedger(Long societyId, Integer glCode, Long financialYearId) {
 
     AccountingYear fy = accountingYearRepository
-            .findBySocietyIdAndIsActiveTrue(societyId)
+            .findByIdAndSociety_Id(societyId,financialYearId)
             .orElseThrow(() -> new RuntimeException("Active Financial Year not found"));
 
-    Double opening = repository.getOpeningBalance(
+    Double opening = ledgerRepository.getOpeningBalance(
             societyId,
             glCode,
             fy.getId()
@@ -36,11 +36,12 @@ public List<LedgerDTO> getLedger(Long societyId, Integer glCode) {
    
     double runningBalance = (opening != null ? opening : 0.0);
 
-    List<LedgerDTO> txns = repository.getLedger(
+    List<LedgerDTO> txns = ledgerRepository.getLedger(
             societyId,
             glCode,
             fy.getStartDate(),
-            fy.getEndDate()
+            fy.getEndDate(),
+            financialYearId
     );
 
     List<LedgerDTO> result = new ArrayList<>();
