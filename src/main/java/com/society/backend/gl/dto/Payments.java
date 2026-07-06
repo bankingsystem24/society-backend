@@ -1,6 +1,5 @@
 package com.society.backend.gl.dto;
 
-import com.society.backend.entity.Society;
 import com.society.backend.enums.PaymentStatus;
 
 public class Payments {

@@ -2,6 +2,8 @@ package com.society.backend.gl.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.entity.Contribution;
 
 public interface ContributionRepository extends JpaRepository<Contribution, Long> {
@@ -11,6 +13,8 @@ public interface ContributionRepository extends JpaRepository<Contribution, Long
     List<Contribution> findBySocietyIdAndFinancialYearId(Long societyId,Long financialYearId);
 
     List<Contribution> findBySocietyIdAndFinancialYearIdAndType(Long societyId,Long financialYearId,String type);
+
+    List<Contribution> findBySocietyIdAndFinancialYearIdAndTypeAndStatus(Long societyId,Long financialYearId,String type,PaymentStatus status);
 
     List<Contribution> findBySocietyIdAndFinancialYearIdAndReceiptId(Long societyId,Long financialYearId,Long receiptId);
 

@@ -334,11 +334,10 @@ public class BillingService {
                                         long daysLate = ChronoUnit.DAYS.between(interestStart, LocalDate.now());
 
                                         interest = Math.round(
-                                                b.getMaintenanceAmount()
-                                                * policy.getInterestRate()
-                                                * daysLate
-                                                / (365.0 * 100)
-                                        );
+                                                        b.getMaintenanceAmount()
+                                                                        * policy.getInterestRate()
+                                                                        * daysLate
+                                                                        / (365.0 * 100));
                                 }
                         }
 
@@ -400,8 +399,8 @@ public class BillingService {
 
         @Transactional
         public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId,
-                        Integer glReceivable, Integer glCreditAccount, Integer glCashInHand, Integer glBankAccount, 
-                        Integer glInterestIncome, Integer glDiscount, Double interestAmount,Double discountAmount) {
+                        Integer glReceivable, Integer glCreditAccount, Integer glCashInHand, Integer glBankAccount,
+                        Integer glInterestIncome, Integer glDiscount, Double interestAmount, Double discountAmount) {
 
                 List<Billing> bills = billingRepository.findAllById(billIds);
 
@@ -620,9 +619,7 @@ public class BillingService {
 
                         // Interest Calculation
 
-                        double interest = bill.getInterestAmount() != null
-                                        ? bill.getInterestAmount()
-                                        : 0.0;
+                        double interest = bill.getInterestAmount() != null ? bill.getInterestAmount() : 0.0;
 
                         if (bill.getStatus() == PaymentStatus.PENDING
                                         && bill.getDueDate() != null
@@ -663,10 +660,9 @@ public class BillingService {
 
                                                 interest = Math.round(
                                                                 bill.getMaintenanceAmount()
-                                                                * policy.getInterestRate()
-                                                                * daysLate
-                                                                / (365.0 * 100)
-                                                );
+                                                                                * policy.getInterestRate()
+                                                                                * daysLate
+                                                                                / (365.0 * 100));
                                         }
                                 }
 
@@ -674,18 +670,18 @@ public class BillingService {
 
                         bill.setInterestAmount(interest);
 
-                        double total = (bill.getMaintenanceAmount() != null
-                                        ? bill.getMaintenanceAmount()
-                                        : 0.0)
-                                        + (bill.getPenaltyAmount() != null
-                                                        ? bill.getPenaltyAmount()
-                                                        : 0.0)
-                                        + interest
-                                        - (bill.getDiscountAmount() != null
-                                                        ? bill.getDiscountAmount()
-                                                        : 0.0);
+                        // double total = (bill.getMaintenanceAmount() != null
+                        //                 ? bill.getMaintenanceAmount()
+                        //                 : 0.0)
+                        //                 + (bill.getPenaltyAmount() != null
+                        //                                 ? bill.getPenaltyAmount()
+                        //                                 : 0.0)
+                        //                 + interest
+                        //                 - (bill.getDiscountAmount() != null
+                        //                                 ? bill.getDiscountAmount()
+                        //                                 : 0.0);
 
-                        bill.setTotalAmount(total);
+                        // bill.setTotalAmount(total);
                 });
 
                 return bills;

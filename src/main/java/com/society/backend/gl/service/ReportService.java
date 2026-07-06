@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.SinkingFund;
+import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.dto.BalanceSheetResponse;
 import com.society.backend.gl.dto.BalanceSheetRow;
 import com.society.backend.gl.dto.Payments;
@@ -326,6 +327,18 @@ public class ReportService {
                 }
                 List<Contribution> contributions = contributionRepository.findBySocietyIdAndFinancialYearIdAndType(societyId,financialYearId,"COMPULSORY");
                 for (Contribution c : contributions){
+                        Payments payment = new Payments();
+                        payment.setFinancialYearId(financialYearId);
+                        payment.setFlatNo(c.getFlat().getFlatNo());
+                        payment.setMemberName(c.getFlat().getOwner().getName());
+                        payment.setSocietyId(c.getSociety().getId());
+                        payment.setDescription("Contributions");
+                        payment.setTotalAmount(c.getAmount());
+                        payment.setStatus(c.getStatus());
+                        response.add(payment); 
+                }
+                List<Contribution> vcontributions = contributionRepository.findBySocietyIdAndFinancialYearIdAndTypeAndStatus(societyId,financialYearId,"VOLUNTARY",PaymentStatus.PAID);
+                for (Contribution c : vcontributions){
                         Payments payment = new Payments();
                         payment.setFinancialYearId(financialYearId);
                         payment.setFlatNo(c.getFlat().getFlatNo());
