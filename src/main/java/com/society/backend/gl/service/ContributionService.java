@@ -252,6 +252,8 @@ public class ContributionService {
             c.setCreatedBy(req.getUserId());
             c.setFinancialYearId(financialYearId);
             c.setDescription(req.getDescription());
+            c.setGlReceivable(req.getGlReceivable());
+            c.setGlCreditAccount(req.getGlCreditAccount());
 
             contributions.add(c);
         }

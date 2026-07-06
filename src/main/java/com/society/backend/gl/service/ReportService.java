@@ -305,6 +305,7 @@ public class ReportService {
                         Payments payment = new Payments();
                         payment.setFinancialYearId(financialYearId);
                         payment.setFlatNo(bill.getFlat().getFlatNo());
+                        payment.setMemberName(bill.getFlat().getOwner().getName());
                         payment.setSocietyId(bill.getSociety().getId());
                         payment.setDescription("Maintenance");
                         payment.setTotalAmount(bill.getTotalAmount());
@@ -316,6 +317,7 @@ public class ReportService {
                         Payments payment = new Payments();
                         payment.setFinancialYearId(financialYearId);
                         payment.setFlatNo(sf.getFlat().getFlatNo());
+                        payment.setMemberName(sf.getFlat().getOwner().getName());
                         payment.setSocietyId(sf.getSociety().getId());
                         payment.setDescription("Sinking Fund");
                         payment.setTotalAmount(sf.getAmount());
@@ -327,6 +329,7 @@ public class ReportService {
                         Payments payment = new Payments();
                         payment.setFinancialYearId(financialYearId);
                         payment.setFlatNo(c.getFlat().getFlatNo());
+                        payment.setMemberName(c.getFlat().getOwner().getName());
                         payment.setSocietyId(c.getSociety().getId());
                         payment.setDescription("Contributions");
                         payment.setTotalAmount(c.getAmount());

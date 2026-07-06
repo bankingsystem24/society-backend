@@ -11,6 +11,7 @@ public class Payments {
     private Long societyId;
     private Long financialYearId;
     private PaymentStatus status; 
+    private String memberName;
 
     public String getFlatNo(){return flatNo;}
     public void setFlatNo(String flatNo){this.flatNo = flatNo;}
@@ -24,4 +25,6 @@ public class Payments {
     public void setFinancialYearId(Long financialYearId) {this.financialYearId = financialYearId;}
     public PaymentStatus getStatus() {return status; }
     public void setStatus(PaymentStatus status) {this.status = status;}
+    public String getMemberName(){return memberName;}
+    public void setMemberName(String memberName){this.memberName = memberName;}
 }
