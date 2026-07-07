@@ -1,5 +1,6 @@
 package com.society.backend.controller;
 
+import com.society.backend.dto.BillingReceiptRequest;
 import com.society.backend.dto.ManualPaymentRequest;
 import com.society.backend.dto.MemberRequest;
 import com.society.backend.dto.MemberResponse;
@@ -122,6 +123,13 @@ public class MemberController {
         return billingService.getBillsByFlatIds(flatIds, societyId, financialYearId);
 
     }
+    
+@PostMapping("/getBillingReceipts")
+public List<Receipt> getBillingReceipts(
+        @RequestBody BillingReceiptRequest request) {
+
+    return billingService.getBillingReceipts(request);
+}
 
     @PostMapping("/sinking-funds") 
     public List<SinkingFundResponse> getSinkingFunds(

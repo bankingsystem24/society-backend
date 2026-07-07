@@ -5,11 +5,14 @@ import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.society.backend.dto.BillingReceiptRequest;
 import com.society.backend.dto.BillingResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
@@ -606,8 +609,6 @@ public class BillingService {
 
                 bills.forEach(bill -> {
 
-                        // Receipt No
-
                         if (bill.getReceiptId() != null) {
 
                                 receiptRepository.findById(bill.getReceiptId())
@@ -616,8 +617,6 @@ public class BillingService {
                                                         bill.setTransactionId(receipt.getTransactionId());
                                                 });
                         }
-
-                        // Interest Calculation
 
                         double interest = bill.getInterestAmount() != null ? bill.getInterestAmount() : 0.0;
 
@@ -670,21 +669,38 @@ public class BillingService {
 
                         bill.setInterestAmount(interest);
 
-                        // double total = (bill.getMaintenanceAmount() != null
-                        //                 ? bill.getMaintenanceAmount()
-                        //                 : 0.0)
-                        //                 + (bill.getPenaltyAmount() != null
-                        //                                 ? bill.getPenaltyAmount()
-                        //                                 : 0.0)
-                        //                 + interest
-                        //                 - (bill.getDiscountAmount() != null
-                        //                                 ? bill.getDiscountAmount()
-                        //                                 : 0.0);
+                        double total = (bill.getMaintenanceAmount() != null
+                                        ? bill.getMaintenanceAmount()
+                                        : 0.0)
+                                        + (bill.getPenaltyAmount() != null
+                                                        ? bill.getPenaltyAmount()
+                                                        : 0.0)
+                                        + interest
+                                        - (bill.getDiscountAmount() != null
+                                                        ? bill.getDiscountAmount()
+                                                        : 0.0);
 
-                        // bill.setTotalAmount(total);
+                        bill.setTotalAmount(total);
                 });
 
                 return bills;
         }
+
+    public List<Receipt> getBillingReceipts(BillingReceiptRequest request) {
+
+        List<Billing> bills =
+                billingRepository.findByFlatIdInAndSocietyIdAndFinancialYearId(
+                        request.getFlatIds(),
+                        request.getSocietyId(),
+                        request.getFinancialYearId());
+
+        List<Long> receiptIds = bills.stream()
+                .map(Billing::getReceiptId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        return receiptRepository.findAllById(receiptIds);
+    }
 
 }

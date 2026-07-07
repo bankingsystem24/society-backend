@@ -13,27 +13,27 @@ import com.society.backend.gl.entity.JournalEntry;
 public interface JournalViewRepository
         extends JpaRepository<JournalEntry, Long> {
 
-    @Query("""
-        SELECT new com.society.backend.gl.dto.JournalViewDTO(
-            je.id,
-            je.voucherNo,
-            CAST(je.voucherType as string),
-            je.entryDate,
-            je.narration,
-            jl.glCode,
-            gm.accountName,
-            jl.debitAmount,
-            jl.creditAmount,
-            jl.entityType,
-            jl.entityId
-        )
-        FROM JournalEntry je
-        JOIN JournalEntryLine jl ON jl.journalEntry.id = je.id
-        JOIN GlMaster gm ON gm.glCode = jl.glCode
-        WHERE je.societyId = :societyId
-          AND je.entryDate BETWEEN :startDate AND :endDate
-        ORDER BY je.id DESC, jl.lineNo ASC
-    """)
+@Query("""
+SELECT new com.society.backend.gl.dto.JournalViewDTO(
+    je.id,
+    je.voucherNo,
+    CAST(je.voucherType as string),
+    je.entryDate,
+    je.narration,
+    jl.glCode,
+    gm.accountName,
+    jl.debitAmount,
+    jl.creditAmount,
+    jl.entityType,
+    jl.entityId
+)
+FROM JournalEntry je
+JOIN je.lines jl
+JOIN GlMaster gm ON gm.glCode = jl.glCode
+WHERE je.societyId = :societyId
+  AND je.entryDate BETWEEN :startDate AND :endDate
+ORDER BY je.id DESC, jl.lineNo ASC
+""")
     List<JournalViewDTO> getJournalView(
             @Param("societyId") Long societyId,
             @Param("startDate") LocalDate startDate,

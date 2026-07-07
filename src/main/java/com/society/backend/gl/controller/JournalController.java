@@ -10,23 +10,34 @@ import org.springframework.web.bind.annotation.RestController;
 import com.society.backend.gl.dto.JournalViewDTO;
 import com.society.backend.gl.service.JournalService;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/journal")
-@RequiredArgsConstructor
 @CrossOrigin("*")
 public class JournalController {
 
     private final JournalService service;
 
-@GetMapping("")
-public List<JournalViewDTO> getJournal(
-        @RequestParam Long societyId,
-        @RequestParam Long financialYearId) {
+    public JournalController(JournalService service) {
+        this.service = service;
+        System.out.println("JournalController Loaded");
+    }
 
-    return service.getJournal(societyId, financialYearId);
-}
+// @GetMapping
+// public String getJournal(
+//         @RequestParam Long societyId,
+//         @RequestParam Long financialYearId) {
 
+//     System.out.println("I am here");
+//     return "OK";
+// }
 
+    @GetMapping
+    public List<JournalViewDTO> getJournal(
+            @RequestParam Long societyId,
+            @RequestParam Long financialYearId) {
+
+        System.out.println("I am here");
+        return service.getJournal(societyId, financialYearId);
+    }
 }

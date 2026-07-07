@@ -203,6 +203,7 @@ public class SinkingFundService {
             fund.setPaymentMode(paymentMode);
             fund.setPaidDate(LocalDate.now());
             fund.setFinancialYearId(financialYearId);
+            fund.setTransactionId(transactionId);
 
             totalAmount += fund.getAmount();
         }
@@ -227,6 +228,8 @@ public class SinkingFundService {
         receipt.setFlatId(flatId);
         receipt.setFinancialYearId(financialYearId);
         receipt.setStatus("CASH".equals(paymentMode)? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
+        receipt.setTransactionId(transactionId);
+
         Receipt savedReceipt = receiptRepository.save(receipt);
 
         savedReceipt.setReceiptNo(

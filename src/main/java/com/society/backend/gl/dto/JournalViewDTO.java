@@ -25,6 +25,7 @@ public class JournalViewDTO {
     private String entityType;
 
     private Long entityId;
+    private Integer memberId;
 
     // =====================================================
     // CONSTRUCTOR
@@ -52,7 +53,8 @@ public class JournalViewDTO {
 
             String entityType,
 
-            Long entityId
+            Long entityId,
+            Integer memberId
 
     ) {
 
@@ -77,6 +79,7 @@ public class JournalViewDTO {
         this.entityType = entityType;
 
         this.entityId = entityId;
+        this.memberId = memberId;
     }
 
     // =====================================================
@@ -170,4 +173,7 @@ public class JournalViewDTO {
     public void setEntityId(Long entityId) {
         this.entityId = entityId;
     }
+
+    public Integer getMemberId(){return memberId;}
+    public void setMemberId(Integer memberId){this.memberId = memberId;}
 }

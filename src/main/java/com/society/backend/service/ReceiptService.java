@@ -151,21 +151,10 @@ public class ReceiptService {
 
                                 // Prefer billing flat data if available
                                 if (bill.getFlat() != null) {
-
-                                        dto.setFlatNo(
-                                                        bill.getFlat().getFlatNo());
-
+                                        dto.setFlatNo(bill.getFlat().getFlatNo());
                                         if (bill.getFlat().getOwner() != null) {
-
-                                                dto.setMemberId(
-                                                                bill.getFlat()
-                                                                                .getOwner()
-                                                                                .getId());
-
-                                                dto.setMemberName(
-                                                                bill.getFlat()
-                                                                                .getOwner()
-                                                                                .getName());
+                                                dto.setMemberId(bill.getFlat().getOwner().getId());
+                                                dto.setMemberName(bill.getFlat().getOwner().getName());
                                         }
                                 }
                         }
@@ -199,6 +188,7 @@ public class ReceiptService {
                                 dto.setPenaltyAmount(b.getPenaltyAmount());
                                 dto.setTotalAmount(b.getTotalAmount());
                                 dto.setCreatedAt(receipt.getReceiptDate());
+                                dto.setTransactionId(receipt.getTransactionId());
                                 
                                 if (b.getStatus() != null) {
                                         dto.setStatus(b.getStatus().name());
@@ -233,6 +223,7 @@ public class ReceiptService {
                                 dto.setStatus(c.getStatus().name());
                                 dto.setname(c.getName());
                                 dto.setCreatedAt(receipt.getReceiptDate());
+                                dto.setTransactionId(receipt.getTransactionId());
 
                                 response.add(dto);
 
@@ -250,6 +241,7 @@ public class ReceiptService {
                         dto.setTotalAmount(s.getAmount());
                         dto.setCreatedAt(receipt.getReceiptDate());
                         dto.setStatus(s.getStatus().name());
+                        dto.setTransactionId(s.getTransactionId());
 
                         response.add(dto);
                 });

@@ -11,7 +11,10 @@ public class Payments {
     private Long financialYearId;
     private PaymentStatus status; 
     private String memberName;
+    private Long memberId;
 
+    public Long getMemberId(){return memberId;}
+    public void setMemberId(Long memberId){this.memberId = memberId;}
     public String getFlatNo(){return flatNo;}
     public void setFlatNo(String flatNo){this.flatNo = flatNo;}
     public String getDescription(){return description;}

@@ -363,10 +363,12 @@ public class JournalService {
         // VIEW JOURNAL
         // =====================================================
 
-        public List<JournalViewDTO> getJournal(Long financialYearId,Long societyId) {
+        public List<JournalViewDTO> getJournal(Long societyId,Long financialYearId) {
+
                 AccountingYear fy = accountingYearRepository
                                 .findByIdAndSociety_Id(financialYearId,societyId)
                                 .orElseThrow(() -> new RuntimeException("Active FY not found"));
+
 
                 return journalViewRepository.getJournalView(
                                 societyId,
