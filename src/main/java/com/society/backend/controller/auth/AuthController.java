@@ -1,4 +1,5 @@
 package com.society.backend.controller.auth;
+import com.society.backend.dto.ChangePasswordRequest;
 import com.society.backend.dto.LoginRequest;
 import com.society.backend.dto.LoginResponse;
 import com.society.backend.dto.MemberLoginRequest;
@@ -14,7 +15,11 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -118,5 +123,31 @@ public class AuthController {
     }
         return ResponseEntity.ok(response);
     }
+
+@PostMapping("/changePassword")
+public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+System.out.println(authentication);
+System.out.println(authentication.getName());
+
+    String username = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    if (!user.getPassword().equals(request.getOldPassword())) {
+        return ResponseEntity.badRequest().body("Old password is incorrect");
+    }
+
+    user.setPassword(request.getNewPassword());
+    userRepository.save(user);
+
+    return ResponseEntity.ok("Password changed successfully");
+}
+
 
 }
