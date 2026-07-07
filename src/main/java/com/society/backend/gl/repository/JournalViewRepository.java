@@ -26,11 +26,12 @@ SELECT new com.society.backend.gl.dto.JournalViewDTO(
     jl.creditAmount,
     jl.entityType,
     jl.entityId,
-    1
+    m.id
 )
 FROM JournalEntry je
 JOIN je.lines jl
 JOIN GlMaster gm ON gm.glCode = jl.glCode
+LEFT JOIN jl.member m
 WHERE je.societyId = :societyId
   AND je.entryDate BETWEEN :startDate AND :endDate
 ORDER BY je.id DESC, jl.lineNo ASC

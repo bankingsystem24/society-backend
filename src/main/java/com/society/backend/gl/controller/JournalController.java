@@ -23,15 +23,6 @@ public class JournalController {
         System.out.println("JournalController Loaded");
     }
 
-// @GetMapping
-// public String getJournal(
-//         @RequestParam Long societyId,
-//         @RequestParam Long financialYearId) {
-
-//     System.out.println("I am here");
-//     return "OK";
-// }
-
     @GetMapping
     public List<JournalViewDTO> getJournal(
             @RequestParam Long societyId,

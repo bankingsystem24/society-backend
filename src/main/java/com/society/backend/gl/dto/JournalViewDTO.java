@@ -25,59 +25,37 @@ public class JournalViewDTO {
     private String entityType;
 
     private Long entityId;
-    private Integer memberId;
+    private Long memberId;
 
     // =====================================================
     // CONSTRUCTOR
     // =====================================================
 
     public JournalViewDTO(
-
             Long journalId,
-
             String voucherNo,
-
             String voucherType,
-
             LocalDate entryDate,
-
             String narration,
-
             Integer glCode,
-
             String accountHead,
-
             Double debitAmount,
-
             Double creditAmount,
-
             String entityType,
-
             Long entityId,
-            Integer memberId
-
+            Long memberId
     ) {
 
         this.journalId = journalId;
-
         this.voucherNo = voucherNo;
-
         this.voucherType = voucherType;
-
         this.entryDate = entryDate;
-
         this.narration = narration;
-
         this.glCode = glCode;
-
         this.accountHead = accountHead;
-
         this.debitAmount = debitAmount;
-
         this.creditAmount = creditAmount;
-
         this.entityType = entityType;
-
         this.entityId = entityId;
         this.memberId = memberId;
     }
@@ -174,6 +152,6 @@ public class JournalViewDTO {
         this.entityId = entityId;
     }
 
-    public Integer getMemberId(){return memberId;}
-    public void setMemberId(Integer memberId){this.memberId = memberId;}
+    public Long getMemberId(){return memberId;}
+    public void setMemberId(Long memberId){this.memberId = memberId;}
 }
