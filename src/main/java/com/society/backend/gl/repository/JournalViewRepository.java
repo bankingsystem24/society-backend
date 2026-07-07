@@ -25,7 +25,8 @@ SELECT new com.society.backend.gl.dto.JournalViewDTO(
     jl.debitAmount,
     jl.creditAmount,
     jl.entityType,
-    jl.entityId
+    jl.entityId,
+    1
 )
 FROM JournalEntry je
 JOIN je.lines jl
