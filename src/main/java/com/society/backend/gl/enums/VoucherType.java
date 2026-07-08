@@ -1,4 +1,4 @@
-package com.society.backend.gl.entity;
+package com.society.backend.gl.enums;
 
 public enum VoucherType {
 
@@ -7,8 +7,9 @@ public enum VoucherType {
     PAYMENT,
     JOURNAL,
     CONTRA,
-    EXPENSE,
+    EXPENSES,
     OPENING,
     INCOME,
-    TRANSFER
+    TRANSFER,
+    YEAR_END_CLOSING
 }

@@ -53,27 +53,30 @@ public class ExpenseVoucherService {
                                 request.getVendorId());
                 voucher.setSociety(society);
                 voucher.setFinancialYearId(request.getFinancialYearId());
+                
 
                 ExpenseVoucher savedVoucher = expenseVoucherRepository.save(voucher);
 
-                // Create Journal Entry here
+                Integer paymentGlCode;
+
+                if("CASH".equals(request.getPaymentMode())){
+                        paymentGlCode = request.getGlCashInHand();
+                } else {
+                        paymentGlCode = request.getGlBankAccount();
+                };
 
                 Long journalId = journalService.createJournalEntry(
                                 savedVoucher.getVoucherNo(), // voucherNo
-                                "EXPENSE", // voucherType
+                                "EXPENSES", // voucherType
                                 savedVoucher.getNarration(), // narration
                                 "EXPENSE_VOUCHER", // referenceType
                                 savedVoucher.getId(), // referenceId
                                 savedVoucher.getAmount(), // totalAmount
-
                                 request.getSocietyId(), // societyId
-
                                 savedVoucher.getExpenseGlCode(), // Debit GL
                                 savedVoucher.getAmount(), // Debit Amount
-
-                                getPaymentGlCode(savedVoucher.getPaymentMode()), // Credit GL
+                                paymentGlCode,
                                 savedVoucher.getAmount(), // Credit Amount
-
                                 "VENDOR",
                                 savedVoucher.getVendorId(),
                                 savedVoucher.getFinancialYearId(),
@@ -130,21 +133,5 @@ public class ExpenseVoucherService {
                                 count);
         }
 
-        private Integer getPaymentGlCode(String paymentMode) {
-
-                if (paymentMode == null) { throw new RuntimeException("Payment mode cannot be null");}
-
-                switch (paymentMode.toUpperCase()) {
-                        case "CASH":
-                                return 1000; // Cash Account GL
-                        case "BANK":
-                                return 1001; // Bank Account GL
-                        case "UPI":
-                                return 1001; // Bank Account GL
-                        default:
-                                throw new RuntimeException(
-                                                "No GL mapping found for payment mode: " + paymentMode);
-                }
-        }
 
 }

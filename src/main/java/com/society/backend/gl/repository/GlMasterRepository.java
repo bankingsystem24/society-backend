@@ -11,5 +11,6 @@ public interface GlMasterRepository
     List<GlMaster> findBySocietyIdOrderByGlCodeAsc(Long societyId);
     GlMaster findBySocietyIdAndGlCode(Long societyId, Integer glCode);
     List<GlMaster> findBySocietyIdAndIsActiveTrue(Long societyId);
+    List<GlMaster> findBySocietyIdAndGroupName(Long societyId,String groupName);
 
 }

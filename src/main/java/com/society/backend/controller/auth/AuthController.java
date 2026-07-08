@@ -1,4 +1,5 @@
 package com.society.backend.controller.auth;
+
 import com.society.backend.dto.ChangePasswordRequest;
 import com.society.backend.dto.LoginRequest;
 import com.society.backend.dto.LoginResponse;
@@ -29,7 +30,7 @@ public class AuthController {
     private final SocietyRepository societyRepository;
     private final JwtUtil jwtUtil;
 
-    public AuthController(UserRepository userRepository,SocietyRepository societyRepository,JwtUtil jwtUtil){
+    public AuthController(UserRepository userRepository, SocietyRepository societyRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.societyRepository = societyRepository;
         this.jwtUtil = jwtUtil;
@@ -51,10 +52,9 @@ public class AuthController {
                 .findFirst()
                 .orElse(null);
 
-
         if (user == null) {
             return ResponseEntity.status(401).body("Invalid credentials");
-        } 
+        }
 
         String token = jwtUtil.generateToken(user.getUsername());
 
@@ -68,14 +68,14 @@ public class AuthController {
         if (user.getMember() != null) {
             memberId = user.getMember().getId();
         }
-        if (societyId != null){
-        Society society = societyRepository.findById(societyId)
-            .orElseThrow(() -> new RuntimeException("Society not found"));
+        if (societyId != null) {
+            Society society = societyRepository.findById(societyId)
+                    .orElseThrow(() -> new RuntimeException("Society not found"));
             if (Boolean.TRUE.equals(society.getUpi1Active())) {
                 upi = society.getUpi1() != null ? society.getUpi1() : null;
-            }else {
-                        upi = society.getUpi2() != null ? society.getUpi2() : null;
-                    }
+            } else {
+                upi = society.getUpi2() != null ? society.getUpi2() : null;
+            }
         }
 
         LoginResponse response = new LoginResponse(
@@ -86,8 +86,7 @@ public class AuthController {
                 user.getId(),
                 user.getName(),
                 memberId,
-                upi
-        );
+                upi);
 
         return ResponseEntity.ok(response);
     }
@@ -104,49 +103,42 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
         String token = jwtUtil.generateToken(user.getUsername());
-            MemberLoginResponse response = new MemberLoginResponse(
-            token,
-            user.getSociety().getId(),
-            user.getSociety().getSocietyName(),
-            user.getMember().getId(),
-            user.getMember().getName(),
-            user.getRole().name(),
-            user.getActive()
-    );
-    if (!user.getActive()) {
-        Map<String, String> error = new HashMap<>();
-        error.put("message", "Your account is inactive. Please contact the administrator.");
+        MemberLoginResponse response = new MemberLoginResponse(
+                token,
+                user.getSociety().getId(),
+                user.getSociety().getSocietyName(),
+                user.getMember().getId(),
+                user.getMember().getName(),
+                user.getRole().name(),
+                user.getActive());
+        if (!user.getActive()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Your account is inactive. Please contact the administrator.");
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(error);   
-    }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(error);
+        }
         return ResponseEntity.ok(response);
     }
 
-@PostMapping("/changePassword")
-public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
-System.out.println(authentication);
-System.out.println(authentication.getName());
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    String username = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getName();
+        if (!user.getPassword().equals(request.getOldPassword())) {
+            return ResponseEntity.badRequest().body("Old password is incorrect");
+        }
 
-    User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPassword(request.getNewPassword());
+        userRepository.save(user);
 
-    if (!user.getPassword().equals(request.getOldPassword())) {
-        return ResponseEntity.badRequest().body("Old password is incorrect");
+        return ResponseEntity.ok("Password changed successfully");
     }
-
-    user.setPassword(request.getNewPassword());
-    userRepository.save(user);
-
-    return ResponseEntity.ok("Password changed successfully");
-}
-
 
 }

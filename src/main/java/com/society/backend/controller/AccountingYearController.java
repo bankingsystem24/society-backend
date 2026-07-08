@@ -1,7 +1,12 @@
 package com.society.backend.controller;
 
 import com.society.backend.entity.AccountingYear;
+import com.society.backend.gl.dto.CloseAccountingYearRequest;
+import com.society.backend.security.JwtUtil;
 import com.society.backend.service.AccountingYearService;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -14,9 +19,12 @@ import java.util.Map;
 public class AccountingYearController {
 
     private final AccountingYearService accountingYearService;
+    private final JwtUtil jwtUtil;
 
-    public AccountingYearController(AccountingYearService accountingYearService){
+    public AccountingYearController(AccountingYearService accountingYearService,
+    JwtUtil jwtUtil){
         this.accountingYearService = accountingYearService;
+        this.jwtUtil = jwtUtil;
     };
 
     @GetMapping("")
@@ -83,4 +91,47 @@ public class AccountingYearController {
        
         return accountingYearService.setActiveYear(societyId, yearId);
     }
+
+    @PostMapping("/close")
+    public ResponseEntity<String> closeAccountingYear(
+            @RequestBody CloseAccountingYearRequest request) {
+
+        String message = accountingYearService.closeAccountingYear(
+                request.getAccountingYearId(),
+                request.getSocietyId(),
+                request.getUsername()
+        );
+
+        return ResponseEntity.ok(message);
+    }
+
+    @PostMapping("/open")
+    public ResponseEntity<String> openAccountingYear(
+            @RequestBody CloseAccountingYearRequest request) {
+
+        String message = accountingYearService.openAccountingYear(
+                request.getAccountingYearId(),
+                request.getSocietyId(),
+                request.getUsername()
+        );
+
+        return ResponseEntity.ok(message);
+    }
+
+    @PostMapping("/year-end-close")
+    public ResponseEntity<String> yearEndClose(
+            @RequestBody CloseAccountingYearRequest request) {
+
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        String message = accountingYearService.yearEndClose(
+                request.getAccountingYearId(),
+                request.getSocietyId(),
+                username);
+
+        return ResponseEntity.ok(message);
+    }
+
 }

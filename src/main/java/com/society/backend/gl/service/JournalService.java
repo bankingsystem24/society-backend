@@ -10,6 +10,7 @@ import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.gl.dto.JournalViewDTO;
 import com.society.backend.gl.entity.*;
+import com.society.backend.gl.enums.VoucherType;
 import com.society.backend.gl.repository.*;
 import com.society.backend.repository.AccountingYearRepository;
 import com.society.backend.repository.FlatRepository;
@@ -58,10 +59,8 @@ public class JournalService {
                         Long societyId,
                         Integer debitGlCode,
                         Double debitAmount,
-
                         Integer creditGlCode,
                         Double creditAmount,
-
                         String entityType,
                         Long entityId,
                         Long financialYearId,
@@ -401,12 +400,12 @@ public class JournalService {
                 line.setRemarks("AUTO");
                 line.setFinancialYearId(financialYearId);
 
-                Flat flat = flatRepository.findById(flatId)
-                                .orElseThrow(() -> new RuntimeException("Flat not found"));
+    if (flatId != null) {
+        Flat flat = flatRepository.findById(flatId)
+                .orElseThrow(() -> new RuntimeException("Flat not found"));
 
-                Member member = flat.getOwner();
-
-                line.setMember(member);
+        line.setMember(flat.getOwner());
+    }
 
                 lineRepo.save(line);
         }

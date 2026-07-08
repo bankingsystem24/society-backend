@@ -20,7 +20,6 @@ public class JournalController {
 
     public JournalController(JournalService service) {
         this.service = service;
-        System.out.println("JournalController Loaded");
     }
 
     @GetMapping
@@ -28,7 +27,6 @@ public class JournalController {
             @RequestParam Long societyId,
             @RequestParam Long financialYearId) {
 
-        System.out.println("I am here");
         return service.getJournal(societyId, financialYearId);
     }
 }

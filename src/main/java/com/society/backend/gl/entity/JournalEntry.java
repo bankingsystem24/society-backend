@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.society.backend.gl.enums.VoucherType;
+
 import jakarta.persistence.*;
 
 @Entity

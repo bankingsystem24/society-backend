@@ -7,6 +7,8 @@ public class ExpenseVoucherRequest {
     private Long societyId;
     private String voucherDate;
     private Integer expenseGlCode;
+    private Integer glCashInHand;
+    private Integer glBankAccount;
     private Double amount;
     private String paymentMode;
     private String narration;
@@ -76,4 +78,12 @@ public class ExpenseVoucherRequest {
     public void setVendorId(Long vendorId) {
         this.vendorId = vendorId;
     }
+
+    public Integer getGlCashInHand() {return glCashInHand;}
+    public Integer getGlBankAccount() {return glBankAccount;}
+
+    public void setGlCashInHand(Integer glCashInHand){ this.glCashInHand = glCashInHand;}
+    public void setGlBankAccount(Integer glBankAccount){ this.glBankAccount = glBankAccount;}
+
+
 }
