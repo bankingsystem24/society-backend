@@ -25,25 +25,11 @@ public class LedgerService {
 public List<LedgerDTO> getLedger(Long societyId, Integer glCode, Long financialYearId) {
 
     AccountingYear fy = accountingYearRepository
-            .findByIdAndSociety_Id(societyId,financialYearId)
+            .findByIdAndSociety_Id(financialYearId,societyId)
             .orElseThrow(() -> new RuntimeException("Active Financial Year not found"));
-
-    Double opening = ledgerRepository.getOpeningBalance(
-            societyId,
-            glCode,
-            fy.getId()
-    );
-   
+    Double opening = ledgerRepository.getOpeningBalance(societyId,glCode,fy.getId());
     double runningBalance = (opening != null ? opening : 0.0);
-
-    List<LedgerDTO> txns = ledgerRepository.getLedger(
-            societyId,
-            glCode,
-            fy.getStartDate(),
-            fy.getEndDate(),
-            financialYearId
-    );
-
+    List<LedgerDTO> txns = ledgerRepository.getLedger(societyId,glCode,fy.getStartDate(),fy.getEndDate(),financialYearId);
     List<LedgerDTO> result = new ArrayList<>();
 
     // =========================

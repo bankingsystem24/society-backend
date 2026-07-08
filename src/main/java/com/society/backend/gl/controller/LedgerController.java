@@ -17,14 +17,11 @@ public class LedgerController {
 
     private final LedgerService service;
 
-    @GetMapping("/{societyId}/{glCode}")
+    @GetMapping("/{societyId}/{glCode}/{financialYearId}")
     public List<LedgerDTO> getLedger(
-
             @PathVariable Long societyId,
-
             @PathVariable Integer glCode,
             @PathVariable Long financialYearId
-
     ) {
 
         return service.getLedger(societyId, glCode,financialYearId);
