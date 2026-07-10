@@ -19,8 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.security.core.Authentication;
-
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin("*")
@@ -124,11 +122,7 @@ public class AuthController {
     @PostMapping("/changePassword")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
 
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(request.getUserName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!user.getPassword().equals(request.getOldPassword())) {

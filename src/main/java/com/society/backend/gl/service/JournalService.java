@@ -375,7 +375,7 @@ public class JournalService {
                                 fy.getEndDate());
         }
 
-        private void createLine(
+        private void createLine( 
                         JournalEntry journalEntry,
                         int lineNo,
                         Integer glCode,
@@ -520,6 +520,31 @@ public class JournalService {
                                 amount);
 
                 return journalId;
+        }
+
+        public void addJournalLine(
+                JournalEntry journalEntry,
+                int lineNo,
+                Integer glCode,
+                Double debit,
+                Double credit,
+                String entityType,
+                Long entityId,
+                Long societyId,
+                Long flatId,
+                Long financialYearId) {
+
+        createLine(
+                journalEntry,
+                lineNo,
+                glCode,
+                debit,
+                credit,
+                entityType,
+                entityId,
+                societyId,
+                flatId,
+                financialYearId);
         }
 
 }

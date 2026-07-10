@@ -8,6 +8,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.society.backend.entity.Society;
 import com.society.backend.gl.dto.TrialBalanceDTO;
+import com.society.backend.gl.entity.GlOpeningBalance;
+import com.society.backend.gl.entity.JournalEntry;
+import com.society.backend.gl.enums.VoucherType;
+import com.society.backend.gl.repository.GlOpeningBalanceRepository;
+import com.society.backend.gl.repository.JournalEntryRepository;
+import com.society.backend.gl.service.JournalService;
+import com.society.backend.gl.service.ProfitLossSnapshotService;
 import com.society.backend.gl.service.TrialBalanceService;
 
 import org.springframework.http.HttpStatus;
@@ -29,6 +36,10 @@ public class AccountingYearService {
     private final AccountingYearRepository accountingYearRepository;
     private final SocietyRepository societyRepository;
     private final TrialBalanceService trialBalanceService;
+    private final JournalEntryRepository journalEntryRepository;
+    private final GlOpeningBalanceRepository glOpeningBalanceRepository;
+    private final JournalService journalService;
+    private final ProfitLossSnapshotService profitLossSnapshotService;
 
     @RestControllerAdvice
     public class GlobalExceptionHandler {
@@ -166,39 +177,23 @@ public class AccountingYearService {
 
         accountingYearRepository.save(accountingYear);
 
-        return "Accounting Year closed successfully.";
+        return "Accounting Year Opened successfully.";
     }
 
-    public String yearEndClose(Long accountingYearId,
-            Long societyId,
-            String username) {
-
-        // 1. Validate accounting year
+    public String yearEndClose(Long accountingYearId, Long societyId, String username) {
         AccountingYear accountingYear = validateYearClosing(accountingYearId, societyId);
-
-        // 2. Validate Trial Balance
-
-        // 3. Generate Closing Journal
-
-        // 4. Carry Forward Opening Balances
-
-        // 5. Create Next Accounting Year
-
-        // 6. Close current accounting year
-
-        accountingYear.setClosed(true);
-        accountingYear.setClosedDate(LocalDate.now());
-        accountingYear.setClosedBy(username);
-        accountingYear.setActive(false);
-
+        List<TrialBalanceDTO> trialBalance = trialBalanceService.getTrialBalance(societyId,accountingYear.getId());
+        
+        profitLossSnapshotService.saveSnapshot(accountingYear,trialBalance,username);
+        generateClosingJournal(accountingYear,trialBalance, societyId,username);
+        AccountingYear nextYear = createNextAccountingYear(accountingYear, username);
+        carryForwardOpeningBalances(accountingYear,nextYear,trialBalance);
+        closeCurrentYear(accountingYear, username);
         accountingYearRepository.save(accountingYear);
-
         return "Year End Closing completed successfully.";
     }
 
-    private AccountingYear validateYearClosing(Long accountingYearId,
-            Long societyId) {
-
+    private AccountingYear validateYearClosing(Long accountingYearId, Long societyId) {
         AccountingYear accountingYear = accountingYearRepository
                 .findByIdAndSociety_Id(accountingYearId, societyId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -216,9 +211,7 @@ public class AccountingYearService {
                     HttpStatus.BAD_REQUEST,
                     "Accounting Year is already closed.");
         }
-
         validateTrialBalance(accountingYear, societyId);
-
         return accountingYear;
     }
 
@@ -233,18 +226,192 @@ public class AccountingYearService {
         double totalCredit = 0;
 
         for (TrialBalanceDTO dto : trialBalance) {
-            totalDebit += dto.getClosingDebit();
-            totalCredit += dto.getClosingCredit();
+
+            totalDebit += safe(dto.getOpeningDebit());
+            totalDebit += safe(dto.getDebit());
+
+            totalCredit += safe(dto.getOpeningCredit());
+            totalCredit += safe(dto.getCredit());
         }
 
         if (Math.abs(totalDebit - totalCredit) > 0.01) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Trial Balance is not balanced. Debit = "
-                            + totalDebit + ", Credit = " + totalCredit);
+                            + totalDebit
+                            + ", Credit = "
+                            + totalCredit);
         }
     }
 
+    private double safe(Double value) {
+        return value == null ? 0.0 : value;
+    }
 
-    
+    private void generateClosingJournal(
+            AccountingYear accountingYear,
+            List<TrialBalanceDTO> trialBalance,
+            Long societyId,
+            String username) {
+
+        // Step 3: Create Journal Header
+        JournalEntry journal = new JournalEntry();
+
+        journal.setVoucherNo("YEC-" + accountingYear.getFyCode());
+        journal.setVoucherType(VoucherType.JOURNAL);
+        journal.setEntryDate(accountingYear.getEndDate());
+        journal.setNarration("Year End Closing " + accountingYear.getFyCode());
+        journal.setReferenceType("YEAR_END");
+        journal.setReferenceId(accountingYear.getId());
+        journal.setStatus("POSTED");
+        journal.setSocietyId(societyId);
+        journal.setFinancialYearId(accountingYear.getId());
+        journal.setCreatedBy(null);
+        journalEntryRepository.save(journal);
+
+        journal = journalEntryRepository.save(journal);
+
+        int lineNo = 1;
+
+        double totalIncome = 0;
+        double totalExpense = 0;
+
+        final Integer PROFIT_LOSS_GL = 3999;
+
+        for (TrialBalanceDTO dto : trialBalance) {
+
+            if ("INCOME".equalsIgnoreCase(dto.getGroupName())
+                    && dto.getClosingCredit() > 0) {
+
+                journalService.addJournalLine(
+                        journal,
+                        lineNo++,
+                        dto.getGlCode(),
+                        dto.getClosingCredit(),
+                        0.0,
+                        null,
+                        null,
+                        societyId,
+                        null,
+                        accountingYear.getId());
+
+                journalService.addJournalLine(
+                        journal,
+                        lineNo++,
+                        PROFIT_LOSS_GL,
+                        0.0,
+                        dto.getClosingCredit(),
+                        null,
+                        null,
+                        societyId,
+                        null,
+                        accountingYear.getId());
+
+                totalIncome += dto.getClosingCredit();
+            }
+        }
+
+        for (TrialBalanceDTO dto : trialBalance) {
+
+            if ("EXPENSES".equalsIgnoreCase(dto.getGroupName())
+                    && dto.getClosingDebit() > 0) {
+
+                journalService.addJournalLine(
+                        journal,
+                        lineNo++,
+                        PROFIT_LOSS_GL,
+                        dto.getClosingDebit(),
+                        0.0,
+                        null,
+                        null,
+                        societyId,
+                        null,
+                        accountingYear.getId());
+
+                journalService.addJournalLine(
+                        journal,
+                        lineNo++,
+                        dto.getGlCode(),
+                        0.0,
+                        dto.getClosingDebit(),
+                        null,
+                        null,
+                        societyId,
+                        null,
+                        accountingYear.getId());
+                totalExpense += dto.getClosingDebit();
+            }
+        }
+        journal.setTotalAmount(Math.max(totalIncome, totalExpense));
+        journalEntryRepository.save(journal);
+    }
+
+    private void closeCurrentYear(AccountingYear accountingYear, String username) {
+        accountingYear.setClosed(true);
+        accountingYear.setClosedDate(LocalDate.now());
+        accountingYear.setClosedBy(username);
+        accountingYear.setActive(false);
+        accountingYearRepository.save(accountingYear);
+    }
+
+    private AccountingYear createNextAccountingYear(
+            AccountingYear currentYear,
+            String username) {
+
+        String currentCode = currentYear.getFyCode();
+        int startYear = Integer.parseInt(currentCode.substring(0, 4));
+        int endYear = startYear + 1;
+        String nextFyCode = endYear + "-" + String.format("%02d", (endYear + 1) % 100);
+        accountingYearRepository.findBySocietyIdAndFyCode(
+                currentYear.getSociety().getId(),
+                nextFyCode).ifPresent(y -> {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Next Accounting Year already exists.");
+                });
+        AccountingYear nextYear = new AccountingYear();
+        nextYear.setSociety(currentYear.getSociety());
+        nextYear.setFyCode(nextFyCode);
+        nextYear.setStartDate(currentYear.getEndDate().plusDays(1));
+        nextYear.setEndDate(currentYear.getEndDate().plusYears(1));
+        nextYear.setActive(true);
+        nextYear.setClosed(false);
+        nextYear.setCreatedBy(username);
+        nextYear.setCreatedAt(LocalDate.now());
+        return accountingYearRepository.save(nextYear);
+    }
+
+    private void carryForwardOpeningBalances(
+            AccountingYear currentYear,
+            AccountingYear nextYear,
+            List<TrialBalanceDTO> trialBalance) {
+
+        for (TrialBalanceDTO dto : trialBalance) {
+
+            // Carry only Balance Sheet accounts
+            if ("INCOME".equalsIgnoreCase(dto.getGroupName())
+                    || "EXPENSES".equalsIgnoreCase(dto.getGroupName())) {
+                continue;
+            }
+
+            // Skip zero balances
+            if (dto.getClosingDebit() == 0.0 && dto.getClosingCredit() == 0.0) {
+                continue;
+            }
+
+            GlOpeningBalance opening = new GlOpeningBalance();
+
+            opening.setSociety(currentYear.getSociety());
+            opening.setFinancialYearId(nextYear.getId());
+            opening.setGlCode(dto.getGlCode());
+
+            opening.setOpeningDebit(dto.getClosingDebit());
+            opening.setOpeningCredit(dto.getClosingCredit());
+
+            // Net balance (Debit positive, Credit negative)
+            opening.setOpeningBalance(
+                    dto.getClosingDebit() - dto.getClosingCredit());
+
+            glOpeningBalanceRepository.save(opening);
+        }
+    }
+
 }
