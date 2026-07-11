@@ -28,37 +28,64 @@ public interface LedgerBalanceRepository
 SELECT new com.society.backend.gl.dto.TrialBalanceDTO(
     gm.glCode,
     gm.accountName,
-    CAST(COALESCE(ob.openingDebit, 0) AS double),
-    CAST(COALESCE(ob.openingCredit, 0) AS double),
-    CAST(COALESCE(SUM(jl.debitAmount), 0) AS double),
-    CAST(COALESCE(SUM(jl.creditAmount), 0) AS double),
+
+    CAST(COALESCE(SUM(
+        CASE
+            WHEN je.voucherType = com.society.backend.gl.enums.VoucherType.OPENING
+            THEN jl.debitAmount
+            ELSE 0
+        END
+    ),0) AS double),
+
+    CAST(COALESCE(SUM(
+        CASE
+            WHEN je.voucherType = com.society.backend.gl.enums.VoucherType.OPENING
+            THEN jl.creditAmount
+            ELSE 0
+        END
+    ),0) AS double),
+
+    CAST(COALESCE(SUM(
+        CASE
+            WHEN je.voucherType <> com.society.backend.gl.enums.VoucherType.OPENING
+                 AND je.entryDate BETWEEN :startDate AND :endDate
+            THEN jl.debitAmount
+            ELSE 0
+        END
+    ),0) AS double),
+
+    CAST(COALESCE(SUM(
+        CASE
+            WHEN je.voucherType <> com.society.backend.gl.enums.VoucherType.OPENING
+                 AND je.entryDate BETWEEN :startDate AND :endDate
+            THEN jl.creditAmount
+            ELSE 0
+        END
+    ),0) AS double),
+
     gm.groupName
 )
 FROM GlMaster gm
-LEFT JOIN GlOpeningBalance ob
-    ON ob.glCode = gm.glCode
-   AND ob.society.id = :societyId
-   AND ob.financialYearId = :financialYearId
 
 LEFT JOIN JournalEntryLine jl
-    ON jl.glCode = gm.glCode
-   AND jl.societyId = :societyId
-   AND jl.financialYearId = :financialYearId
+       ON jl.glCode = gm.glCode
+      AND jl.societyId = :societyId
+      AND jl.financialYearId = :financialYearId
+
+LEFT JOIN jl.journalEntry je
 
 GROUP BY
     gm.glCode,
     gm.accountName,
-    gm.groupName,
-    ob.openingDebit,
-    ob.openingCredit
+    gm.groupName
 
 ORDER BY gm.glCode
 """)
+List<TrialBalanceDTO> getTrialBalance(
+        @Param("societyId") Long societyId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate,
+        @Param("financialYearId") Long financialYearId);
 
-    List<TrialBalanceDTO> getTrialBalance(
-            @Param("societyId") Long societyId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            @Param("financialYearId") Long financialYearId);
-
+        
 }

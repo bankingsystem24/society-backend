@@ -1,7 +1,6 @@
 package com.society.backend.gl.enums;
 
 public enum VoucherType {
-
     BILL,
     RECEIPT,
     PAYMENT,

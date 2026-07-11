@@ -547,4 +547,60 @@ public class JournalService {
                 financialYearId);
         }
 
+        public Long createOpeningBalanceEntry(
+                Long openingBalanceId,
+                Long societyId,
+                Long financialYearId,
+                Long createdBy,
+                Integer glCode,
+                Double openingDebit,
+                Double openingCredit,
+                Integer openingBalanceControlGl) 
+        {
+
+                Double amount = openingDebit > 0 ? openingDebit : openingCredit;
+
+                if (openingDebit > 0) {
+
+                        return createJournalEntry(
+                                "OB-" + openingBalanceId,
+                                "OPENING",
+                                "Opening Balance",
+                                "OPENING_BALANCE",
+                                openingBalanceId,
+                                amount,
+                                societyId,
+                                glCode,
+                                amount,
+                                openingBalanceControlGl,
+                                amount,
+                                "SOCIETY",
+                                null,
+                                financialYearId,
+                                createdBy,
+                                null,
+                                null);
+
+                } else {
+
+                        return createJournalEntry(
+                                "OB-" + openingBalanceId,
+                                "OPENING",
+                                "Opening Balance",
+                                "OPENING_BALANCE",
+                                openingBalanceId,
+                                amount,
+                                societyId,
+                                openingBalanceControlGl,
+                                amount,
+                                glCode,
+                                amount,
+                                "SOCIETY",
+                                null,
+                                financialYearId,
+                                createdBy,
+                                null,
+                                null);
+                }
+        }
 }

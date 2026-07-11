@@ -8,6 +8,7 @@ public class GlOpeningBalanceRequest {
     private Double openingCredit;
     private Double openingBalance;
     private Integer contraGlCode;
+    private Long createdBy;
 
     public Long getSocietyId(){
         return societyId;
@@ -64,4 +65,7 @@ public class GlOpeningBalanceRequest {
     public void setContraGlCode(Integer contraGlCode) {
         this.contraGlCode = contraGlCode;
     }
+
+    public Long getCreatedBy(){ return createdBy;}
+    public void setCreatedBy(Long createdBy){this.createdBy = createdBy;}
 }

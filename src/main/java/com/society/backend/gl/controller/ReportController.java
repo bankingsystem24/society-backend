@@ -14,7 +14,7 @@ import com.society.backend.gl.dto.Payments;
 import com.society.backend.gl.service.ReportService;
 
 import lombok.RequiredArgsConstructor;
-
+ 
 @RestController
 @RequestMapping("/api/reports")
 @CrossOrigin("*")

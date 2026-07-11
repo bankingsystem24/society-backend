@@ -19,12 +19,10 @@ import java.util.Map;
 public class AccountingYearController {
 
     private final AccountingYearService accountingYearService;
-    private final JwtUtil jwtUtil;
 
     public AccountingYearController(AccountingYearService accountingYearService,
     JwtUtil jwtUtil){
         this.accountingYearService = accountingYearService;
-        this.jwtUtil = jwtUtil;
     };
 
     @GetMapping("")
