@@ -31,10 +31,10 @@ public class DiscountPolicyService {
 
     DiscountPolicy policy = optPolicy.get();
 
-    LocalDate eligibleDate =
-            dueDate.minusDays(policy.getDaysBeforeDue());
+    LocalDate paidBeforeDate =policy.getPaidBeforeDate();
 
-    if (!paymentDate.isAfter(eligibleDate)) {
+    if (!paymentDate.isAfter(paidBeforeDate))
+    {
         return billAmount
                 .multiply(policy.getDiscountPercent())
                 .divide(BigDecimal.valueOf(100));

@@ -124,7 +124,8 @@ public class BillingController {
                                 req.getGlInterestIncome(),
                                 req.getGlDiscount(),
                                 req.getInterestAmount(),
-                                req.getDiscountAmount()
+                                req.getDiscountAmount(),
+                                req.getSelectedCount()
                                 );
         }
 

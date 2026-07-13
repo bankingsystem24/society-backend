@@ -32,7 +32,7 @@ public class DiscountPolicyController {
         DiscountPolicy policy = new DiscountPolicy();
         policy.setPolicyName(request.getPolicyName());
         policy.setActive(request.getActive());
-        policy.setDaysBeforeDue(request.getDaysBeforeDue());
+        policy.setPaidBeforeDate(request.getPaidBeforeDate());
         policy.setDiscountPercent(request.getDiscountPercent());
         policy.setEffectiveFrom(request.getEffectiveFrom());
         policy.setEffectiveTo(request.getEffectiveTo());
@@ -71,7 +71,7 @@ public class DiscountPolicyController {
 
         policy.setPolicyName(request.getPolicyName());
         policy.setActive(request.getActive());
-        policy.setDaysBeforeDue(request.getDaysBeforeDue());
+        policy.setPaidBeforeDate(request.getPaidBeforeDate());
         policy.setDiscountPercent(request.getDiscountPercent());
         policy.setEffectiveFrom(request.getEffectiveFrom());
         policy.setEffectiveTo(request.getEffectiveTo());

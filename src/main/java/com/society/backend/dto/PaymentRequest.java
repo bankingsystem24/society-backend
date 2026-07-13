@@ -26,6 +26,10 @@ public class PaymentRequest {
     private Integer glDiscount;
     private Double interestAmount;
     private Double discountAmount;
+    private Integer selectedCount;
+
+    public Integer getSelectedCount(){return selectedCount;}
+    public void setSelectedCount(Integer selectedCount){this.selectedCount = selectedCount;}
 
     public Double getInterestAmount(){return interestAmount;}
     public Double getDiscountAmount(){return discountAmount;}

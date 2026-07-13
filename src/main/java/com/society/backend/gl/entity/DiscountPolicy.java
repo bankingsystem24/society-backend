@@ -16,7 +16,7 @@ public class DiscountPolicy {
     private Long id;
     private String policyName;
     private Boolean active;
-    private Integer daysBeforeDue;
+    private LocalDate paidBeforeDate;
     private BigDecimal discountPercent;
     private LocalDate effectiveFrom;
     private LocalDate effectiveTo;
@@ -59,12 +59,12 @@ public class DiscountPolicy {
         this.active = active;
     }
 
-    public Integer getDaysBeforeDue() {
-        return daysBeforeDue;
+    public LocalDate getPaidBeforeDate() {
+        return paidBeforeDate;
     }
 
-    public void setDaysBeforeDue(Integer daysBeforeDue) {
-        this.daysBeforeDue = daysBeforeDue;
+    public void setPaidBeforeDate(LocalDate paidBeforeDate) {
+        this.paidBeforeDate = paidBeforeDate;
     }
 
     public BigDecimal getDiscountPercent() {
