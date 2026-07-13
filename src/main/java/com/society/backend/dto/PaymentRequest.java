@@ -1,4 +1,5 @@
 package com.society.backend.dto;
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -27,6 +28,7 @@ public class PaymentRequest {
     private Double interestAmount;
     private Double discountAmount;
     private Integer selectedCount;
+    private LocalDate paymentDate;
 
     public Integer getSelectedCount(){return selectedCount;}
     public void setSelectedCount(Integer selectedCount){this.selectedCount = selectedCount;}
@@ -88,4 +90,7 @@ public class PaymentRequest {
     
     public Integer getGlCreditAccount(){return glCreditAccount;}
     public void setGlCreditAccount(Integer glCreditAccount){ this.glCreditAccount = glCreditAccount;}
+
+    public LocalDate getPaymentDate(){return paymentDate;}
+    public void setPaymentDate(LocalDate paymentDate){this.paymentDate = paymentDate;}
 }

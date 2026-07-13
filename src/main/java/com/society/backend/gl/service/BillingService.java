@@ -14,12 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.dto.BillingReceiptRequest;
 import com.society.backend.dto.BillingResponse;
+import com.society.backend.dto.InterestCalculationRequest;
+import com.society.backend.dto.InterestCalculationResponse;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.entity.Receipt;
 import com.society.backend.gl.entity.SocietyBillingPolicy;
 import com.society.backend.enums.PaymentStatus;
+import com.society.backend.gl.repository.DiscountPolicyRepository;
 import com.society.backend.gl.repository.SocietyBillingPolicyRepository;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
@@ -28,16 +31,20 @@ import com.society.backend.repository.ReceiptRepository;
 @Service
 public class BillingService {
 
+        private final DiscountPolicyRepository discountPolicyRepository;
+
         public BillingService(BillingRepository billingRepository,
                         FlatRepository flatRepository,
                         ReceiptRepository receiptRepository,
                         JournalService journalService,
-                        SocietyBillingPolicyRepository societyBillingPolicyRepository) {
+                        SocietyBillingPolicyRepository societyBillingPolicyRepository,
+                        DiscountPolicyRepository discountPolicyRepository) {
                 this.billingRepository = billingRepository;
                 this.flatRepository = flatRepository;
                 this.receiptRepository = receiptRepository;
                 this.journalService = journalService;
                 this.societyBillingPolicyRepository = societyBillingPolicyRepository;
+                this.discountPolicyRepository = discountPolicyRepository;
         }
 
         @Autowired
@@ -334,7 +341,7 @@ public class BillingService {
 
                                 if (LocalDate.now().isAfter(interestStart)) {
 
-                                        long daysLate = ChronoUnit.DAYS.between(interestStart, LocalDate.now());
+                                        long daysLate = ChronoUnit.DAYS.between(b.getCreatedDate(), LocalDate.now());
 
                                         interest = Math.round(
                                                         b.getMaintenanceAmount()
@@ -401,7 +408,8 @@ public class BillingService {
         // =====================================================
 
         @Transactional
-        public String payBills(List<Long> billIds, String paymentMode, Long financialYearId, String transactionId,
+        public String payBills(List<Long> billIds, String paymentMode, LocalDate paymentDate, Long financialYearId,
+                        String transactionId,
                         Integer glReceivable, Integer glCreditAccount, Integer glCashInHand, Integer glBankAccount,
                         Integer glInterestIncome, Integer glDiscount, Double interestAmount, Double discountAmount,
                         Integer selectedCount) {
@@ -458,7 +466,7 @@ public class BillingService {
 
                         bill.setStatus("CASH".equals(paymentMode) ? PaymentStatus.PAID : PaymentStatus.SUBMITTED);
 
-                        bill.setPaidDate(LocalDate.now());
+                        bill.setPaidDate(paymentDate);
                         bill.setPaymentMode(paymentMode);
                         bill.setTransactionId(transactionId);
 
@@ -656,7 +664,7 @@ public class BillingService {
 
                                         if (LocalDate.now().isAfter(interestStart)) {
 
-                                                long daysLate = ChronoUnit.DAYS.between(interestStart, LocalDate.now());
+                                                long daysLate = ChronoUnit.DAYS.between(bill.getCreatedDate(), LocalDate.now());
 
                                                 interest = Math.round(
                                                                 bill.getMaintenanceAmount()
@@ -687,21 +695,113 @@ public class BillingService {
                 return bills;
         }
 
-    public List<Receipt> getBillingReceipts(BillingReceiptRequest request) {
+        public List<Receipt> getBillingReceipts(BillingReceiptRequest request) {
 
-        List<Billing> bills =
-                billingRepository.findByFlatIdInAndSocietyIdAndFinancialYearId(
-                        request.getFlatIds(),
-                        request.getSocietyId(),
-                        request.getFinancialYearId());
+                List<Billing> bills = billingRepository.findByFlatIdInAndSocietyIdAndFinancialYearId(
+                                request.getFlatIds(),
+                                request.getSocietyId(),
+                                request.getFinancialYearId());
 
-        List<Long> receiptIds = bills.stream()
-                .map(Billing::getReceiptId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+                List<Long> receiptIds = bills.stream()
+                                .map(Billing::getReceiptId)
+                                .filter(Objects::nonNull)
+                                .distinct()
+                                .toList();
 
-        return receiptRepository.findAllById(receiptIds);
-    }
+                return receiptRepository.findAllById(receiptIds);
+        }
+
+        public InterestCalculationResponse calculateInterest(
+                        InterestCalculationRequest request) {
+
+                List<Billing> bills = billingRepository.findAllById(request.getBillIds());
+
+                if (bills.isEmpty()) {
+                        return new InterestCalculationResponse(0.0, 0.0, 0.0, 0.0);
+                }
+
+                Long societyId = bills.get(0).getSociety().getId();
+                Long financialYearId = bills.get(0).getFinancialYearId();
+
+                SocietyBillingPolicy policy = societyBillingPolicyRepository
+                                .findBySociety_IdAndFinancialYearId(societyId, financialYearId)
+                                .orElse(null);
+
+                double maintenanceAmount = 0.0;
+                double interestAmount = 0.0;
+                double discountAmount = 0.0;
+                double totalAmount = 0.0;
+
+                LocalDate paymentDate = request.getPaymentDate();
+
+                for (Billing bill : bills) {
+
+                        if (bill.getStatus() == PaymentStatus.PAID) {
+                                continue;
+                        }
+
+                        double maintenance = bill.getMaintenanceAmount() == null
+                                        ? 0.0
+                                        : bill.getMaintenanceAmount();
+
+                        double interest = 0.0;
+                        double discount = bill.getDiscountAmount() == null
+                                        ? 0.0
+                                        : bill.getDiscountAmount();
+
+                        if (policy != null && bill.getDueDate() != null) {
+
+                                LocalDate interestStart = bill.getCreatedDate();
+
+                                switch (policy.getInterestType()) {
+                                        case MONTHLY:
+                                                interestStart = interestStart.plusMonths(1);
+                                                break;
+                                        case QUARTERLY:
+                                                interestStart = interestStart.plusMonths(3);
+                                                break;
+                                        case HALF_YEARLY:
+                                                interestStart = interestStart.plusMonths(6);
+                                                break;
+                                        case YEARLY:
+                                                interestStart = interestStart.plusMonths(12);
+                                                break;
+                                }
+
+                                if (paymentDate.isAfter(interestStart)) {
+
+                                        long daysLate = ChronoUnit.DAYS.between(
+                                                        bill.getCreatedDate(),
+                                                        paymentDate);
+
+                                        daysLate = Math.max(0, daysLate);
+
+                                        // Annual interest rate converted to daily interest
+                                        interest = maintenance
+                                                        * policy.getInterestRate()
+                                                        * daysLate
+                                                        / (365.0 * 100.0);
+                                }
+
+                        }
+
+                        maintenanceAmount += maintenance;
+                        interestAmount += interest;
+                        discountAmount += discount;
+
+                        totalAmount += maintenance + interest - discount;
+                }
+
+                interestAmount = Math.round(interestAmount);
+                totalAmount = Math.round(totalAmount);
+                maintenanceAmount = Math.round(maintenanceAmount);
+                System.out.println("TotalAmount:"+totalAmount);
+
+                return new InterestCalculationResponse(
+                                maintenanceAmount,
+                                interestAmount,
+                                discountAmount,
+                                totalAmount);
+        }
 
 }

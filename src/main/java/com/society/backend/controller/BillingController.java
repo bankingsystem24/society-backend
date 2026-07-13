@@ -11,6 +11,8 @@ import com.razorpay.RazorpayClient;
 import com.society.backend.dto.BillGenerateRequest;
 import com.society.backend.dto.BillingFilterRequest;
 import com.society.backend.dto.BillingResponse;
+import com.society.backend.dto.InterestCalculationRequest;
+import com.society.backend.dto.InterestCalculationResponse;
 import com.society.backend.dto.ManualPaymentRequest;
 import com.society.backend.dto.PaymentRequest;
 import com.society.backend.entity.Billing;
@@ -115,6 +117,7 @@ public class BillingController {
                 return billingService.payBills(
                                 req.getBillIds(),
                                 req.getPaymentMode(),
+                                req.getPaymentDate(),
                                 req.getFinancialYearId(),
                                 req.getTransactionId(),
                                 req.getGlReceivable(),
@@ -247,6 +250,14 @@ public class BillingController {
                         return ResponseEntity.internalServerError()
                                         .body(e.getMessage());
                 }
+        }
+
+        @PostMapping("/calculate-interest")
+                public ResponseEntity<InterestCalculationResponse> calculateInterest(
+                        @RequestBody InterestCalculationRequest request) {
+
+                return ResponseEntity.ok(billingService.calculateInterest(request)
+                );
         }
 
 }

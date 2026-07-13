@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
- 
+
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
@@ -123,15 +123,15 @@ public class MemberController {
         return billingService.getBillsByFlatIds(flatIds, societyId, financialYearId);
 
     }
-    
-@PostMapping("/getBillingReceipts")
-public List<Receipt> getBillingReceipts(
-        @RequestBody BillingReceiptRequest request) {
 
-    return billingService.getBillingReceipts(request);
-}
+    @PostMapping("/getBillingReceipts")
+    public List<Receipt> getBillingReceipts(
+            @RequestBody BillingReceiptRequest request) {
 
-    @PostMapping("/sinking-funds") 
+        return billingService.getBillingReceipts(request);
+    }
+
+    @PostMapping("/sinking-funds")
     public List<SinkingFundResponse> getSinkingFunds(
             @RequestBody Map<String, Object> req) {
 
@@ -144,7 +144,7 @@ public List<Receipt> getBillingReceipts(
         Long societyId = Long.valueOf(req.get("societyId").toString());
         Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
 
-        return sinkingFundService.getSinkingFundsByFlatIds(flatIds,societyId,financialYearId);
+        return sinkingFundService.getSinkingFundsByFlatIds(flatIds, societyId, financialYearId);
     }
 
     @PostMapping("/sinking-fund/manual-payment")
@@ -155,8 +155,7 @@ public List<Receipt> getBillingReceipts(
 
             Long financialYearId = req.getFinancialYearId();
 
-            List<SinkingFund> sinkingFunds =
-                    sinkingFundRepository.findByIdIn(req.getSinkingFundIds());
+            List<SinkingFund> sinkingFunds = sinkingFundRepository.findByIdIn(req.getSinkingFundIds());
 
             if (sinkingFunds == null || sinkingFunds.isEmpty()) {
                 return ResponseEntity.badRequest()
@@ -199,9 +198,8 @@ public List<Receipt> getBillingReceipts(
                 sinkingFund.setReceiptId(savedReceipt.getId());
                 sinkingFund.setTransactionId(req.getTransactionId());
             }
-            
-            sinkingFundRepository.saveAll(sinkingFunds);
 
+            sinkingFundRepository.saveAll(sinkingFunds);
 
             return ResponseEntity.ok(
                     "Sinking fund payment recorded successfully");
@@ -228,7 +226,7 @@ public List<Receipt> getBillingReceipts(
         Long societyId = Long.valueOf(req.get("societyId").toString());
         Long financialYearId = Long.valueOf(req.get("financialYearId").toString());
 
-        return contributionService.getContributionsByFlatIds(flatIds,societyId,financialYearId);
+        return contributionService.getContributionsByFlatIds(flatIds, societyId, financialYearId);
     }
 
 }
