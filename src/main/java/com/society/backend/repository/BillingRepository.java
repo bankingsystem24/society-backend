@@ -19,7 +19,7 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
                         int year);
 
         // ================= BASIC FETCH =================
-        List<Billing> findBySocietyId(Long societyId);
+        List<Billing> findBySocietyId(Long societyId); 
 
         List<Billing> findBySocietyIdAndFinancialYearId(Long societyId, Long financialYearId);
 

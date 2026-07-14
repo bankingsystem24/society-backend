@@ -1,5 +1,7 @@
 package com.society.backend.gl.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.society.backend.dto.BillGenerateRequest;
 import com.society.backend.dto.BillingReceiptRequest;
 import com.society.backend.dto.BillingResponse;
 import com.society.backend.dto.InterestCalculationRequest;
@@ -20,6 +23,7 @@ import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.entity.Receipt;
+import com.society.backend.gl.entity.DiscountPolicy;
 import com.society.backend.gl.entity.SocietyBillingPolicy;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.repository.DiscountPolicyRepository;
@@ -143,6 +147,7 @@ public class BillingService {
                                         ? flat.getMaintenanceAmount()
                                         : 0.0;
 
+                        amount = Math.round(amount);
                         Billing bill = new Billing();
                         bill.setSociety(flat.getSociety());
                         bill.setFlat(flat);
@@ -664,7 +669,8 @@ public class BillingService {
 
                                         if (LocalDate.now().isAfter(interestStart)) {
 
-                                                long daysLate = ChronoUnit.DAYS.between(bill.getCreatedDate(), LocalDate.now());
+                                                long daysLate = ChronoUnit.DAYS.between(bill.getCreatedDate(),
+                                                                LocalDate.now());
 
                                                 interest = Math.round(
                                                                 bill.getMaintenanceAmount()
@@ -795,13 +801,110 @@ public class BillingService {
                 interestAmount = Math.round(interestAmount);
                 totalAmount = Math.round(totalAmount);
                 maintenanceAmount = Math.round(maintenanceAmount);
-                System.out.println("TotalAmount:"+totalAmount);
+                System.out.println("TotalAmount:" + totalAmount);
 
                 return new InterestCalculationResponse(
                                 maintenanceAmount,
                                 interestAmount,
                                 discountAmount,
                                 totalAmount);
+        }
+
+        public InterestCalculationResponse calculateDiscount(
+                        InterestCalculationRequest request) {
+
+                System.out.println("Count:" + request.getSelectedCount());
+                System.out.println("Date:" + request.getPaymentDate());
+
+                List<Billing> bills = billingRepository.findAllById(request.getBillIds());
+
+                if (bills.isEmpty()) {
+                        return new InterestCalculationResponse(0.0, 0.0, 0.0, 0.0);
+                }
+
+                Long societyId = bills.get(0).getSociety().getId();
+
+                List<DiscountPolicy> policies = discountPolicyRepository.findBySociety_IdAndActiveTrue(societyId);
+
+                DiscountPolicy policy = policies.isEmpty() ? null : policies.get(0);
+
+                double maintenanceAmount = 0.0;
+                double interestAmount = 0.0;
+
+                for (Billing bill : bills) {
+                        maintenanceAmount += bill.getMaintenanceAmount() == null
+                                        ? 0.0
+                                        : bill.getMaintenanceAmount();
+                        interestAmount += bill.getInterestAmount() == null ? 0.0 : bill.getInterestAmount();
+                }
+
+                double discountAmount = 0.0;
+
+                System.out.println("Discount:" + discountAmount);
+
+                if (policy != null && request.getSelectedCount() != null
+                                && request.getSelectedCount() == 12 && request.getPaymentDate() != null
+                                && !request.getPaymentDate().isAfter(policy.getPaidBeforeDate())) {
+
+                        discountAmount = BigDecimal.valueOf(maintenanceAmount)
+                                        .multiply(policy.getDiscountPercent())
+                                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                                        .doubleValue();
+                }
+                Double totalAmount = maintenanceAmount + interestAmount - discountAmount;
+                return new InterestCalculationResponse(
+                                maintenanceAmount,
+                                interestAmount,
+                                discountAmount,
+                                totalAmount);
+        }
+
+        public void generateFinancialYearBills(BillGenerateRequest request) {
+
+                List<String> months = List.of(
+                                "APRIL",
+                                "MAY",
+                                "JUNE",
+                                "JULY",
+                                "AUGUST",
+                                "SEPTEMBER",
+                                "OCTOBER",
+                                "NOVEMBER",
+                                "DECEMBER",
+                                "JANUARY",
+                                "FEBRUARY",
+                                "MARCH");
+
+                int startYear = request.getYear();
+
+                for (String month : months) {
+
+                        int billYear = List.of(
+                                        "JANUARY",
+                                        "FEBRUARY",
+                                        "MARCH").contains(month)
+                                                        ? startYear + 1
+                                                        : startYear;
+
+                        BillGenerateRequest req = new BillGenerateRequest();
+
+                        req.setMonth(month);
+                        req.setYear(billYear);
+                        req.setSocietyId(request.getSocietyId());
+                        req.setFinancialYearId(request.getFinancialYearId());
+                        req.setCreatedBy(request.getCreatedBy());
+                        req.setGlReceivable(request.getGlReceivable());
+                        req.setGlCreditAccount(request.getGlCreditAccount());
+
+                        generateMonthlyBills(
+                                        req.getSocietyId(),
+                                        req.getMonth(),
+                                        req.getYear(),
+                                        req.getCreatedBy(),
+                                        req.getFinancialYearId(),
+                                        req.getGlReceivable(),
+                                        req.getGlCreditAccount());
+                }
         }
 
 }

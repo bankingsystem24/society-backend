@@ -8,6 +8,7 @@ public class InterestCalculationRequest {
     private List<Long> billIds;
     private LocalDate paymentDate;
     private Long financialYearId;
+    private Integer selectedCount;
 
     public List<Long> getBillIds() {
         return billIds;
@@ -27,4 +28,7 @@ public class InterestCalculationRequest {
 
     public Long getFinancialYearId(){return financialYearId;}
     public void setFinancialYearId(Long financialYearId){this.financialYearId = financialYearId;}
+
+    public Integer getSelectedCount(){return selectedCount;}
+    public void setSelectedCount(Integer selectedCount){ this.selectedCount = selectedCount;}
 }

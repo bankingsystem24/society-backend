@@ -29,6 +29,8 @@ public class ManualPaymentRequest {
     private Integer glDiscount;
     private Double interestAmount;
     private Double discountAmount;
+    private Long societyId;
+    private Integer selectedCount;
 
     public Double getInterestAmount(){return interestAmount;}
     public Double getDiscountAmount(){return discountAmount;}
@@ -110,4 +112,10 @@ public class ManualPaymentRequest {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+
+    public Long getSocietyId(){return societyId;}
+    public void setSocietyId(Long societyId){this.societyId = societyId;}
+
+    public Integer getSelectedCount(){return selectedCount;}
+    public void setSelectedCount(Integer selectedCount){this.selectedCount = selectedCount;}
 }

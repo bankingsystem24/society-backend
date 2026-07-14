@@ -1,6 +1,8 @@
 package com.society.backend.controller;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,10 @@ import com.society.backend.dto.ManualPaymentRequest;
 import com.society.backend.dto.PaymentRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
+import com.society.backend.gl.entity.DiscountPolicy;
+import com.society.backend.gl.entity.SocietyBillingPolicy;
+import com.society.backend.gl.repository.DiscountPolicyRepository;
+import com.society.backend.gl.repository.SocietyBillingPolicyRepository;
 import com.society.backend.gl.service.BillingService;
 import com.society.backend.gl.service.JournalService;
 import com.society.backend.repository.BillingRepository;
@@ -30,6 +36,8 @@ public class BillingController {
         private final BillingService billingService;
         private final BillingRepository billingRepository;
         private final ReceiptRepository receiptRepository;
+        private final SocietyBillingPolicyRepository societyBillingPolicyRepository;
+        private final DiscountPolicyRepository discountPolicyRepository;
         @Value("${razorpay.key_secret}")
         private String razorpayKeySecret;
         @Value("${razorpay.key_id}")
@@ -40,12 +48,16 @@ public class BillingController {
                         RazorpayClient razorpayClient,
                         BillingRepository billingRepository,
                         ReceiptRepository receiptRepository,
+                        SocietyBillingPolicyRepository societyBillingPolicyRepository,
+                        DiscountPolicyRepository discountPolicyRepository,
                         JournalService journalService,
                         @Value("${razorpay.key_secret}") String razorpayKeySecret,
                         @Value("${razorpay.key_id}") String keyId) {
                 this.billingService = billingService;
                 this.billingRepository = billingRepository;
                 this.receiptRepository = receiptRepository;
+                this.societyBillingPolicyRepository = societyBillingPolicyRepository;
+                this.discountPolicyRepository = discountPolicyRepository;
                 this.razorpayKeySecret = razorpayKeySecret;
                 this.keyId = keyId;
         }
@@ -132,11 +144,14 @@ public class BillingController {
                                 );
         }
 
-        @PostMapping("/manual-payment")
-        public ResponseEntity<?> manualPayment(
-                        @RequestBody ManualPaymentRequest req) {
-                
-                Double interestAmount = req.getInterestAmount();
+        @PostMapping("/member/manual-payment") 
+        public ResponseEntity<?> manualPayment(@RequestBody ManualPaymentRequest req) 
+        {
+
+                System.out.println(req);
+                System.out.println("SocietyId = " + req.getSocietyId());
+                System.out.println("SelectedCount = " + req.getSelectedCount());
+
                 Double discountAmount = req.getDiscountAmount();
 
                 try {
@@ -147,68 +162,88 @@ public class BillingController {
                                                 .body("No bills found");
                         }
                         Billing firstBill = bills.get(0);
-                        // SocietyBillingPolicy policy = societyBillingPolicyRepository
-                        //                 .findBySociety_IdAndFinancialYearId(
-                        //                                 firstBill.getSociety().getId(),
-                        //                                 financialYearId)
-                        //                 .orElse(null);
+                        
+                        SocietyBillingPolicy policy = societyBillingPolicyRepository
+                                        .findBySociety_IdAndFinancialYearId(
+                                                        firstBill.getSociety().getId(),
+                                                        financialYearId)
+                                        .orElse(null);
+                                        
                         double maintenanceAmount = bills.stream()
                                         .mapToDouble(b -> b.getMaintenanceAmount() != null
                                                         ? b.getMaintenanceAmount()
                                                         : 0.0)
                                         .sum();
-                        // double interestAmount = 0.0;
-                        // if (policy != null) {
+                        double interestAmount = 0.0;
+                        if (policy != null) {
 
-                        //         for (Billing b : bills) {
+                                for (Billing b : bills) {
 
-                        //                 if (b.getDueDate() == null)
-                        //                         continue;
+                                        if (b.getDueDate() == null)
+                                                continue;
 
-                        //                 LocalDate interestStart = b.getDueDate();
+                                        LocalDate interestStart = b.getCreatedDate();
 
-                        //                 switch (policy.getInterestType()) {
+                                        switch (policy.getInterestType()) {
 
-                        //                         case MONTHLY:
-                        //                                 interestStart = interestStart.plusMonths(1);
-                        //                                 break;
+                                                case MONTHLY:
+                                                        interestStart = interestStart.plusMonths(1);
+                                                        break;
 
-                        //                         case QUARTERLY:
-                        //                                 interestStart = interestStart.plusMonths(3);
-                        //                                 break;
+                                                case QUARTERLY:
+                                                        interestStart = interestStart.plusMonths(3);
+                                                        break;
 
-                        //                         case HALF_YEARLY:
-                        //                                 interestStart = interestStart.plusMonths(6);
-                        //                                 break;
+                                                case HALF_YEARLY:
+                                                        interestStart = interestStart.plusMonths(6);
+                                                        break;
 
-                        //                         case YEARLY:
-                        //                                 interestStart = interestStart.plusMonths(12);
-                        //                                 break;
-                        //                 }
+                                                case YEARLY:
+                                                        interestStart = interestStart.plusMonths(12);
+                                                        break;
+                                        }
 
-                        //                 if (LocalDate.now().isAfter(interestStart)) {
+                                        if (LocalDate.now().isAfter(interestStart)) {
 
-                        //                         long monthsLate = ChronoUnit.MONTHS.between(
-                        //                                         interestStart.withDayOfMonth(1),
-                        //                                         LocalDate.now().withDayOfMonth(1));
+                                                long daysLate = ChronoUnit.DAYS.between(
+                                                        b.getCreatedDate(),
+                                                        LocalDate.now());
 
-                        //                         monthsLate = Math.max(1, monthsLate);
+                                        daysLate = Math.max(0, daysLate);
 
-                        //                         interestAmount += (b.getMaintenanceAmount() != null
-                        //                                         ? b.getMaintenanceAmount()
-                        //                                         : 0.0)
-                        //                                         * policy.getInterestRate()
-                        //                                         * monthsLate
-                        //                                         / 1200.0;
-                        //                 }
-                        //         }
-                        // }
+                                        // Annual interest rate converted to daily interest
+                                        interestAmount = b.getMaintenanceAmount()
+                                                        * policy.getInterestRate()
+                                                        * daysLate
+                                                        / (365.0 * 100.0);
+                                        }
 
-                        // double discountAmount = bills.stream()
-                        //                 .mapToDouble(b -> b.getDiscountAmount() != null
-                        //                                 ? b.getDiscountAmount()
-                        //                                 : 0.0)
-                        //                 .sum();
+                                        
+                                }
+                                interestAmount = Math.round(interestAmount);
+                        }
+
+
+                       List<DiscountPolicy> policies = discountPolicyRepository
+                                .findBySociety_IdAndActiveTrue(req.getSocietyId());
+
+                        DiscountPolicy discountPolicy = policies.isEmpty() ? null : policies.get(0);
+
+                        BigDecimal discount = BigDecimal.ZERO;
+
+                        if (discountPolicy != null && req.getSelectedCount() == 12
+                                && LocalDate.now().isBefore(discountPolicy.getPaidBeforeDate())) {
+
+                        
+                                discount = BigDecimal.valueOf(maintenanceAmount)
+                                                .multiply(discountPolicy.getDiscountPercent())
+                                                .divide(BigDecimal.valueOf(100));
+                                
+                        
+                        }
+
+                        discountAmount = discount.doubleValue();
+
 
                         double totalAmount = maintenanceAmount + interestAmount- discountAmount;
 
@@ -240,8 +275,7 @@ public class BillingController {
 
                         billingRepository.saveAll(bills);
 
-                        return ResponseEntity.ok(
-                                        "Payment recorded successfully");
+                        return ResponseEntity.ok("Payment recorded successfully");
 
                 } catch (Exception e) {
 
@@ -260,4 +294,20 @@ public class BillingController {
                 );
         }
 
+        @PostMapping("/calculate-discount")
+        public ResponseEntity<InterestCalculationResponse> calculateDiscount(
+                        @RequestBody InterestCalculationRequest request) {
+
+                return ResponseEntity.ok(
+                        billingService.calculateDiscount(request));
+        }
+
+        @PostMapping("/generate-financial-year-bills")
+        public ResponseEntity<?> generateFinancialYearBills(
+                @RequestBody BillGenerateRequest request) {
+
+        billingService.generateFinancialYearBills(request);
+
+        return ResponseEntity.ok("Bills generated successfully.");
+        }
 }
