@@ -33,6 +33,7 @@ public class User extends SocietyBaseEntity {
 
     private Boolean active = true;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "society_id")
     private Society society;

@@ -19,7 +19,7 @@ public class CorsConfig {
                 configuration.setAllowedOrigins(
                                 List.of(
                                                 "http://localhost:5173",
-                                                "https://housing.coopmember.in"));
+                                                "https://housing.coopmember.in:8443"));
 
                 configuration.setAllowedMethods(
                                 List.of(

@@ -57,24 +57,27 @@ public class AccountingYearController {
     // CREATE FINANCIAL YEAR
     // =====================================================
     @PostMapping("/create")
-    public AccountingYear create(@RequestBody Map<String, Object> req) {
-
-        
-
+    public ResponseEntity<?> create(@RequestBody Map<String, Object> req) {
 
         Long societyId = Long.valueOf(req.get("societyId").toString());
         String fyCode = req.get("fyCode").toString();
-        String username =req.get("username").toString();
+        String username = req.get("username").toString();
         LocalDate startDate = LocalDate.parse(req.get("startDate").toString());
         LocalDate endDate = LocalDate.parse(req.get("endDate").toString());
 
-        return accountingYearService.createYear(
+        AccountingYear year = accountingYearService.createYear(
                 societyId,
                 fyCode,
                 startDate,
                 endDate,
                 username
         );
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "id", year.getId(),
+                "fyCode", year.getFyCode()
+        ));
     }
 
     // =====================================================
