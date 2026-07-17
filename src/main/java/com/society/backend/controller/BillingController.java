@@ -147,11 +147,6 @@ public class BillingController {
         @PostMapping("/member/manual-payment") 
         public ResponseEntity<?> manualPayment(@RequestBody ManualPaymentRequest req) 
         {
-
-                System.out.println(req);
-                System.out.println("SocietyId = " + req.getSocietyId());
-                System.out.println("SelectedCount = " + req.getSelectedCount());
-
                 Double discountAmount = req.getDiscountAmount();
 
                 try {

@@ -801,7 +801,6 @@ public class BillingService {
                 interestAmount = Math.round(interestAmount);
                 totalAmount = Math.round(totalAmount);
                 maintenanceAmount = Math.round(maintenanceAmount);
-                System.out.println("TotalAmount:" + totalAmount);
 
                 return new InterestCalculationResponse(
                                 maintenanceAmount,
@@ -812,9 +811,6 @@ public class BillingService {
 
         public InterestCalculationResponse calculateDiscount(
                         InterestCalculationRequest request) {
-
-                System.out.println("Count:" + request.getSelectedCount());
-                System.out.println("Date:" + request.getPaymentDate());
 
                 List<Billing> bills = billingRepository.findAllById(request.getBillIds());
 
@@ -839,8 +835,6 @@ public class BillingService {
                 }
 
                 double discountAmount = 0.0;
-
-                System.out.println("Discount:" + discountAmount);
 
                 if (policy != null && request.getSelectedCount() != null
                                 && request.getSelectedCount() == 12 && request.getPaymentDate() != null
