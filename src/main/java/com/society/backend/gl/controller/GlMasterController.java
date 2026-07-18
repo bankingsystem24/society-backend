@@ -20,9 +20,9 @@ public class GlMasterController {
     private final GlMappingRepository glMappingRepository;
     private final GlMappingService glMappingService;
 
-    public GlMasterController(GlMasterService glMasterService, 
+    public GlMasterController(GlMasterService glMasterService,
             GlMappingRepository glMappingRepository,
-            GlMappingService glMappingService){
+            GlMappingService glMappingService) {
         this.glMasterService = glMasterService;
         this.glMappingRepository = glMappingRepository;
         this.glMappingService = glMappingService;
@@ -77,7 +77,7 @@ public class GlMasterController {
     }
 
     @GetMapping("/mapping")
-     public List<GlMapping> getGlMapping(@RequestParam Long societyId) {
+    public List<GlMapping> getGlMapping(@RequestParam Long societyId) {
         return glMasterService.getMappingBySociety(societyId);
     }
 
@@ -94,12 +94,20 @@ public class GlMasterController {
         return ResponseEntity.noContent().build();
     }
 
-@PutMapping("/mapping/{id}")
-public ResponseEntity<GlMapping> update(
-        @PathVariable Long id,
-        @RequestBody GlMapping glMapping) {
+    @PutMapping("/mapping/{id}")
+    public ResponseEntity<GlMapping> update(
+            @PathVariable Long id,
+            @RequestBody GlMapping glMapping) {
 
-    return ResponseEntity.ok(glMappingService.update(id, glMapping));
-}
+        return ResponseEntity.ok(glMappingService.update(id, glMapping));
+    }
+
+    @GetMapping("/cash-bank")
+    public List<GlMaster> getCashBankAccounts(
+            @RequestParam Long societyId) {
+                
+        return glMasterService.getCashBankAccounts(societyId);
+    }
+
 
 }

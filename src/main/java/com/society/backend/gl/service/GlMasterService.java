@@ -72,6 +72,9 @@ public class GlMasterService {
         glMasterRepository.delete(existing);
     }
 
+    public List<GlMaster> getCashBankAccounts(Long societyId) {
+        return glMasterRepository.findCashBankAccounts(societyId);
+    }
     public GlMapping save(GlMapping glMapping) {
         return glMappingRepository.save(glMapping);
     }
