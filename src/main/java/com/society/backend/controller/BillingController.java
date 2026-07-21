@@ -17,8 +17,10 @@ import com.society.backend.dto.InterestCalculationRequest;
 import com.society.backend.dto.InterestCalculationResponse;
 import com.society.backend.dto.ManualPaymentRequest;
 import com.society.backend.dto.PaymentRequest;
+import com.society.backend.dto.PostArrearsRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
+import com.society.backend.gl.dto.ArrearsResponse;
 import com.society.backend.gl.entity.DiscountPolicy;
 import com.society.backend.gl.entity.SocietyBillingPolicy;
 import com.society.backend.gl.repository.DiscountPolicyRepository;
@@ -305,4 +307,23 @@ public class BillingController {
 
         return ResponseEntity.ok("Bills generated successfully.");
         }
+
+        @PostMapping("/arrears")
+        public ResponseEntity<?> postArrears(
+                @RequestBody PostArrearsRequest request) {
+
+        billingService.saveArrears(request);
+
+        return ResponseEntity.ok("Arrears Saved Successfully");
+        }
+
+        @GetMapping("/arrears")
+        public ResponseEntity<List<ArrearsResponse>> getArrears(
+                @RequestParam Long societyId,
+                @RequestParam Long financialYearId) {
+
+        return ResponseEntity.ok(
+                billingService.getArrears(societyId, financialYearId));
+        }        
+
 }

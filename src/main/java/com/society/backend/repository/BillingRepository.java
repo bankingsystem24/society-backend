@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.society.backend.entity.Billing;
 import com.society.backend.enums.PaymentStatus;
+import com.society.backend.gl.enums.BillType;
  
 public interface BillingRepository extends JpaRepository<Billing, Long> {
 
@@ -70,5 +71,19 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
                         String transactionId,
                         String paymentMode,
                         List<Long> ids);
+
+        @Query("""
+            select b
+            from Billing b
+            where b.society.id = :societyId
+            and b.financialYearId = :financialYearId
+            and b.billType = :billType
+            order by b.flat.flatNo
+            """)
+        List<Billing> getArrears(
+                Long societyId,
+                Long financialYearId,
+                BillType billType);
+
 
 }

@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,52 +19,51 @@ import com.society.backend.dto.BillingReceiptRequest;
 import com.society.backend.dto.BillingResponse;
 import com.society.backend.dto.InterestCalculationRequest;
 import com.society.backend.dto.InterestCalculationResponse;
+import com.society.backend.dto.PostArrearsRequest;
 import com.society.backend.entity.Billing;
 import com.society.backend.entity.Flat;
 import com.society.backend.entity.Member;
 import com.society.backend.entity.Receipt;
+import com.society.backend.entity.Society;
+import com.society.backend.gl.dto.ArrearsResponse;
 import com.society.backend.gl.entity.DiscountPolicy;
 import com.society.backend.gl.entity.SocietyBillingPolicy;
+import com.society.backend.gl.enums.BillType;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.repository.DiscountPolicyRepository;
 import com.society.backend.gl.repository.SocietyBillingPolicyRepository;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.ReceiptRepository;
+import com.society.backend.repository.SocietyRepository;
 
 @Service
 public class BillingService {
 
         private final DiscountPolicyRepository discountPolicyRepository;
+        private final SocietyRepository societyRepository;
+        private BillingRepository billingRepository;
+        private FlatRepository flatRepository;
+        private ReceiptRepository receiptRepository;
+        private JournalService journalService;
+        private SocietyBillingPolicyRepository societyBillingPolicyRepository;
 
         public BillingService(BillingRepository billingRepository,
                         FlatRepository flatRepository,
                         ReceiptRepository receiptRepository,
                         JournalService journalService,
                         SocietyBillingPolicyRepository societyBillingPolicyRepository,
-                        DiscountPolicyRepository discountPolicyRepository) {
+                        DiscountPolicyRepository discountPolicyRepository,
+                        SocietyRepository societyRepository) {
                 this.billingRepository = billingRepository;
                 this.flatRepository = flatRepository;
                 this.receiptRepository = receiptRepository;
                 this.journalService = journalService;
                 this.societyBillingPolicyRepository = societyBillingPolicyRepository;
                 this.discountPolicyRepository = discountPolicyRepository;
+                this.societyRepository = societyRepository;
         }
 
-        @Autowired
-        private BillingRepository billingRepository;
-
-        @Autowired
-        private FlatRepository flatRepository;
-
-        @Autowired
-        private ReceiptRepository receiptRepository;
-
-        @Autowired
-        private JournalService journalService;
-
-        @Autowired
-        private SocietyBillingPolicyRepository societyBillingPolicyRepository;
 
         // =====================================================
         // GENERATE MONTHLY BILLS
@@ -900,5 +899,89 @@ public class BillingService {
                                         req.getGlCreditAccount());
                 }
         }
+
+
+        public void saveArrears(PostArrearsRequest request) {
+                Society society = societyRepository.findById(request.getSocietyId())
+                        .orElseThrow(() -> new RuntimeException("Society not found"));
+
+                Flat flat = flatRepository.findById(request.getFlatId())
+                        .orElseThrow(() -> new RuntimeException("Flat not found"));
+
+                Billing bill = new Billing();
+                bill.setSociety(society);
+                bill.setFlat(flat);
+                bill.setFinancialYearId(request.getFinancialYearId());
+                bill.setMonth("OPENING");
+                bill.setYear(LocalDate.now().getYear());
+                bill.setBillType(BillType.ARREARS);
+                bill.setMaintenanceAmount(request.getAmount());
+                bill.setPenaltyAmount(0.0);
+                bill.setInterestAmount(0.0);
+                bill.setDiscountAmount(0.0);
+                bill.setTotalAmount(request.getAmount());
+                bill.setStatus(PaymentStatus.PENDING);
+                bill.setDueDate(request.getDueDate());
+                bill.setCreatedDate(LocalDate.now());
+
+                billingRepository.save(bill);
+
+                Member member = flat.getOwner();
+                
+                journalService.createJournalEntry(
+                        "ARR-" + bill.getId(),                // Voucher No
+                        "JOURNAL",                            // Voucher Type
+                        "Opening Arrears for Flat " + bill.getFlat().getFlatNo(),
+                        "BILLING",                            // Reference Type
+                        bill.getId(),                         // Reference Id
+                        request.getAmount(),                  // Total Amount
+                        request.getSocietyId(),               // Society
+                        request.getGlReceivable(),        // Debit GL
+                        request.getAmount(),                  // Debit Amount
+                        request.getGlCreditAccount(),            // Credit GL
+                        request.getAmount(),                  // Credit Amount
+                        "MEMBER",                             // Entity Type
+                        bill.getFlat().getOwner().getId(),                     // Entity Id
+                        request.getFinancialYearId(),         // Financial Year
+                        request.getCreatedBy(),               // User
+                        flat.getId(),                         // Flat
+                        member
+                );
+        }
+        
+    public List<ArrearsResponse> getArrears(Long societyId, Long financialYearId) {
+
+        List<Billing> bills = billingRepository.getArrears(
+                        societyId,
+                        financialYearId,
+                        BillType.ARREARS
+                        );
+
+        return bills.stream().map(bill -> {
+
+            ArrearsResponse dto = new ArrearsResponse();
+
+            dto.setId(bill.getId());
+            dto.setFlatNo(bill.getFlat().getFlatNo());
+
+            if (bill.getFlat().getOwner() != null) {
+                dto.setOwnerName(bill.getFlat().getOwner().getName());
+            } else {
+                dto.setOwnerName("");
+            }
+
+            dto.setMaintenanceAmount(
+                    bill.getMaintenanceAmount() == null ? 0.0 : bill.getMaintenanceAmount()
+            );
+
+            dto.setDueDate(bill.getDueDate());
+
+            dto.setStatus(bill.getStatus().name());
+
+            return dto;
+
+        }).collect(Collectors.toList());
+    }
+
 
 }

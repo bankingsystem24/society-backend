@@ -1,6 +1,8 @@
 package com.society.backend.entity;
 import java.time.LocalDate;
 import com.society.backend.enums.PaymentStatus;
+import com.society.backend.gl.enums.BillType;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -60,6 +62,9 @@ public class Billing {
 
     // Audit fields
     private LocalDate createdDate;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BillType billType = BillType.MAINTENANCE;
 
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
@@ -152,8 +157,10 @@ public class Billing {
     }
 
     public PaymentStatus getStatus() { return status; }
-
     public void setStatus(PaymentStatus status) { this.status = status; }
+
+    public BillType getBillType() { return billType; }
+    public void setBillType(BillType billType) { this.billType = billType; }
 
     public LocalDate getDueDate() { return dueDate; }
 
