@@ -8,6 +8,7 @@ import com.society.backend.entity.Society;
 import com.society.backend.gl.dto.ExpenseVoucherRequest;
 import com.society.backend.gl.entity.ExpenseVoucher;
 import com.society.backend.gl.repository.ExpenseVoucherRepository;
+import com.society.backend.gl.repository.JournalEntryLineRepository;
 import com.society.backend.gl.repository.JournalEntryRepository;
 import com.society.backend.repository.SocietyRepository;
 
@@ -20,15 +21,18 @@ public class ExpenseVoucherService {
         private final SocietyRepository societyRepository;
         private final JournalService journalService;
         private final JournalEntryRepository journalEntryRepository;
+        private final JournalEntryLineRepository journalEntryLineRepository;
 
         public ExpenseVoucherService(JournalEntryRepository journalEntryRepository,
                         ExpenseVoucherRepository expenseVoucherRepository,
                         SocietyRepository societyRepository,
-                        JournalService journalService) {
+                        JournalService journalService,
+                        JournalEntryLineRepository journalEntryLineRepository) {
                 this.journalEntryRepository = journalEntryRepository;
                 this.expenseVoucherRepository = expenseVoucherRepository;
                 this.societyRepository = societyRepository;
                 this.journalService = journalService;
+                this.journalEntryLineRepository = journalEntryLineRepository;
         }
 
         // ================= SAVE =================
@@ -116,7 +120,11 @@ public class ExpenseVoucherService {
                 ExpenseVoucher voucher = getById(id);
                 Long journalId = voucher.getJournalId();
 
-                if (journalId != null) {
+                if (journalId != null) {if (journalId != null) 
+                {
+                        journalEntryLineRepository.deleteByJournalId(journalId);
+
+                }
                         journalEntryRepository.deleteById(journalId);
                 }
                 expenseVoucherRepository.delete(voucher);
