@@ -9,6 +9,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
 List<Member> findBySociety_Id(Long societyId);
 
-// List<Member> findBySociety_IdAndMemberId(Long societyId,Long memberId);
+
 
 }

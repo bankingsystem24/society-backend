@@ -7,7 +7,10 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.society.backend.dto.FlatWiseMembersDto;
 import com.society.backend.entity.Billing;
+import com.society.backend.entity.Flat;
+import com.society.backend.entity.Member;
 import com.society.backend.entity.SinkingFund;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.dto.BalanceSheetResponse;
@@ -23,6 +26,7 @@ import com.society.backend.gl.repository.GlMasterRepository;
 import com.society.backend.gl.repository.GlOpeningBalanceRepository;
 import com.society.backend.gl.repository.JournalEntryLineRepository;
 import com.society.backend.repository.BillingRepository;
+import com.society.backend.repository.FlatRepository;
 import com.society.backend.repository.SinkingFundRepository;
 
 @Service
@@ -34,19 +38,22 @@ public class ReportService {
         private final BillingRepository billingRepository;
         private final SinkingFundRepository sinkingFundRepository;
         private final ContributionRepository contributionRepository;
+        private final FlatRepository flatRepository;
 
         public ReportService(JournalEntryLineRepository journalEntryLineRepository,
                         GlOpeningBalanceRepository glOpeningBalanceRepository,
                         GlMasterRepository glMasterRepository,
                         BillingRepository billingRepository,
                         SinkingFundRepository sinkingFundRepository,
-                        ContributionRepository contributionRepository) {
+                        ContributionRepository contributionRepository,
+                        FlatRepository flatRepository) {
                 this.journalEntryLineRepository = journalEntryLineRepository;
                 this.glOpeningBalanceRepository = glOpeningBalanceRepository;
                 this.glMasterRepository = glMasterRepository;
                 this.billingRepository = billingRepository;
                 this.sinkingFundRepository = sinkingFundRepository;
                 this.contributionRepository = contributionRepository;
+                this.flatRepository = flatRepository;
         }
 
         public ProfitLossResponseDTO getProfitAndLoss(Long societyId, Long financialYearId) {
@@ -195,11 +202,8 @@ public class ReportService {
                 for (Object[] obj : transactions) {
 
                         Integer gl = ((Number) obj[0]).intValue();
-
                         double debit = ((Number) obj[1]).doubleValue();
-
                         double credit = ((Number) obj[2]).doubleValue();
-
                         BalanceSheetRow row = map.get(gl);
 
                         if (row == null)
@@ -207,21 +211,16 @@ public class ReportService {
 
                         row.setDebit(debit);
                         row.setCredit(credit);
-
                         double opening = row.getOpeningBalance();
-
                         double closing;
 
                         if ("ASSETS".equalsIgnoreCase(row.getAccountType())) {
-
                                 closing = opening + debit - credit;
 
                         } else {
 
                                 closing = opening + credit - debit;
-
                         }
-
                         row.setClosingBalance(closing);
                 }
 
@@ -355,4 +354,32 @@ public class ReportService {
 
                 return response;
         }
+
+        public List<FlatWiseMembersDto> getFlatWiseMembers(Long societyId) 
+        {
+                List<Flat> flats = flatRepository.findBySocietyIdOrderByFlatNoAsc(societyId);
+
+                List<FlatWiseMembersDto> report = new ArrayList<>();
+
+                for (Flat flat : flats) 
+                {
+                        FlatWiseMembersDto dto = new FlatWiseMembersDto();
+
+                        dto.setFlatNo(flat.getFlatNo());
+                        Member owner = flat.getOwner();
+                        if (owner != null) 
+                        {
+                                dto.setMemberName(owner.getName());
+                                dto.setMobile(owner.getMobile());
+                                dto.setEmail(owner.getEmail());
+                                dto.setMemberType(owner.getMemberType());
+                                dto.setActive(owner.getActive());                                
+
+                                report.add(dto);
+                        }
+                      
+                }
+                return report;
+        }
+
 }
