@@ -9,7 +9,7 @@ import jakarta.persistence.*;
 @Table(
     name = "billing",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"society_id", "flat_id", "month", "year"})
+        @UniqueConstraint(columnNames = {"society_id", "flat_id", "month", "year","bill_type"})
     }
 )
 public class Billing {

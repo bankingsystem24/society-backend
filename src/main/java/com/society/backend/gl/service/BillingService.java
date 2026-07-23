@@ -142,10 +142,11 @@ public class BillingService {
                         if (flat.getOwner() == null || flat.getOwner().getId() == null)
                                 continue;
 
-                        boolean exists = billingRepository.existsByFlatIdAndMonthAndYear(
+                        boolean exists = billingRepository.existsByFlatIdAndMonthAndYearAndBillType(
                                         flat.getId(),
                                         month,
-                                        year);
+                                        year,
+                                        BillType.MAINTENANCE);
 
                         if (exists)
                                 continue;
@@ -353,7 +354,7 @@ public class BillingService {
 
                                 if (LocalDate.now().isAfter(interestStart)) {
 
-                                        long daysLate = ChronoUnit.DAYS.between(b.getCreatedDate(), LocalDate.now());
+                                        long daysLate = ChronoUnit.DAYS.between(b.getCreatedDate(), LocalDate.now())-policy.getGraceDays();
 
                                         interest = Math.round(
                                                         b.getMaintenanceAmount()
@@ -373,6 +374,7 @@ public class BillingService {
                         dto.setInterestAmount(interest);
                         dto.setDiscountAmount(b.getDiscountAmount());
                         dto.setDueDate(b.getDueDate());
+                        dto.setBillType(b.getBillType());
 
                         double totalAmount = (b.getMaintenanceAmount() != null ? b.getMaintenanceAmount() : 0.0)
                                         + (b.getPenaltyAmount() != null ? b.getPenaltyAmount() : 0.0)
@@ -677,7 +679,7 @@ public class BillingService {
                                         if (LocalDate.now().isAfter(interestStart)) {
 
                                                 long daysLate = ChronoUnit.DAYS.between(bill.getCreatedDate(),
-                                                                LocalDate.now());
+                                                                LocalDate.now())-policy.getGraceDays();
 
                                                 interest = Math.round(
                                                                 bill.getMaintenanceAmount()
@@ -920,7 +922,7 @@ public class BillingService {
                 bill.setSociety(society);
                 bill.setFlat(flat);
                 bill.setFinancialYearId(request.getFinancialYearId());
-                bill.setMonth("OPENING");
+                bill.setMonth(request.getMonth());
                 bill.setYear(LocalDate.now().getYear());
                 bill.setBillType(BillType.ARREARS);
                 bill.setMaintenanceAmount(request.getAmount());
@@ -970,6 +972,7 @@ public class BillingService {
 
                 dto.setId(bill.getId());
                 dto.setFlatNo(bill.getFlat().getFlatNo());
+                dto.setBillType(BillType.ARREARS);
 
                 if (bill.getFlat().getOwner() != null) {
                         dto.setOwnerName(bill.getFlat().getOwner().getName());

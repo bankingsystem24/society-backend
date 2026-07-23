@@ -27,6 +27,8 @@ public class SocietyBillingPolicy {
 
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
+
+    private Integer graceDays;
     
     public Long getFinancialYearId() {
         return financialYearId;
@@ -73,4 +75,11 @@ public class SocietyBillingPolicy {
         this.interestType = interestType;
     }
 
+    public Integer getGraceDays() {
+        return graceDays;
+    }
+
+    public void setGraceDays(Integer graceDays) {
+        this.graceDays = graceDays;
+    }
 }

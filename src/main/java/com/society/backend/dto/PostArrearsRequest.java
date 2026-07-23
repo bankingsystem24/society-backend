@@ -14,6 +14,7 @@ public class PostArrearsRequest {
     private Integer glReceivable;
     private Integer glCreditAccount;
     private Long createdBy;
+    private String month;
 
     // Getters & Setters
 
@@ -73,4 +74,7 @@ public class PostArrearsRequest {
 
     public Long getCreatedBy(){return createdBy;}
     public void setCreatedBy(Long createdBy){this.createdBy = createdBy;}
+
+    public String getMonth(){return month;}
+    public void setMonth(String month){this.month = month;}
 }

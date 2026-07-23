@@ -2,6 +2,12 @@ package com.society.backend.gl.dto;
 
 import java.time.LocalDate;
 
+import com.society.backend.gl.enums.BillType;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
 public class ArrearsResponse {
 
     private Long id;
@@ -10,6 +16,9 @@ public class ArrearsResponse {
     private Double maintenanceAmount;
     private LocalDate dueDate;
     private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BillType billType = BillType.ARREARS;
 
     public Long getId() {
         return id;
@@ -58,4 +67,12 @@ public class ArrearsResponse {
     public void setStatus(String status) {
         this.status = status;
     }
+
+public BillType getBillType() {
+    return billType;
+}
+
+public void setBillType(BillType billType) {
+    this.billType = billType;
+}
 }

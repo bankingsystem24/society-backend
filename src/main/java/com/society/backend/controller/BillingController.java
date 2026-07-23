@@ -309,12 +309,10 @@ public class BillingController {
         }
 
         @PostMapping("/arrears")
-        public ResponseEntity<?> postArrears(
-                @RequestBody PostArrearsRequest request) {
-
-        billingService.saveArrears(request);
-
-        return ResponseEntity.ok("Arrears Saved Successfully");
+        public ResponseEntity<?> postArrears(@RequestBody PostArrearsRequest request) 
+        {
+                billingService.saveArrears(request);
+                return ResponseEntity.ok("Arrears Saved Successfully");
         }
 
         @GetMapping("/arrears")

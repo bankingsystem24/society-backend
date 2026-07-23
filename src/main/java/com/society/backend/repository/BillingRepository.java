@@ -16,10 +16,11 @@ import com.society.backend.gl.enums.BillType;
 public interface BillingRepository extends JpaRepository<Billing, Long> {
 
     // ================= DUPLICATE CHECK =================
-    boolean existsByFlatIdAndMonthAndYear(
+    boolean existsByFlatIdAndMonthAndYearAndBillType(
             Long flatId,
             String month,
-            int year);
+            int year,
+            BillType billType);
 
     // ================= BASIC FETCH =================
     List<Billing> findBySocietyId(Long societyId);

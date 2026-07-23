@@ -2,23 +2,23 @@ package com.society.backend.dto;
 
 import java.time.LocalDate;
 
+import com.society.backend.gl.enums.BillType;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 public class BillingResponse {
 
     private Long id;
     private String month;
     private Integer year;
-
     private Double maintenanceAmount;
     private Double penaltyAmount;
     private Double totalAmount;
-
     private String status;
-
     private Long flatId;
     private String flatNo;
-
     private Long memberId;
     private String memberName;
     private Long receiptId;
@@ -29,6 +29,10 @@ public class BillingResponse {
     @Column(name = "financial_year_id", nullable = false)
     private Long financialYearId;
     private String transactionId;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BillType billType = BillType.ARREARS;
+
     public Long getFinancialYearId() {
         return financialYearId;
     }
@@ -172,4 +176,11 @@ public class BillingResponse {
     public String getTransactionId( ){return transactionId;}
     public void setTransactionId(String transactionId){ this.transactionId = transactionId;}
 
+    public BillType getBillType() {
+        return billType;
+    }
+
+    public void setBillType(BillType billType) {
+        this.billType = billType;
+    }
 }

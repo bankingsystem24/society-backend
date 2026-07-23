@@ -37,6 +37,7 @@ public class SocietyBillingPolicyService {
         policy.setInterestRate(dto.getInterestRate());
         policy.setInterestType(dto.getInterestType());
         policy.setFinancialYearId(dto.getFinancialYearId());
+        policy.setGraceDays(dto.getGraceDays());
 
         return policyRepository.save(policy);
     }
