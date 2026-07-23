@@ -106,7 +106,8 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
             JOIN b.flat f
             LEFT JOIN f.owner m
             WHERE b.society.id = :societyId
-            AND b.status = com.society.backend.enums.PaymentStatus.PENDING
+            AND (b.status = com.society.backend.enums.PaymentStatus.PENDING or 
+            b.status = com.society.backend.enums.PaymentStatus.SUBMITTED)
             ORDER BY f.flatNo, b.year, b.month
             """)
     List<DueBillsReport> getDueBills(@Param("societyId") Long societyId);
