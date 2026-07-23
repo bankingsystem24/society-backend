@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.society.backend.gl.entity.JournalEntry;
 import com.society.backend.gl.entity.JournalEntryLine;
 
 import jakarta.transaction.Transactional;
@@ -21,6 +22,8 @@ public interface JournalEntryLineRepository extends JpaRepository<JournalEntryLi
     @Transactional
     @Query("DELETE FROM JournalEntryLine j WHERE j.journalEntry.id = :journalId")
     int deleteByJournalId(@Param("journalId") Long journalId);
+
+    void deleteByJournalEntry(JournalEntry journalEntry);
 
     @Query(value = """
             SELECT gm.gl_code, gm.account_name, gm.group_name,

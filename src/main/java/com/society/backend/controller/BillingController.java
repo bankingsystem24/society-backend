@@ -324,6 +324,14 @@ public class BillingController {
 
         return ResponseEntity.ok(
                 billingService.getArrears(societyId, financialYearId));
-        }        
+        }  
+        
+        @DeleteMapping("/{id}")
+        public ResponseEntity<String> deleteBill(@PathVariable Long id) {
+
+        billingService.deleteBill(id);
+
+        return ResponseEntity.ok("Bill deleted successfully");
+        }
 
 }

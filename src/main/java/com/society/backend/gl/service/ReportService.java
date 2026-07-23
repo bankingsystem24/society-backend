@@ -15,6 +15,7 @@ import com.society.backend.entity.SinkingFund;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.dto.BalanceSheetResponse;
 import com.society.backend.gl.dto.BalanceSheetRow;
+import com.society.backend.gl.dto.DueBillsReport;
 import com.society.backend.gl.dto.Payments;
 import com.society.backend.gl.dto.ProfitLossItemDTO;
 import com.society.backend.gl.dto.ProfitLossResponseDTO;
@@ -382,4 +383,7 @@ public class ReportService {
                 return report;
         }
 
+        public List<DueBillsReport> getDueBills(Long societyId) {
+        return billingRepository.getDueBills(societyId);
+    }
 }

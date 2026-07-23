@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.society.backend.dto.FlatWiseMembersDto;
 import com.society.backend.gl.dto.BalanceSheetResponse;
+import com.society.backend.gl.dto.DueBillsReport;
 import com.society.backend.gl.dto.Payments;
 import com.society.backend.gl.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,13 @@ public class ReportController {
                 @RequestParam Long societyId
         ) {
                 return reportService.getFlatWiseMembers(societyId);
+        }
+
+        @GetMapping("/due-bills")
+        public List<DueBillsReport> dueBills(
+                @RequestParam Long societyId) {
+
+                return reportService.getDueBills(societyId);
         }
     
 }

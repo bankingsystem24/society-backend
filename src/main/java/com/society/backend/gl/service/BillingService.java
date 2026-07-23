@@ -31,6 +31,8 @@ import com.society.backend.gl.entity.SocietyBillingPolicy;
 import com.society.backend.gl.enums.BillType;
 import com.society.backend.enums.PaymentStatus;
 import com.society.backend.gl.repository.DiscountPolicyRepository;
+import com.society.backend.gl.repository.JournalEntryLineRepository;
+import com.society.backend.gl.repository.JournalEntryRepository;
 import com.society.backend.gl.repository.SocietyBillingPolicyRepository;
 import com.society.backend.repository.BillingRepository;
 import com.society.backend.repository.FlatRepository;
@@ -42,11 +44,13 @@ public class BillingService {
 
         private final DiscountPolicyRepository discountPolicyRepository;
         private final SocietyRepository societyRepository;
-        private BillingRepository billingRepository;
-        private FlatRepository flatRepository;
-        private ReceiptRepository receiptRepository;
-        private JournalService journalService;
-        private SocietyBillingPolicyRepository societyBillingPolicyRepository;
+        private final BillingRepository billingRepository;
+        private final FlatRepository flatRepository;
+        private final ReceiptRepository receiptRepository;
+        private final JournalService journalService;
+        private final SocietyBillingPolicyRepository societyBillingPolicyRepository;
+        private final JournalEntryRepository journalEntryRepository;
+        private final JournalEntryLineRepository journalEntryLineRepository;
 
         public BillingService(BillingRepository billingRepository,
                         FlatRepository flatRepository,
@@ -54,7 +58,9 @@ public class BillingService {
                         JournalService journalService,
                         SocietyBillingPolicyRepository societyBillingPolicyRepository,
                         DiscountPolicyRepository discountPolicyRepository,
-                        SocietyRepository societyRepository) {
+                        SocietyRepository societyRepository,
+                        JournalEntryRepository journalEntryRepository,
+                        JournalEntryLineRepository journalEntryLineRepository) {
                 this.billingRepository = billingRepository;
                 this.flatRepository = flatRepository;
                 this.receiptRepository = receiptRepository;
@@ -62,6 +68,8 @@ public class BillingService {
                 this.societyBillingPolicyRepository = societyBillingPolicyRepository;
                 this.discountPolicyRepository = discountPolicyRepository;
                 this.societyRepository = societyRepository;
+                this.journalEntryRepository = journalEntryRepository;
+                this.journalEntryLineRepository = journalEntryLineRepository;
         }
 
 
@@ -949,39 +957,55 @@ public class BillingService {
                 );
         }
         
-    public List<ArrearsResponse> getArrears(Long societyId, Long financialYearId) {
+        public List<ArrearsResponse> getArrears(Long societyId, Long financialYearId) {
+                List<Billing> bills = billingRepository.getArrears(
+                                societyId,
+                                financialYearId,
+                                BillType.ARREARS
+                                );
 
-        List<Billing> bills = billingRepository.getArrears(
-                        societyId,
-                        financialYearId,
-                        BillType.ARREARS
-                        );
+                return bills.stream().map(bill -> {
 
-        return bills.stream().map(bill -> {
+                ArrearsResponse dto = new ArrearsResponse();
 
-            ArrearsResponse dto = new ArrearsResponse();
+                dto.setId(bill.getId());
+                dto.setFlatNo(bill.getFlat().getFlatNo());
 
-            dto.setId(bill.getId());
-            dto.setFlatNo(bill.getFlat().getFlatNo());
+                if (bill.getFlat().getOwner() != null) {
+                        dto.setOwnerName(bill.getFlat().getOwner().getName());
+                } else {
+                        dto.setOwnerName("");
+                }
 
-            if (bill.getFlat().getOwner() != null) {
-                dto.setOwnerName(bill.getFlat().getOwner().getName());
-            } else {
-                dto.setOwnerName("");
-            }
+                dto.setMaintenanceAmount(
+                        bill.getMaintenanceAmount() == null ? 0.0 : bill.getMaintenanceAmount()
+                );
 
-            dto.setMaintenanceAmount(
-                    bill.getMaintenanceAmount() == null ? 0.0 : bill.getMaintenanceAmount()
-            );
+                dto.setDueDate(bill.getDueDate());
 
-            dto.setDueDate(bill.getDueDate());
+                dto.setStatus(bill.getStatus().name());
 
-            dto.setStatus(bill.getStatus().name());
+                return dto;
 
-            return dto;
+                }).collect(Collectors.toList());
+        }
 
-        }).collect(Collectors.toList());
-    }
+        @Transactional
+        public void deleteBill(Long id) {
+                Billing bill = billingRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Bill not found"));
 
+                if (bill.getStatus() != PaymentStatus.PENDING) {
+                        throw new RuntimeException("Only pending bills can be deleted.");
+                }
+                journalEntryRepository
+                        .findByReferenceTypeAndReferenceId("BILLING", bill.getId())
+                        .ifPresent(entry -> {
+                                journalEntryLineRepository.deleteByJournalEntry(entry);
+                                journalEntryRepository.delete(entry);
+                        });
+
+                billingRepository.delete(bill);
+        }
 
 }
