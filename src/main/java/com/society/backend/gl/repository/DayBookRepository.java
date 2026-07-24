@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.society.backend.gl.dto.DayBookDTO;
+import com.society.backend.gl.dto.OpeningBalanceDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -78,25 +79,66 @@ public class DayBookRepository {
         }
     }
 
-    public Double getOpeningBalance(Long societyId, LocalDate date) {
+public List<OpeningBalanceDTO> getOpeningBalance(Long societyId, LocalDate date) {
 
     String sql = """
-        SELECT COALESCE(
-            SUM(jl.debit_amount - jl.credit_amount), 0
-        )
-        FROM journal_entry_line jl
-        JOIN journal_entry je
-            ON je.id = jl.journal_id
-        WHERE jl.society_id = ?
-          AND je.entry_date < ?
-          AND jl.gl_code IN (1001,1002,1003)
-    """;
+        SELECT
+            gob.gl_code,
+            gm.account_name,
+            (
+                COALESCE(gob.opening_balance,0)
+                +
+                COALESCE(SUM(
+                    CASE
+                        WHEN je.entry_date >= gob.opening_as_on
+                         AND je.entry_date < ?
+                        THEN jl.debit_amount
+                        ELSE 0
+                    END
+                ),0)
+                -
+                COALESCE(SUM(
+                    CASE
+                        WHEN je.entry_date >= gob.opening_as_on
+                         AND je.entry_date < ?
+                        THEN jl.credit_amount
+                        ELSE 0
+                    END
+                ),0)
+            ) AS opening_balance
+        FROM gl_opening_balance gob
 
-    return jdbcTemplate.queryForObject(
+        JOIN gl_master gm
+            ON gm.gl_code = gob.gl_code
+           AND gm.society_id = gob.society_id
+
+        LEFT JOIN journal_entry_line jl
+            ON jl.gl_code = gob.gl_code
+           AND jl.society_id = gob.society_id
+
+        LEFT JOIN journal_entry je
+            ON je.id = jl.journal_id
+
+        WHERE gob.society_id = ?
+
+        GROUP BY
+            gob.gl_code,
+            gm.account_name,
+            gob.opening_balance
+
+        ORDER BY gob.gl_code
+        """;
+
+    return jdbcTemplate.query(
             sql,
-            Double.class,
-            societyId,
-            date
+            (rs, rowNum) -> new OpeningBalanceDTO(
+                    rs.getInt("gl_code"),
+                    rs.getString("account_name"),
+                    rs.getDouble("opening_balance")
+            ),
+            date,
+            date,
+            societyId
     );
 }
 

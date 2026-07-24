@@ -87,7 +87,8 @@ public class ExpenseVoucherService {
 
                                 0L, // createdBy
                                 null, // flatId
-                                null // member
+                                null,
+                                LocalDate.now() // member
                 );
 
                 savedVoucher.setJournalId(journalId);

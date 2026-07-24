@@ -81,7 +81,8 @@ public class IncomeVoucherService {
 
                                 0L, // createdBy
                                 null, // flatId
-                                null // member
+                                null, // member,
+                                request.getVoucherDate()
                                 );
 
         voucher.setJournalId(journalId);

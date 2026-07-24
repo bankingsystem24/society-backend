@@ -954,7 +954,8 @@ public class BillingService {
                         request.getFinancialYearId(),         // Financial Year
                         request.getCreatedBy(),               // User
                         flat.getId(),                         // Flat
-                        member
+                        member,
+                        LocalDate.now()
                 );
         }
         

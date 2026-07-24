@@ -66,11 +66,12 @@ public class JournalService {
                         Long financialYearId,
                         Long createdBy,
                         Long flatId,
-                        Member member) {
+                        Member member,
+                        LocalDate voucherDate) {
 
                 JournalEntry entry = new JournalEntry();
                 entry.setVoucherNo(voucherNo);
-                entry.setEntryDate(LocalDate.now());
+                entry.setEntryDate("INCOME".equals(voucherType)? voucherDate : LocalDate.now());
                 entry.setVoucherType(VoucherType.valueOf(voucherType));
                 entry.setNarration(narration);
                 entry.setReferenceType(referenceType);
@@ -154,7 +155,8 @@ public class JournalService {
                                 financialYearId,
                                 createdBy,
                                 flatId,
-                                member);
+                                member,
+                                LocalDate.now());
 
                 // ================= LEDGER UPDATE =================
 
@@ -355,7 +357,8 @@ public class JournalService {
                                 societyId,
                                 createdBy,
                                 null,
-                                member);
+                                member,
+                                LocalDate.now());
         }
 
         // =====================================================
@@ -445,7 +448,8 @@ public class JournalService {
                                 financialYearId,
                                 createdBy,
                                 flatId,
-                                member);
+                                member,
+                                LocalDate.now());
 
                 // ================= LEDGER UPDATE =================
 
@@ -499,7 +503,8 @@ public class JournalService {
                                 financialYearId,
                                 createdBy,
                                 flatId,
-                                member);
+                                member,
+                                LocalDate.now());
 
                 // ================= LEDGER UPDATE =================
 
@@ -579,7 +584,8 @@ public class JournalService {
                                 financialYearId,
                                 createdBy,
                                 null,
-                                null);
+                                null,
+                                LocalDate.now());
 
                 } else {
 
@@ -600,7 +606,8 @@ public class JournalService {
                                 financialYearId,
                                 createdBy,
                                 null,
-                                null);
+                                null,
+                                LocalDate.now());
                 }
         }
 }

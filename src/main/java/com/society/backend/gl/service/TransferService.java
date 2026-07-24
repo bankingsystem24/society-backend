@@ -1,4 +1,5 @@
 package com.society.backend.gl.service;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import com.society.backend.entity.Society;
@@ -82,7 +83,8 @@ public class TransferService {
 
                 0L,
                 null,
-                null
+                null,
+                LocalDate.now()
         );
 
         voucher.setJournalId(journalId);
