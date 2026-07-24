@@ -295,8 +295,7 @@ public class BillingController {
         public ResponseEntity<InterestCalculationResponse> calculateDiscount(
                         @RequestBody InterestCalculationRequest request) {
 
-                return ResponseEntity.ok(
-                        billingService.calculateDiscount(request));
+                return ResponseEntity.ok(billingService.calculateDiscount(request));
         }
 
         @PostMapping("/generate-financial-year-bills")

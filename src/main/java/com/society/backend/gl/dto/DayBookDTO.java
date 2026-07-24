@@ -19,6 +19,7 @@ public class DayBookDTO {
 
     private String remarks;
     private String entityType;
+    private String particulars;
 
     public DayBookDTO() {
     }
@@ -33,7 +34,8 @@ public class DayBookDTO {
                       Double debitAmount,
                       Double creditAmount,
                       String remarks,
-                      String entityType) {
+                      String entityType,
+                      String particulars) {
         this.entryDate = entryDate;
         this.voucherNo = voucherNo;
         this.glCode = glCode;
@@ -45,6 +47,7 @@ public class DayBookDTO {
         this.creditAmount = creditAmount;
         this.remarks = remarks;
         this.entityType = entityType;
+        this.particulars = particulars;
     }
 
     public LocalDate getEntryDate() {
@@ -133,5 +136,13 @@ public class DayBookDTO {
 
     public void setEntityType(String entityType) {
         this.entityType = entityType;
+    }
+
+    public String getParticulars() {
+        return particulars;
+    }
+
+    public void setParticulars(String particulars) {
+        this.particulars = particulars;
     }
 }

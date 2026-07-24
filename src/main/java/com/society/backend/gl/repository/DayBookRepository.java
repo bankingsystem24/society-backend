@@ -32,7 +32,8 @@ public class DayBookRepository {
                     jl.debit_amount,
                     jl.credit_amount,
                     jl.remarks,
-                    jl.entity_type
+                    jl.entity_type,
+                    je.narration
                 FROM journal_entry_line jl
                 JOIN journal_entry je
                     ON jl.journal_id = je.id
@@ -71,8 +72,32 @@ public class DayBookRepository {
             dto.setCreditAmount(rs.getDouble("credit_amount"));
             dto.setRemarks(rs.getString("remarks"));
             dto.setEntityType(rs.getString("entity_type"));
+            dto.setParticulars(rs.getString("narration"));
 
             return dto;
         }
     }
+
+    public Double getOpeningBalance(Long societyId, LocalDate date) {
+
+    String sql = """
+        SELECT COALESCE(
+            SUM(jl.debit_amount - jl.credit_amount), 0
+        )
+        FROM journal_entry_line jl
+        JOIN journal_entry je
+            ON je.id = jl.journal_id
+        WHERE jl.society_id = ?
+          AND je.entry_date < ?
+          AND jl.gl_code IN (1001,1002,1003)
+    """;
+
+    return jdbcTemplate.queryForObject(
+            sql,
+            Double.class,
+            societyId,
+            date
+    );
+}
+
 }

@@ -726,8 +726,7 @@ public class BillingService {
                 return receiptRepository.findAllById(receiptIds);
         }
 
-        public InterestCalculationResponse calculateInterest(
-                        InterestCalculationRequest request) {
+        public InterestCalculationResponse calculateInterest(InterestCalculationRequest request) {
 
                 List<Billing> bills = billingRepository.findAllById(request.getBillIds());
 
@@ -789,7 +788,7 @@ public class BillingService {
                                                         bill.getCreatedDate(),
                                                         paymentDate);
 
-                                        daysLate = Math.max(0, daysLate);
+                                        daysLate = Math.max(0, daysLate)-policy.getGraceDays();
 
                                         // Annual interest rate converted to daily interest
                                         interest = maintenance

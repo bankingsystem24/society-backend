@@ -1,5 +1,7 @@
 package com.society.backend.gl.entity;
 
+import java.time.LocalDate;
+
 import com.society.backend.entity.Society;
 import jakarta.persistence.*;
 
@@ -31,6 +33,8 @@ public class GlOpeningBalance {
     @Column(name = "opening_balance")
     private Double openingBalance = 0.0;
 
+    @Column(name = "opening_as_on")
+    private LocalDate openingAsOn;
 
     // ================= GETTERS & SETTERS =================
 
@@ -90,4 +94,11 @@ public class GlOpeningBalance {
         this.openingBalance = openingBalance;
     }
 
+    public LocalDate getOpeningAsOn() {
+        return openingAsOn;
+    }
+
+    public void setOpeningAsOn(LocalDate openingAsOn) {
+        this.openingAsOn = openingAsOn;
+    }
 }

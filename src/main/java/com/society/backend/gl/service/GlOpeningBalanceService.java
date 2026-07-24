@@ -1,6 +1,5 @@
 package com.society.backend.gl.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -55,13 +54,14 @@ public class GlOpeningBalanceService {
         mainEntry.setGlCode(request.getGlCode());
         mainEntry.setOpeningDebit(request.getOpeningDebit());
         mainEntry.setOpeningCredit(request.getOpeningCredit());
+        mainEntry.setOpeningAsOn(request.getOpeningAsOn());
 
         GlOpeningBalance savedMain = glOpeningBalanceRepository.save(mainEntry);
 
         // Create Opening Journal Entry (Single Entry)
         JournalEntry entry = new JournalEntry();
         entry.setVoucherNo("OB-" + savedMain.getId());
-        entry.setEntryDate(LocalDate.now());
+        entry.setEntryDate(request.getOpeningAsOn());
         entry.setVoucherType(VoucherType.OPENING);
         entry.setNarration("Opening Balance");
         entry.setReferenceType("OPENING_BALANCE");

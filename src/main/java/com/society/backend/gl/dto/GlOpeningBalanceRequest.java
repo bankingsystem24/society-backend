@@ -1,5 +1,9 @@
 package com.society.backend.gl.dto;
 
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+
 public class GlOpeningBalanceRequest {
     private Long societyId;
     private Long financialYearId;
@@ -9,6 +13,8 @@ public class GlOpeningBalanceRequest {
     private Double openingBalance;
     private Integer contraGlCode;
     private Long createdBy;
+    @Column(name = "opening_as_on")
+    private LocalDate openingAsOn;
 
     public Long getSocietyId(){
         return societyId;
@@ -68,4 +74,12 @@ public class GlOpeningBalanceRequest {
 
     public Long getCreatedBy(){ return createdBy;}
     public void setCreatedBy(Long createdBy){this.createdBy = createdBy;}
+
+    public LocalDate getOpeningAsOn() {
+        return openingAsOn;
+    }
+
+    public void setOpeningAsOn(LocalDate openingAsOn) {
+        this.openingAsOn = openingAsOn;
+    }
 }

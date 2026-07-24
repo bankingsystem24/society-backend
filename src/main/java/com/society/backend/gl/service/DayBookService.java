@@ -21,73 +21,98 @@ public class DayBookService {
 
     private final DayBookRepository dayBookRepository;
 
-    public DayBookReportDTO getDayBook(Long societyId, LocalDate date) {
+public DayBookReportDTO getDayBook(Long societyId, LocalDate date) {
 
-        List<DayBookDTO> rows = dayBookRepository.getDayBook(societyId, date);
+    // Transactions for selected date
+    List<DayBookDTO> rows = dayBookRepository.getDayBook(societyId, date);
 
-        Map<Integer, DayBookGroupDTO> debitMap = new LinkedHashMap<>();
-        Map<Integer, DayBookGroupDTO> creditMap = new LinkedHashMap<>();
+    // Opening balance before selected date
+    Double openingBalance = dayBookRepository.getOpeningBalance(societyId, date);
 
-        double totalDebit = 0.0;
-        double totalCredit = 0.0;
+    if (openingBalance == null) {
+        openingBalance = 0.0;
+    }
 
-        for (DayBookDTO dto : rows) {
+    // Add Opening Balance row
+    if (openingBalance != 0) {
 
-            // ---------------- DEBIT SIDE ----------------
+        DayBookDTO opening = new DayBookDTO();
+        opening.setGlCode(1001);               // Cash in Hand
+        opening.setAccountName("Cash in Hand");
+        opening.setParticulars("Opening Balance");
 
-            if (dto.getDebitAmount() != null && dto.getDebitAmount() > 0) {
-
-                DayBookGroupDTO group = debitMap.get(dto.getGlCode());
-
-                if (group == null) {
-
-                    group = new DayBookGroupDTO();
-                    group.setGlCode(dto.getGlCode());
-                    group.setAccountName(dto.getAccountName());
-
-                    debitMap.put(dto.getGlCode(), group);
-                }
-
-                group.getTransactions().add(dto);
-
-                group.setTotalDebit(
-                        group.getTotalDebit() + dto.getDebitAmount());
-
-                totalDebit += dto.getDebitAmount();
-            }
-
-            // ---------------- CREDIT SIDE ----------------
-
-            if (dto.getCreditAmount() != null && dto.getCreditAmount() > 0) {
-
-                DayBookGroupDTO group = creditMap.get(dto.getGlCode());
-
-                if (group == null) {
-
-                    group = new DayBookGroupDTO();
-                    group.setGlCode(dto.getGlCode());
-                    group.setAccountName(dto.getAccountName());
-
-                    creditMap.put(dto.getGlCode(), group);
-                }
-
-                group.getTransactions().add(dto);
-
-                group.setTotalCredit(
-                        group.getTotalCredit() + dto.getCreditAmount());
-
-                totalCredit += dto.getCreditAmount();
-            }
-
+        if (openingBalance >= 0) {
+            opening.setDebitAmount(openingBalance);
+        } else {
+            opening.setCreditAmount(Math.abs(openingBalance));
         }
 
-        DayBookReportDTO report = new DayBookReportDTO();
-
-        report.setDebitGroups(new ArrayList<>(debitMap.values()));
-        report.setCreditGroups(new ArrayList<>(creditMap.values()));
-        report.setTotalDebit(totalDebit);
-        report.setTotalCredit(totalCredit);
-
-        return report;
+        rows.add(0, opening);
     }
+
+    Map<Integer, DayBookGroupDTO> debitMap = new LinkedHashMap<>();
+    Map<Integer, DayBookGroupDTO> creditMap = new LinkedHashMap<>();
+
+    double totalDebit = 0;
+    double totalCredit = 0;
+
+for (DayBookDTO dto : rows) {
+
+    boolean isOpening = "Opening Balance".equals(dto.getParticulars());
+
+    // ---------------- DEBIT ----------------
+    if (dto.getDebitAmount() != null && dto.getDebitAmount() > 0) {
+
+        DayBookGroupDTO group = debitMap.computeIfAbsent(
+                dto.getGlCode(),
+                k -> {
+                    DayBookGroupDTO g = new DayBookGroupDTO();
+                    g.setGlCode(dto.getGlCode());
+                    g.setAccountName(dto.getAccountName());
+                    return g;
+                });
+
+        group.getTransactions().add(dto);
+
+        group.setTotalDebit(group.getTotalDebit() + dto.getDebitAmount());
+
+        // Don't include opening balance in daily total
+        if (!isOpening) {
+            totalDebit += dto.getDebitAmount();
+        }
+    }
+
+    // ---------------- CREDIT ----------------
+    if (dto.getCreditAmount() != null && dto.getCreditAmount() > 0) {
+
+        DayBookGroupDTO group = creditMap.computeIfAbsent(
+                dto.getGlCode(),
+                k -> {
+                    DayBookGroupDTO g = new DayBookGroupDTO();
+                    g.setGlCode(dto.getGlCode());
+                    g.setAccountName(dto.getAccountName());
+                    return g;
+                });
+
+        group.getTransactions().add(dto);
+
+        group.setTotalCredit(group.getTotalCredit() + dto.getCreditAmount());
+
+        // Don't include opening balance in daily total
+        if (!isOpening) {
+            totalCredit += dto.getCreditAmount();
+        }
+    }
+}
+    DayBookReportDTO report = new DayBookReportDTO();
+    report.setDebitGroups(new ArrayList<>(debitMap.values()));
+    report.setCreditGroups(new ArrayList<>(creditMap.values()));
+    report.setTotalDebit(totalDebit);
+    report.setTotalCredit(totalCredit);
+
+    return report;
+}
+
+
+
 }
